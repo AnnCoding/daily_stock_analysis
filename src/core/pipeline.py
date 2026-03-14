@@ -1005,7 +1005,8 @@ class StockAnalysisPipeline:
         stock_codes: Optional[List[str]] = None,
         dry_run: bool = False,
         send_notification: bool = True,
-        merge_notification: bool = False
+        merge_notification: bool = False,
+        feishu_alias: Optional[str] = None
     ) -> List[AnalysisResult]:
         """
         运行完整的分析流程
@@ -1021,6 +1022,7 @@ class StockAnalysisPipeline:
             dry_run: 是否仅获取数据不分析
             send_notification: 是否发送推送通知
             merge_notification: 是否合并推送（跳过本次推送，由 main 层合并个股+大盘后统一发送，Issue #190）
+            feishu_alias: 飞书 Webhook 别名（仅发送到该别名对应的群）
 
         Returns:
             分析结果列表
@@ -1126,13 +1128,13 @@ class StockAnalysisPipeline:
             if single_stock_notify:
                 # 单股推送模式：只保存汇总报告，不再重复推送
                 logger.info("单股推送模式：跳过汇总推送，仅保存报告到本地")
-                self._send_notifications(results, report_type, skip_push=True)
+                self._send_notifications(results, report_type, skip_push=True, feishu_alias=feishu_alias)
             elif merge_notification:
                 # 合并模式（Issue #190）：仅保存，不推送，由 main 层合并个股+大盘后统一发送
                 logger.info("合并推送模式：跳过本次推送，将在个股+大盘复盘后统一发送")
-                self._send_notifications(results, report_type, skip_push=True)
+                self._send_notifications(results, report_type, skip_push=True, feishu_alias=feishu_alias)
             else:
-                self._send_notifications(results, report_type)
+                self._send_notifications(results, report_type, feishu_alias=feishu_alias)
         
         return results
     
@@ -1141,15 +1143,17 @@ class StockAnalysisPipeline:
         results: List[AnalysisResult],
         report_type: ReportType = ReportType.SIMPLE,
         skip_push: bool = False,
+        feishu_alias: Optional[str] = None,
     ) -> None:
         """
         发送分析结果通知
-        
+
         生成决策仪表盘格式的报告
-        
+
         Args:
             results: 分析结果列表
             skip_push: 是否跳过推送（仅保存到本地，用于单股推送模式）
+            feishu_alias: 飞书 Webhook 别名（仅发送到该别名对应的群）
         """
         try:
             logger.info("生成决策仪表盘日报...")
@@ -1233,6 +1237,42 @@ class StockAnalysisPipeline:
                     else:
                         wechat_success = self.notifier.send_to_wechat(dashboard_content)
 
+                # 飞书：使用简易版模板（三个核心部分）
+                feishu_success = False
+                if NotificationChannel.FEISHU in channels:
+                    simple_content = self.notifier.generate_simple_dashboard(results)
+                    logger.info(f"飞书简报长度: {len(simple_content)} 字符")
+                    logger.debug(f"飞书推送内容:\n{simple_content}")
+
+                    # 处理飞书多 Webhook 别名发送
+                    if feishu_alias:
+                        # 按别名发送到指定群（stock_list 已在 main.py 中过滤）
+                        feishu_success = self.notifier.send_to_feishu_by_alias(feishu_alias, simple_content)
+                        if feishu_success:
+                            logger.info(f"已通过飞书别名 '{feishu_alias}' 推送报告")
+                        else:
+                            logger.error(f"飞书别名 '{feishu_alias}' 推送失败")
+                    else:
+                        # 原有逻辑：发送到所有飞书 webhook
+                        feishu_image_bytes = None
+                        if NotificationChannel.FEISHU in channels_needing_image:
+                            feishu_image_bytes = markdown_to_image(
+                                simple_content,
+                                max_chars=self.notifier._markdown_to_image_max_chars,
+                            )
+                            if feishu_image_bytes is None:
+                                logger.warning(
+                                    "飞书 Markdown 转图片失败，将回退为文本发送。请检查 MARKDOWN_TO_IMAGE_CHANNELS 配置并安装 %s",
+                                    _get_md2img_hint(),
+                                )
+                        use_image = self.notifier._should_use_image_for_channel(
+                            NotificationChannel.FEISHU, feishu_image_bytes
+                        )
+                        if use_image:
+                            feishu_success = self.notifier._send_feishu_image(feishu_image_bytes)
+                        else:
+                            feishu_success = self.notifier.send_to_feishu(simple_content)
+
                 # 其他渠道：发完整报告（避免自定义 Webhook 被 wechat 截断逻辑污染）
                 non_wechat_success = False
                 stock_email_groups = getattr(self.config, 'stock_email_groups', []) or []
@@ -1240,7 +1280,7 @@ class StockAnalysisPipeline:
                     if channel == NotificationChannel.WECHAT:
                         continue
                     if channel == NotificationChannel.FEISHU:
-                        non_wechat_success = self.notifier.send_to_feishu(report) or non_wechat_success
+                        continue
                     elif channel == NotificationChannel.TELEGRAM:
                         use_image = self.notifier._should_use_image_for_channel(
                             channel, image_bytes
@@ -1319,7 +1359,7 @@ class StockAnalysisPipeline:
                     else:
                         logger.warning(f"未知通知渠道: {channel}")
 
-                success = wechat_success or non_wechat_success or context_success
+                success = wechat_success or feishu_success or non_wechat_success or context_success
                 if success:
                     logger.info("决策仪表盘推送成功")
                 else:

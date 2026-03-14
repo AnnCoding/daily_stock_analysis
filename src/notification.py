@@ -1189,9 +1189,165 @@ class NotificationService(
             lines.append(f"*分析模型: {', '.join(models)}*")
 
         content = "\n".join(lines)
-        
+
         return content
-    
+
+    def generate_simple_dashboard(self, results: List[AnalysisResult]) -> str:
+        """
+        生成简易版决策仪表盘（飞书专用）
+
+        仅包含三个核心部分：
+        1. 重要信息速览 - 舆情情绪、业绩预期、风险警报、利好催化
+        2. 核心结论 - 一句话决策、信号、趋势预测、持仓建议
+        3. 作战计划 - 狙击点位、仓位建议、检查清单
+
+        Args:
+            results: 分析结果列表
+
+        Returns:
+            简易版决策仪表盘
+        """
+        config = get_config()
+        if getattr(config, 'report_renderer_enabled', False) and results:
+            from src.services.report_renderer import render
+            out = render(
+                platform='simple',
+                results=results,
+                report_date=datetime.now().strftime('%Y-%m-%d'),
+                summary_only=self._report_summary_only,
+            )
+            if out:
+                return out
+
+        report_date = datetime.now().strftime('%Y-%m-%d')
+
+        # 按评分排序
+        sorted_results = sorted(results, key=lambda x: x.sentiment_score, reverse=True)
+
+        # 统计 - 使用 decision_type 字段准确统计
+        buy_count = sum(1 for r in results if getattr(r, 'decision_type', '') == 'buy')
+        sell_count = sum(1 for r in results if getattr(r, 'decision_type', '') == 'sell')
+        hold_count = sum(1 for r in results if getattr(r, 'decision_type', '') in ('hold', ''))
+
+        lines = [
+            f"## 🎯 {report_date} 决策简报",
+            "",
+            f"> 共分析 {len(results)} 只 | 🟢{buy_count} 🟡{hold_count} 🔴{sell_count}",
+            "",
+        ]
+
+        # Issue #262: summary_only 时仅输出摘要列表
+        if self._report_summary_only:
+            lines.append("**📊 分析结果摘要**")
+            lines.append("")
+            for r in sorted_results:
+                _, signal_emoji, _ = self._get_signal_level(r)
+                stock_name = self._escape_md(r.name if r.name and not r.name.startswith('股票') else f'股票{r.code}')
+                dash = r.dashboard if hasattr(r, 'dashboard') and r.dashboard else {}
+                core = dash.get('core_conclusion', {}) if dash else {}
+                one_sentence = (core.get('one_sentence') or r.analysis_summary or '')[:60]
+                lines.append(
+                    f"**{stock_name}({r.code})** {signal_emoji} {r.operation_advice} | 评分{r.sentiment_score} | {one_sentence}"
+                )
+        else:
+            for result in sorted_results:
+                signal_text, signal_emoji, _ = self._get_signal_level(result)
+                dashboard = result.dashboard if hasattr(result, 'dashboard') and result.dashboard else {}
+                core = dashboard.get('core_conclusion', {}) if dashboard else {}
+                battle = dashboard.get('battle_plan', {}) if dashboard else {}
+                intel = dashboard.get('intelligence', {}) if dashboard else {}
+
+                # 股票名称
+                stock_name = result.name if result.name and not result.name.startswith('股票') else f'股票{result.code}'
+                stock_name = self._escape_md(stock_name)
+
+                # 标题行
+                lines.append(f"---")
+                lines.append("")
+                lines.append(f"### {signal_emoji} {stock_name}({result.code})")
+                lines.append("")
+
+                # 1. 重要信息速览
+                lines.append("#### 📰 重要信息速览")
+                if intel.get('sentiment_summary'):
+                    sentiment = intel['sentiment_summary'][:50]
+                    lines.append(f"- 💭 **舆情情绪**: {sentiment}{'...' if len(intel['sentiment_summary']) > 50 else ''}")
+                if intel.get('earnings_outlook'):
+                    outlook = intel['earnings_outlook'][:60]
+                    lines.append(f"- 📊 **业绩预期**: {outlook}{'...' if len(intel['earnings_outlook']) > 60 else ''}")
+
+                # 风险警报
+                risks = intel.get('risk_alerts', []) if intel else []
+                if risks:
+                    lines.append("- 🚨 **风险警报**:")
+                    for risk in risks[:2]:
+                        risk_text = risk[:50] + "..." if len(risk) > 50 else risk
+                        lines.append(f"  - {risk_text}")
+
+                # 利好催化
+                catalysts = intel.get('positive_catalysts', []) if intel else []
+                if catalysts:
+                    lines.append("- ✨ **利好催化**:")
+                    for cat in catalysts[:2]:
+                        cat_text = cat[:50] + "..." if len(cat) > 50 else cat
+                        lines.append(f"  - {cat_text}")
+                lines.append("")
+
+                # 2. 核心结论
+                lines.append("#### 📌 核心结论")
+                one_sentence = core.get('one_sentence', result.analysis_summary) if core else result.analysis_summary
+                if one_sentence:
+                    lines.append(f"- **信号**: {signal_text} | **趋势**: {result.trend_prediction}")
+                    lines.append(f"- **一句话决策**: {one_sentence[:80]}{'...' if len(one_sentence) > 80 else ''}")
+
+                # 持仓建议
+                pos_advice = core.get('position_advice', {}) if core else {}
+                if pos_advice:
+                    no_pos = pos_advice.get('no_position', result.operation_advice) if pos_advice else result.operation_advice
+                    has_pos = pos_advice.get('has_position', '继续持有') if pos_advice else '继续持有'
+                    lines.append(f"- 🆕 **空仓者**: {no_pos[:50]}{'...' if len(no_pos) > 50 else ''}")
+                    lines.append(f"- 💼 **持仓者**: {has_pos[:50]}{'...' if len(has_pos) > 50 else ''}")
+                lines.append("")
+
+                # 3. 作战计划
+                lines.append("#### 🎯 作战计划")
+                sniper = battle.get('sniper_points', {}) if battle else {}
+                if sniper:
+                    points = []
+                    if sniper.get('ideal_buy'):
+                        points.append(f"🎯理想买点:{self._clean_sniper_value(sniper['ideal_buy'])[:15]}")
+                    if sniper.get('stop_loss'):
+                        points.append(f"🛑止损位:{self._clean_sniper_value(sniper['stop_loss'])[:15]}")
+                    if sniper.get('take_profit'):
+                        points.append(f"🎊目标位:{self._clean_sniper_value(sniper['take_profit'])[:15]}")
+                    if points:
+                        lines.append(f"- **狙击点位**: {' | '.join(points)}")
+
+                # 仓位建议
+                position = battle.get('position_strategy', {}) if battle else {}
+                if position.get('suggested_position'):
+                    lines.append(f"- 💰 **仓位建议**: {position['suggested_position'][:50]}{'...' if len(position['suggested_position']) > 50 else ''}")
+
+                # 检查清单
+                checklist = battle.get('action_checklist', []) if battle else []
+                if checklist:
+                    # 只显示不通过的项目
+                    failed_checks = [c for c in checklist if c.startswith('❌') or c.startswith('⚠️')]
+                    if failed_checks:
+                        lines.append("**检查清单**:")
+                        for check in failed_checks[:3]:
+                            lines.append(f"- [ ] {check[:40]}{'...' if len(check) > 40 else ''}")
+
+                lines.append("")
+
+        # 底部
+        lines.append("---")
+        lines.append(f"*{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*")
+
+        content = "\n".join(lines)
+
+        return content
+
     def generate_wechat_summary(self, results: List[AnalysisResult]) -> str:
         """
         生成企业微信精简版日报（控制在4000字符内）
@@ -1652,6 +1808,12 @@ class NotificationService(
         
         logger.info(f"日报已保存到: {filepath}")
         return str(filepath)
+
+    # ===== 飞书多 Webhook 支持 =====
+    # 注意：以下方法继承自 FeishuSender，在此提供文档说明
+    # - get_feishu_webhook_aliases(): 获取所有已配置的飞书 Webhook 别名列表
+    # - send_to_feishu_by_alias(alias, content): 推送消息到指定别名的飞书群
+    # - send_to_feishu_webhook(url, content): 推送消息到指定 URL 的飞书群
 
 
 class NotificationBuilder:

@@ -361,6 +361,10 @@ class Config:
     # When configured, each group's report is sent to that group's emails only.
     stock_email_groups: List[Tuple[List[str], List[str]]] = field(default_factory=list)
 
+    # 飞书多 Webhook 配置（支持按别名推送到不同群）
+    # 格式: [{"url": "...", "alias": "...", "stocks": [...]}]
+    feishu_webhooks: List[Dict[str, Any]] = field(default_factory=list)
+
     # Pushover 配置（手机/桌面推送通知）
     pushover_user_key: Optional[str] = None  # 用户 Key（https://pushover.net 获取）
     pushover_api_token: Optional[str] = None  # 应用 API Token
@@ -856,6 +860,7 @@ class Config:
             email_password=os.getenv('EMAIL_PASSWORD'),
             email_receivers=[r.strip() for r in os.getenv('EMAIL_RECEIVERS', '').split(',') if r.strip()],
             stock_email_groups=cls._parse_stock_email_groups(),
+            feishu_webhooks=cls._parse_feishu_webhooks(),
             pushover_user_key=os.getenv('PUSHOVER_USER_KEY'),
             pushover_api_token=os.getenv('PUSHOVER_API_TOKEN'),
             pushplus_token=os.getenv('PUSHPLUS_TOKEN'),
@@ -1210,6 +1215,54 @@ class Config:
             g = groups[idx]
             if 'stocks' in g and 'emails' in g and g['stocks'] and g['emails']:
                 result.append((g['stocks'], g['emails']))
+        return result
+
+    @classmethod
+    def _parse_feishu_webhooks(cls) -> List[Dict[str, Any]]:
+        """
+        解析 FEISHU_WEBHOOK_N 环境变量
+        格式: <url>|<alias>|<stock_codes>
+        返回: [{"url": "...", "alias": "...", "stocks": [...]}]
+
+        兼容性: 自动将 FEISHU_WEBHOOK_URL + STOCK_LIST 迁移为第一组
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+
+        webhooks: Dict[int, Dict[str, Any]] = {}
+        webhook_re = re.compile(r'^FEISHU_WEBHOOK_(\d+)$', re.IGNORECASE)
+
+        # 解析 FEISHU_WEBHOOK_N 配置
+        for key in os.environ:
+            m = webhook_re.match(key)
+            if m:
+                idx = int(m.group(1))
+                val = os.environ[key].strip()
+                parts = val.split('|')
+                if len(parts) < 2:
+                    logger.warning(f"FEISHU_WEBHOOK_{idx} 格式错误，应为 url|alias|stocks，已跳过")
+                    continue
+                url = parts[0].strip()
+                alias = parts[1].strip()
+                stocks = []
+                if len(parts) > 2 and parts[2].strip():
+                    stocks = [s.strip().upper() for s in parts[2].split(',') if s.strip()]
+                webhooks[idx] = {"url": url, "alias": alias, "stocks": stocks}
+
+        # 向后兼容：如果有旧的 FEISHU_WEBHOOK_URL 配置，自动迁移为索引1
+        if not webhooks:
+            old_url = os.getenv('FEISHU_WEBHOOK_URL', '').strip()
+            if old_url:
+                # 读取 STOCK_LIST 作为默认股票列表
+                stock_list_str = os.getenv('STOCK_LIST', '')
+                stocks = [s.strip().upper() for s in stock_list_str.split(',') if s.strip()]
+                webhooks[1] = {"url": old_url, "alias": "default", "stocks": stocks}
+                logger.info("检测到旧版 FEISHU_WEBHOOK_URL 配置，已自动迁移为 FEISHU_WEBHOOK_1")
+
+        # 按索引排序返回
+        result = []
+        for idx in sorted(webhooks.keys()):
+            result.append(webhooks[idx])
         return result
 
     @classmethod

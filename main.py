@@ -65,6 +65,8 @@ def parse_arguments() -> argparse.Namespace:
   python main.py --debug            # 调试模式
   python main.py --dry-run          # 仅获取数据，不进行 AI 分析
   python main.py --stocks 600519,000001  # 指定分析特定股票
+  python main.py --fa 蓝筹群        # 使用飞书别名对应的股票列表并推送到该群
+  python main.py --fa 蓝筹群 --stocks 600519  # 分析指定股票并推送到蓝筹群
   python main.py --no-notify        # 不发送推送通知
   python main.py --single-notify    # 启用单股推送模式（每分析完一只立即推送）
   python main.py --schedule         # 启用定时任务模式
@@ -210,6 +212,17 @@ def parse_arguments() -> argparse.Namespace:
         help='强制回测（即使已有回测结果也重新计算）'
     )
 
+    # === 飞书多 Webhook 支持 ===
+    parser.add_argument(
+        '--feishu-alias',
+        '--fa',
+        type=str,
+        default=None,
+        dest='feishu_alias',
+        metavar='ALIAS',
+        help='指定飞书 Webhook 别名，自动使用该群配置的股票列表（例如: --fa 蓝筹群）'
+    )
+
     return parser.parse_args()
 
 
@@ -315,7 +328,8 @@ def run_full_analysis(
             stock_codes=stock_codes,
             dry_run=args.dry_run,
             send_notification=not args.no_notify,
-            merge_notification=merge_notification
+            merge_notification=merge_notification,
+            feishu_alias=getattr(args, 'feishu_alias', None)
         )
 
         # Issue #128: 分析间隔 - 在个股分析和大盘分析之间添加延迟
@@ -343,6 +357,7 @@ def run_full_analysis(
                 send_notification=not args.no_notify,
                 merge_notification=merge_notification,
                 override_region=effective_region,
+                feishu_alias=getattr(args, 'feishu_alias', None),
             )
             # 如果有结果，赋值给 market_report 用于后续飞书文档生成
             if review_result:
@@ -538,6 +553,26 @@ def main() -> int:
     if args.stocks:
         stock_codes = [canonical_stock_code(c) for c in args.stocks.split(',') if (c or "").strip()]
         logger.info(f"使用命令行指定的股票列表: {stock_codes}")
+    elif args.feishu_alias:
+        # 使用飞书别名对应的股票列表
+        feishu_webhooks = getattr(config, 'feishu_webhooks', [])
+        webhook_found = False
+        for webhook in feishu_webhooks:
+            if webhook.get('alias') == args.feishu_alias:
+                webhook_stocks = webhook.get('stocks', [])
+                if webhook_stocks:
+                    stock_codes = webhook_stocks
+                    logger.info(f"使用飞书别名 '{args.feishu_alias}' 配置的股票列表: {stock_codes}")
+                else:
+                    # 如果别名没有配置股票列表，使用默认 STOCK_LIST
+                    stock_codes = config.stock_list
+                    logger.info(f"飞书别名 '{args.feishu_alias}' 未配置股票列表，使用默认列表: {stock_codes}")
+                webhook_found = True
+                break
+        if not webhook_found:
+            logger.error(f"未找到别名 '{args.feishu_alias}' 的飞书 Webhook 配置")
+            logger.error(f"可用别名: {[w.get('alias') for w in feishu_webhooks if w.get('alias')]}")
+            return 1
 
     # === 处理 --webui / --webui-only 参数，映射到 --serve / --serve-only ===
     if args.webui:
@@ -658,6 +693,7 @@ def main() -> int:
                 search_service=search_service,
                 send_notification=not args.no_notify,
                 override_region=effective_region,
+                feishu_alias=getattr(args, 'feishu_alias', None),
             )
             return 0
 

@@ -518,9 +518,54 @@ crontab -e
 
 ### 飞书
 
+#### 单 Webhook 配置
+
 1. 在飞书群聊中添加"自定义机器人"
 2. 复制 Webhook URL
 3. 设置 `FEISHU_WEBHOOK_URL`
+
+#### 多 Webhook 配置（按群推送）
+
+支持配置多个飞书 Webhook，每个群可关联不同的股票列表，实现精准推送：
+
+```bash
+# .env 配置格式：url|alias|stocks
+FEISHU_WEBHOOK_1=https://open.feishu.cn/open-apis/bot/v2/hook/xxx|蓝筹群|600519,300750,002594
+FEISHU_WEBHOOK_2=https://open.feishu.cn/open-apis/bot/v2/hook/yyy|科技群|000001,300059,688981
+FEISHU_WEBHOOK_3=https://open.feishu.cn/open-apis/bot/v2/hook/zzz|总群|
+```
+
+**配置说明：**
+- `url`: 飞书 Webhook URL
+- `alias`: 群组别名（用于命令行指定）
+- `stocks`: 关联的股票列表（可选，为空则接收全部股票）
+
+**使用方式：**
+
+```bash
+# 推送到指定群（自动使用该群配置的股票列表）
+python main.py --fa 蓝筹群
+
+# 或使用完整参数名
+python main.py --feishu-alias 蓝筹群
+
+# 也可以指定股票覆盖配置
+python main.py --fa 蓝筹群 --stocks 600519
+
+# 查看所有可用别名
+python main.py --help  # 显示已配置的别名列表
+```
+
+**兼容性：**
+- 仍支持单 Webhook 配置（`FEISHU_WEBHOOK_URL`），会自动转换为别名 `default`
+- 当别名对应的群未配置股票列表时，使用默认 `STOCK_LIST`
+
+**港股支持：**
+港股代码使用 `hk` 前缀：
+```bash
+STOCK_LIST=600519,hk00700,hk01810
+FEISHU_WEBHOOK_1=https://open.feishu.cn/...|港股群|hk00700,hk01810,hk00941
+```
 
 ### Telegram
 

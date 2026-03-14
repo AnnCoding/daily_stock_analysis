@@ -1,0 +1,70 @@
+## 🎯 {{ report_date }} 决策简报
+
+> 共分析 {{ results|length }} 只 | 🟢{{ buy_count }} 🟡{{ hold_count }} 🔴{{ sell_count }}
+
+{% for e in enriched %}
+{% set result = e.result %}
+{% set dashboard = result.dashboard if result.dashboard else {} %}
+{% set intel = dashboard.get('intelligence') or {} %}
+{% set core = dashboard.get('core_conclusion') or {} %}
+{% set battle = dashboard.get('battle_plan') or {} %}
+
+---
+
+### {{ e.signal_emoji }} {{ e.stock_name }}({{ result.code }})
+
+#### 📰 重要信息速览
+{% if intel.get('sentiment_summary') %}
+- 💭 **舆情情绪**: {{ intel.sentiment_summary[:50] }}{{ '...' if intel.sentiment_summary|length > 50 else '' }}
+{% endif %}
+{% if intel.get('earnings_outlook') %}
+- 📊 **业绩预期**: {{ intel.earnings_outlook[:60] }}{{ '...' if intel.earnings_outlook|length > 60 else '' }}
+{% endif %}
+{% if intel.get('risk_alerts') %}
+- 🚨 **风险警报**:
+{% for alert in intel.risk_alerts[:2] %}
+  - {{ alert[:50] }}{{ '...' if alert|length > 50 else '' }}
+{% endfor %}
+{% endif %}
+{% if intel.get('positive_catalysts') %}
+- ✨ **利好催化**:
+{% for cat in intel.positive_catalysts[:2] %}
+  - {{ cat[:50] }}{{ '...' if cat|length > 50 else '' }}
+{% endfor %}
+{% endif %}
+
+#### 📌 核心结论
+- **信号**: {{ e.signal_text }} | **趋势**: {{ result.trend_prediction }}
+- **一句话决策**: {{ (core.get('one_sentence') or result.analysis_summary)[:80] }}{{ '...' if (core.get('one_sentence') or result.analysis_summary)|length > 80 else '' }}
+{% set pos_advice = core.get('position_advice') or {} %}
+{% if pos_advice %}
+- 🆕 **空仓者**: {{ pos_advice.get('no_position', result.operation_advice)[:50] }}{{ '...' if pos_advice.get('no_position', result.operation_advice)|length > 50 else '' }}
+- 💼 **持仓者**: {{ pos_advice.get('has_position', '继续持有')[:50] }}{{ '...' if pos_advice.get('has_position', '继续持有')|length > 50 else '' }}
+{% endif %}
+
+#### 🎯 作战计划
+{% set sniper = battle.get('sniper_points') or {} %}
+{% if sniper.ideal_buy or sniper.stop_loss or sniper.take_profit %}
+{% set ns = namespace(parts=[]) %}
+{% if sniper.ideal_buy %}{% set ns.parts = ns.parts + ['🎯理想买点:' ~ clean_sniper(sniper.ideal_buy)[:15]] %}{% endif %}
+{% if sniper.stop_loss %}{% set ns.parts = ns.parts + ['🛑止损位:' ~ clean_sniper(sniper.stop_loss)[:15]] %}{% endif %}
+{% if sniper.take_profit %}{% set ns.parts = ns.parts + ['🎊目标位:' ~ clean_sniper(sniper.take_profit)[:15]] %}{% endif %}
+- **狙击点位**: {{ ns.parts|join(' | ') }}
+{% endif %}
+{% set position = battle.get('position_strategy') or {} %}
+{% if position.suggested_position %}
+- 💰 **仓位建议**: {{ position.suggested_position[:50] }}{{ '...' if position.suggested_position|length > 50 else '' }}
+{% endif %}
+{% set checklist = battle.get('action_checklist') or [] %}
+{% set fc = failed_checks(checklist) %}
+{% if fc %}
+**检查清单**:
+{% for item in fc[:3] %}
+- [ ] {{ item[:40] }}{{ '...' if item|length > 40 else '' }}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+
+---
+*{{ report_timestamp }}*

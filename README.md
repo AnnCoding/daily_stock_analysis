@@ -111,7 +111,8 @@
 | Secret 名称 | 说明 | 必填 |
 |------------|------|:----:|
 | `WECHAT_WEBHOOK_URL` | 企业微信 Webhook URL | 可选 |
-| `FEISHU_WEBHOOK_URL` | 飞书 Webhook URL | 可选 |
+| `FEISHU_WEBHOOK_URL` | 飞书 Webhook URL（单群配置） | 可选 |
+| `FEISHU_WEBHOOK_N` | 飞书多 Webhook（格式：`url|alias|stocks`，支持按群推送） | 可选 |
 | `TELEGRAM_BOT_TOKEN` | Telegram Bot Token（@BotFather 获取） | 可选 |
 | `TELEGRAM_CHAT_ID` | Telegram Chat ID | 可选 |
 | `TELEGRAM_MESSAGE_THREAD_ID` | Telegram Topic ID (用于发送到子话题) | 可选 |
@@ -287,6 +288,30 @@ LITELLM_MODEL=openai/deepseek-chat
 领涨: 互联网服务、文化传媒、小金属
 领跌: 保险、航空机场、光伏设备
 ```
+
+### 飞书多群推送
+
+支持配置多个飞书 Webhook，每个群可关联不同的股票列表，实现精准推送：
+
+```bash
+# .env 配置格式：url|alias|stocks
+FEISHU_WEBHOOK_1=https://open.feishu.cn/...|蓝筹群|600519,300750,002594
+FEISHU_WEBHOOK_2=https://open.feishu.cn/...|科技群|000001,300059,688981
+FEISHU_WEBHOOK_3=https://open.feishu.cn/...|总群|
+```
+
+使用方式：
+```bash
+# 推送到指定群（自动使用该群配置的股票列表）
+python main.py --fa 蓝筹群
+
+# 或使用完整参数名
+python main.py --feishu-alias 蓝筹群
+
+# 也可以指定股票覆盖配置
+python main.py --fa 蓝筹群 --stocks 600519
+```
+
 ## ⚙️ 配置说明
 
 > 📖 完整环境变量、定时任务配置请参考 [完整配置指南](docs/full-guide.md)

@@ -31,6 +31,7 @@ def run_market_review(
     send_notification: bool = True,
     merge_notification: bool = False,
     override_region: Optional[str] = None,
+    feishu_alias: Optional[str] = None,
 ) -> Optional[str]:
     """
     执行大盘复盘分析
@@ -42,6 +43,7 @@ def run_market_review(
         send_notification: 是否发送通知
         merge_notification: 是否合并推送（跳过本次推送，由 main 层合并个股+大盘后统一发送，Issue #190）
         override_region: 覆盖 config 的 market_review_region（Issue #373 交易日过滤后有效子集）
+        feishu_alias: 飞书 Webhook 别名（仅发送到该别名对应的群）
 
     Returns:
         复盘报告文本
@@ -99,18 +101,26 @@ def run_market_review(
             # 推送通知（合并模式下跳过，由 main 层统一发送）
             if merge_notification and send_notification:
                 logger.info("合并推送模式：跳过大盘复盘单独推送，将在个股+大盘复盘后统一发送")
-            elif send_notification and notifier.is_available():
+            elif send_notification:
                 # 添加标题
                 report_content = f"🎯 大盘复盘\n\n{review_report}"
 
-                success = notifier.send(report_content, email_send_to_all=True)
-                if success:
-                    logger.info("大盘复盘推送成功")
-                else:
-                    logger.warning("大盘复盘推送失败")
+                # 处理飞书按别名发送
+                if feishu_alias:
+                    success = notifier.send_to_feishu_by_alias(feishu_alias, report_content)
+                    if success:
+                        logger.info(f"大盘复盘推送成功（飞书别名 '{feishu_alias}'）")
+                    else:
+                        logger.warning(f"大盘复盘推送失败（飞书别名 '{feishu_alias}'）")
+                elif notifier.is_available():
+                    success = notifier.send(report_content, email_send_to_all=True)
+                    if success:
+                        logger.info("大盘复盘推送成功")
+                    else:
+                        logger.warning("大盘复盘推送失败")
             elif not send_notification:
                 logger.info("已跳过推送通知 (--no-notify)")
-            
+
             return review_report
         
     except Exception as e:
