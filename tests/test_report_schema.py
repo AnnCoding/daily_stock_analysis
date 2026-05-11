@@ -10,7 +10,8 @@ Tests for AnalysisReportSchema validation and analyzer fallback behavior.
 import json
 import sys
 import unittest
-from unittest.mock import MagicMock
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 # Mock litellm before importing analyzer (optional runtime dep)
 try:
@@ -130,3 +131,39 @@ class TestAnalyzerSchemaFallback(unittest.TestCase):
         self.assertEqual(result.name, "贵州茅台")
         self.assertEqual(result.sentiment_score, 72)
         self.assertEqual(result.analysis_summary, "技术面向好")
+
+    def test_parse_response_keeps_unknown_dashboard_fields(self) -> None:
+        analyzer = GeminiAnalyzer()
+        response = json.dumps({
+            "stock_name": "贵州茅台",
+            "sentiment_score": 72,
+            "trend_prediction": "看多",
+            "operation_advice": "持有",
+            "decision_type": "hold",
+            "analysis_summary": "技术面向好",
+            "dashboard": {
+                "core_conclusion": {
+                    "one_sentence": "先观察",
+                    "signal_type": "🟡持有观望",
+                },
+                "decision_stability": {
+                    "applied": True,
+                    "reason": "回测验证",
+                },
+            },
+        })
+        result = analyzer._parse_response(response, "600519", "股票600519")
+        self.assertEqual(result.dashboard["decision_stability"]["applied"], True)
+        self.assertEqual(result.dashboard["decision_stability"]["reason"], "回测验证")
+
+    def test_parse_text_response_honors_injected_runtime_report_language(self) -> None:
+        """Fallback text parsing should use the analyzer's injected config, not the global singleton."""
+        with patch.object(GeminiAnalyzer, "_init_litellm", return_value=None):
+            analyzer = GeminiAnalyzer(config=SimpleNamespace(report_language="en"))
+
+        result = analyzer._parse_text_response("bullish buy setup", "AAPL", "Apple")
+
+        self.assertEqual(result.report_language, "en")
+        self.assertEqual(result.trend_prediction, "Bullish")
+        self.assertEqual(result.operation_advice, "Buy")
+        self.assertEqual(result.confidence_level, "Low")

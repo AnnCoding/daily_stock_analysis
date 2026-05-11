@@ -26,6 +26,16 @@ export type SystemConfigUIControl =
   | 'switch'
   | 'time';
 
+export interface SystemConfigOption {
+  label: string;
+  value: string;
+}
+
+export interface SystemConfigDocLink {
+  label: string;
+  href: string;
+}
+
 export interface SystemConfigFieldSchema {
   key: string;
   title?: string;
@@ -37,9 +47,13 @@ export interface SystemConfigFieldSchema {
   isRequired: boolean;
   isEditable: boolean;
   defaultValue?: string | null;
-  options: string[];
+  options: Array<string | SystemConfigOption>;
   validation: Record<string, unknown>;
   displayOrder: number;
+  helpKey?: string | null;
+  examples?: string[];
+  docs?: SystemConfigDocLink[];
+  warningCodes?: string[];
 }
 
 export interface SystemConfigCategorySchema {
@@ -70,6 +84,30 @@ export interface SystemConfigResponse {
   updatedAt?: string;
 }
 
+export interface SetupStatusCheck {
+  key: string;
+  title: string;
+  category: 'base' | 'ai_model' | 'agent' | 'notification' | 'system';
+  required: boolean;
+  status: 'configured' | 'inherited' | 'optional' | 'needs_action';
+  message: string;
+  nextStep?: string | null;
+}
+
+export interface SetupStatusResponse {
+  isComplete: boolean;
+  readyForSmoke: boolean;
+  requiredMissingKeys: string[];
+  nextStepKey?: string | null;
+  checks: SetupStatusCheck[];
+}
+
+export interface ExportSystemConfigResponse {
+  content: string;
+  configVersion: string;
+  updatedAt?: string;
+}
+
 export interface SystemConfigUpdateItem {
   key: string;
   value: string;
@@ -96,6 +134,12 @@ export interface ValidateSystemConfigRequest {
   items: SystemConfigUpdateItem[];
 }
 
+export interface ImportSystemConfigRequest {
+  configVersion: string;
+  content: string;
+  reloadNow?: boolean;
+}
+
 export interface ConfigValidationIssue {
   key: string;
   code: string;
@@ -118,14 +162,98 @@ export interface TestLLMChannelRequest {
   models: string[];
   enabled?: boolean;
   timeoutSeconds?: number;
+  capabilityChecks?: LLMCapabilityCheck[];
+}
+
+export type LLMCapabilityCheck = 'json' | 'tools' | 'vision' | 'stream';
+
+export interface LLMCapabilityCheckResult {
+  status: 'passed' | 'failed' | 'skipped';
+  message: string;
+  errorCode?: string | null;
+  stage: string;
+  retryable?: boolean | null;
+  latencyMs?: number | null;
+  details?: Record<string, unknown>;
 }
 
 export interface TestLLMChannelResponse {
   success: boolean;
   message: string;
   error?: string | null;
+  errorCode?: string | null;
+  stage?: string | null;
+  retryable?: boolean | null;
+  details?: Record<string, unknown>;
   resolvedProtocol?: string | null;
   resolvedModel?: string | null;
+  latencyMs?: number | null;
+  capabilityResults?: Partial<Record<LLMCapabilityCheck, LLMCapabilityCheckResult>>;
+}
+
+export type NotificationTestChannel =
+  | 'wechat'
+  | 'feishu'
+  | 'telegram'
+  | 'email'
+  | 'pushover'
+  | 'pushplus'
+  | 'serverchan3'
+  | 'custom'
+  | 'discord'
+  | 'slack'
+  | 'astrbot';
+
+export interface NotificationTestAttempt {
+  channel: NotificationTestChannel;
+  success: boolean;
+  message: string;
+  target?: string | null;
+  errorCode?: string | null;
+  stage: string;
+  retryable: boolean;
+  latencyMs?: number | null;
+  httpStatus?: number | null;
+}
+
+export interface TestNotificationChannelRequest {
+  channel: NotificationTestChannel;
+  items?: SystemConfigUpdateItem[];
+  maskToken?: string;
+  title?: string;
+  content?: string;
+  timeoutSeconds?: number;
+}
+
+export interface TestNotificationChannelResponse {
+  success: boolean;
+  message: string;
+  errorCode?: string | null;
+  stage?: string | null;
+  retryable: boolean;
+  latencyMs?: number | null;
+  attempts: NotificationTestAttempt[];
+}
+
+export interface DiscoverLLMChannelModelsRequest {
+  name: string;
+  protocol: string;
+  baseUrl?: string;
+  apiKey?: string;
+  models?: string[];
+  timeoutSeconds?: number;
+}
+
+export interface DiscoverLLMChannelModelsResponse {
+  success: boolean;
+  message: string;
+  error?: string | null;
+  errorCode?: string | null;
+  stage?: string | null;
+  retryable?: boolean | null;
+  details?: Record<string, unknown>;
+  resolvedProtocol?: string | null;
+  models: string[];
   latencyMs?: number | null;
 }
 

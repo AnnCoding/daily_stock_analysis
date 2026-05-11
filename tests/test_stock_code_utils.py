@@ -27,8 +27,30 @@ class TestIsCodeLike:
     def test_suffix_sz(self):
         assert is_code_like("000001.SZ") is True
 
+    def test_suffix_bj(self):
+        assert is_code_like("920493.BJ") is True
+
+    def test_suffix_bj_rejects_non_bse_base(self):
+        assert is_code_like("600519.BJ") is False
+
     def test_suffix_lowercase(self):
         assert is_code_like("600519.sh") is True
+
+    # --- HK suffix format ---
+    def test_suffix_hk(self):
+        assert is_code_like("00700.HK") is True
+
+    def test_suffix_hk_lowercase(self):
+        assert is_code_like("00700.hk") is True
+
+    def test_suffix_hk_short_code(self):
+        assert is_code_like("1810.HK") is True
+
+    def test_suffix_hk_rejects_6_digit_base(self):
+        assert is_code_like("600519.HK") is False
+
+    def test_suffix_sh_rejects_5_digit_base(self):
+        assert is_code_like("00700.SH") is False
 
     # --- Exchange prefix format (Issue #6 fix) ---
     def test_prefix_sh_upper(self):
@@ -40,11 +62,23 @@ class TestIsCodeLike:
     def test_prefix_sz(self):
         assert is_code_like("SZ000001") is True
 
+    def test_prefix_bj(self):
+        assert is_code_like("BJ920493") is True
+
+    def test_prefix_bj_rejects_non_bse_base(self):
+        assert is_code_like("BJ600519") is False
+
     def test_prefix_hk(self):
         assert is_code_like("HK00700") is True
 
     def test_prefix_hk_lower(self):
         assert is_code_like("hk00700") is True
+
+    def test_prefix_hk_short_code(self):
+        assert is_code_like("HK700") is True
+
+    def test_prefix_hk_rejects_6_digit_base(self):
+        assert is_code_like("HK600519") is False
 
     # --- US tickers ---
     def test_us_ticker(self):
@@ -82,8 +116,29 @@ class TestNormalizeCode:
     def test_suffix_sz_strips(self):
         assert normalize_code("000001.SZ") == "000001"
 
+    def test_suffix_bj_strips(self):
+        assert normalize_code("920493.BJ") == "920493"
+
+    def test_suffix_bj_rejects_non_bse_base(self):
+        assert normalize_code("600519.BJ") is None
+
     def test_suffix_ss_strips(self):
         assert normalize_code("600000.SS") == "600000"
+
+    def test_suffix_hk_strips(self):
+        assert normalize_code("00700.HK") == "00700"
+
+    def test_suffix_hk_lowercase_strips(self):
+        assert normalize_code("00700.hk") == "00700"
+
+    def test_suffix_hk_short_code_is_zero_padded(self):
+        assert normalize_code("1810.HK") == "01810"
+
+    def test_suffix_hk_rejects_6_digit_base(self):
+        assert normalize_code("600519.HK") is None
+
+    def test_suffix_sh_rejects_5_digit_base(self):
+        assert normalize_code("00700.SH") is None
 
     # --- Exchange prefix format (Issue #6 fix) ---
     def test_prefix_sh_upper(self):
@@ -95,11 +150,23 @@ class TestNormalizeCode:
     def test_prefix_sz(self):
         assert normalize_code("SZ000001") == "000001"
 
+    def test_prefix_bj(self):
+        assert normalize_code("BJ920493") == "920493"
+
+    def test_prefix_bj_rejects_non_bse_base(self):
+        assert normalize_code("BJ600519") is None
+
     def test_prefix_hk(self):
         assert normalize_code("HK00700") == "00700"
 
     def test_prefix_hk_lower(self):
         assert normalize_code("hk00700") == "00700"
+
+    def test_prefix_hk_short_code_is_zero_padded(self):
+        assert normalize_code("HK700") == "00700"
+
+    def test_prefix_hk_rejects_6_digit_base(self):
+        assert normalize_code("HK600519") is None
 
     # --- US tickers ---
     def test_us_ticker(self):

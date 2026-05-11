@@ -14,14 +14,34 @@ A股自选股智能分析系统 - 通知层
    - 邮件 SMTP
    - Pushover（手机/桌面推送）
 """
+from __future__ import annotations
+
 import logging
 from datetime import datetime
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional, Tuple, TYPE_CHECKING
 from enum import Enum
 
-from src.config import get_config
-from src.analyzer import AnalysisResult
+from src.config import Config, get_config
 from src.enums import ReportType
+from src.notification_routing import (
+    get_notification_route_config,
+    split_notification_route_channels,
+)
+from src.notification_noise import (
+    NotificationNoiseDecision,
+    evaluate_notification_noise,
+    record_notification_noise,
+    release_notification_noise,
+)
+from src.report_language import (
+    get_localized_stock_name,
+    get_report_labels,
+    get_signal_level,
+    localize_chip_health,
+    localize_operation_advice,
+    localize_trend_prediction,
+    normalize_report_language,
+)
 from bot.models import BotMessage
 from src.utils.data_processing import normalize_model_used
 from src.notification_sender import (
@@ -33,12 +53,16 @@ from src.notification_sender import (
     PushoverSender,
     PushplusSender,
     Serverchan3Sender,
+    SlackSender,
     TelegramSender,
     WechatSender,
     WECHAT_IMAGE_MAX_BYTES
 )
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from src.analyzer import AnalysisResult
 
 
 class NotificationChannel(Enum):
@@ -52,6 +76,7 @@ class NotificationChannel(Enum):
     SERVERCHAN3 = "serverchan3"  # Server酱3（手机APP推送服务）
     CUSTOM = "custom"      # 自定义 Webhook
     DISCORD = "discord"    # Discord 机器人 (Bot)
+    SLACK = "slack"        # Slack
     ASTRBOT = "astrbot"
     UNKNOWN = "unknown"    # 未知
 
@@ -76,6 +101,7 @@ class ChannelDetector:
             NotificationChannel.SERVERCHAN3: "Server酱3",
             NotificationChannel.CUSTOM: "自定义Webhook",
             NotificationChannel.DISCORD: "Discord机器人",
+            NotificationChannel.SLACK: "Slack",
             NotificationChannel.ASTRBOT: "ASTRBOT机器人",
             NotificationChannel.UNKNOWN: "未知渠道",
         }
@@ -91,6 +117,7 @@ class NotificationService(
     PushoverSender,
     PushplusSender,
     Serverchan3Sender,
+    SlackSender,
     TelegramSender,
     WechatSender
 ):
@@ -119,6 +146,7 @@ class NotificationService(
         检测所有已配置的渠道，推送时会向所有渠道发送
         """
         config = get_config()
+        self._config = config
         self._source_message = source_message
         self._context_channels: List[str] = []
 
@@ -143,6 +171,7 @@ class NotificationService(
         PushoverSender.__init__(self, config)
         PushplusSender.__init__(self, config)
         Serverchan3Sender.__init__(self, config)
+        SlackSender.__init__(self, config)
         TelegramSender.__init__(self, config)
         WechatSender.__init__(self, config)
 
@@ -163,6 +192,29 @@ class NotificationService(
         if isinstance(report_type, ReportType):
             return report_type
         return ReportType.from_str(report_type)
+
+    def _get_report_language(self, payload: Optional[Any] = None) -> str:
+        """Resolve report language from result payload or global config."""
+        if isinstance(payload, list):
+            for item in payload:
+                language = getattr(item, "report_language", None)
+                if language:
+                    return normalize_report_language(language)
+        elif payload is not None:
+            language = getattr(payload, "report_language", None)
+            if language:
+                return normalize_report_language(language)
+
+        return normalize_report_language(getattr(get_config(), "report_language", "zh"))
+
+    def _get_labels(self, payload: Optional[Any] = None) -> Dict[str, str]:
+        return get_report_labels(self._get_report_language(payload))
+
+    def _get_display_name(self, result: AnalysisResult, language: Optional[str] = None) -> str:
+        report_language = normalize_report_language(language or self._get_report_language(result))
+        return self._escape_md(
+            get_localized_stock_name(result.name, result.code, report_language)
+        )
 
     def _get_history_compare_context(self, results: List[AnalysisResult]) -> Dict[str, Any]:
         """Fetch and cache history comparison data for markdown rendering."""
@@ -219,54 +271,78 @@ class NotificationService(
                 models.append(model)
         return list(dict.fromkeys(models))
     
+    @staticmethod
+    def detect_configured_channels(config: Config) -> List[NotificationChannel]:
+        """
+        Detect statically configured notification channels from Config.
+
+        This intentionally mirrors sender availability without instantiating
+        sender objects, so diagnostics and runtime use the same channel truth.
+        Runtime-only context channels are handled by instance methods.
+        """
+        channels = []
+
+        if getattr(config, "wechat_webhook_url", None):
+            channels.append(NotificationChannel.WECHAT)
+
+        if getattr(config, "feishu_webhook_url", None):
+            channels.append(NotificationChannel.FEISHU)
+
+        if (
+            getattr(config, "telegram_bot_token", None)
+            and getattr(config, "telegram_chat_id", None)
+        ):
+            channels.append(NotificationChannel.TELEGRAM)
+
+        if getattr(config, "email_sender", None) and getattr(config, "email_password", None):
+            channels.append(NotificationChannel.EMAIL)
+
+        if (
+            getattr(config, "pushover_user_key", None)
+            and getattr(config, "pushover_api_token", None)
+        ):
+            channels.append(NotificationChannel.PUSHOVER)
+
+        if getattr(config, "pushplus_token", None):
+            channels.append(NotificationChannel.PUSHPLUS)
+
+        if getattr(config, "serverchan3_sendkey", None):
+            channels.append(NotificationChannel.SERVERCHAN3)
+
+        if getattr(config, "custom_webhook_urls", None):
+            channels.append(NotificationChannel.CUSTOM)
+
+        if (
+            getattr(config, "discord_webhook_url", None)
+            or (
+                getattr(config, "discord_bot_token", None)
+                and getattr(config, "discord_main_channel_id", None)
+            )
+        ):
+            channels.append(NotificationChannel.DISCORD)
+
+        if (
+            getattr(config, "slack_webhook_url", None)
+            or (
+                getattr(config, "slack_bot_token", None)
+                and getattr(config, "slack_channel_id", None)
+            )
+        ):
+            channels.append(NotificationChannel.SLACK)
+
+        if getattr(config, "astrbot_url", None):
+            channels.append(NotificationChannel.ASTRBOT)
+
+        return channels
+
     def _detect_all_channels(self) -> List[NotificationChannel]:
         """
         检测所有已配置的渠道
-        
+
         Returns:
             已配置的渠道列表
         """
-        channels = []
-        
-        # 企业微信
-        if self._wechat_url:
-            channels.append(NotificationChannel.WECHAT)
-        
-        # 飞书
-        if self._feishu_url:
-            channels.append(NotificationChannel.FEISHU)
-        
-        # Telegram
-        if self._is_telegram_configured():
-            channels.append(NotificationChannel.TELEGRAM)
-        
-        # 邮件
-        if self._is_email_configured():
-            channels.append(NotificationChannel.EMAIL)
-        
-        # Pushover
-        if self._is_pushover_configured():
-            channels.append(NotificationChannel.PUSHOVER)
-
-        # PushPlus
-        if self._pushplus_token:
-            channels.append(NotificationChannel.PUSHPLUS)
-
-       # Server酱3
-        if self._serverchan3_sendkey:
-            channels.append(NotificationChannel.SERVERCHAN3)
-       
-        # 自定义 Webhook
-        if self._custom_webhook_urls:
-            channels.append(NotificationChannel.CUSTOM)
-        
-        # Discord
-        if self._is_discord_configured():
-            channels.append(NotificationChannel.DISCORD)
-        # AstrBot
-        if self._is_astrbot_configured():
-            channels.append(NotificationChannel.ASTRBOT)
-        return channels
+        return self.detect_configured_channels(self._config)
 
     def is_available(self) -> bool:
         """检查通知服务是否可用（至少有一个渠道或上下文渠道）"""
@@ -275,6 +351,42 @@ class NotificationService(
     def get_available_channels(self) -> List[NotificationChannel]:
         """获取所有已配置的渠道"""
         return self._available_channels
+
+    def get_channels_for_route(
+        self,
+        route_type: Optional[str],
+        channels: Optional[List[NotificationChannel]] = None,
+    ) -> List[NotificationChannel]:
+        """Return channels allowed for a route type.
+
+        ``route_type=None`` keeps the legacy behavior and returns all supplied
+        static channels. Empty route config also keeps all supplied channels.
+        Non-empty route config that matches no enabled channel returns an empty
+        list.
+        """
+        target_channels = list(channels if channels is not None else self._available_channels)
+        if route_type is None:
+            return target_channels
+
+        route_config = get_notification_route_config(route_type)
+        if route_config is None:
+            logger.warning("未知通知路由类型 %s，沿用全部已配置渠道", route_type)
+            return target_channels
+
+        configured_route_channels = getattr(self._config, route_config["config_attr"], []) or []
+        if not configured_route_channels:
+            return target_channels
+
+        valid_channels, invalid_channels = split_notification_route_channels(configured_route_channels)
+        if invalid_channels:
+            logger.warning(
+                "%s 包含未知通知渠道，将忽略: %s",
+                route_config["env_key"],
+                ", ".join(invalid_channels),
+            )
+
+        allowed = set(valid_channels)
+        return [channel for channel in target_channels if channel.value in allowed]
     
     def get_channel_names(self) -> str:
         """获取所有已配置渠道的名称"""
@@ -282,6 +394,35 @@ class NotificationService(
         if self._has_context_channel():
             names.append("钉钉会话")
         return ', '.join(names)
+
+    def evaluate_noise_control(
+        self,
+        content: str,
+        *,
+        route_type: Optional[str] = None,
+        severity: Optional[str] = None,
+        dedup_key: Optional[str] = None,
+        cooldown_key: Optional[str] = None,
+    ) -> NotificationNoiseDecision:
+        """Evaluate static-channel notification noise controls."""
+        return evaluate_notification_noise(
+            self._config,
+            content=content,
+            route_type=route_type,
+            severity=severity,
+            dedup_key=dedup_key,
+            cooldown_key=cooldown_key,
+        )
+
+    @staticmethod
+    def record_noise_control(decision: NotificationNoiseDecision) -> None:
+        """Record static-channel notification noise state after a successful send."""
+        record_notification_noise(decision)
+
+    @staticmethod
+    def release_noise_control(decision: NotificationNoiseDecision) -> None:
+        """Release static-channel in-flight noise reservation after send failure."""
+        release_notification_noise(decision)
 
     # ===== Context channel =====
     def _has_context_channel(self) -> bool:
@@ -499,12 +640,15 @@ class NotificationService(
         """
         if report_date is None:
             report_date = datetime.now().strftime('%Y-%m-%d')
+        report_language = self._get_report_language(results)
+        labels = get_report_labels(report_language)
 
         # 标题
         report_lines = [
-            f"# 📅 {report_date} 股票智能分析报告",
+            f"# 📅 {report_date} {labels['report_title']}",
             "",
-            f"> 共分析 **{len(results)}** 只股票 | 报告生成时间：{datetime.now().strftime('%H:%M:%S')}",
+            f"> {labels['analyzed_prefix']} **{len(results)}** {labels['stock_unit']} | "
+            f"{labels['generated_at_label']}：{datetime.now().strftime('%H:%M:%S')}",
             "",
             "---",
             "",
@@ -524,14 +668,14 @@ class NotificationService(
         avg_score = sum(r.sentiment_score for r in results) / len(results) if results else 0
         
         report_lines.extend([
-            "## 📊 操作建议汇总",
+            f"## 📊 {labels['summary_heading']}",
             "",
             "| 指标 | 数值 |",
             "|------|------|",
-            f"| 🟢 建议买入/加仓 | **{buy_count}** 只 |",
-            f"| 🟡 建议持有/观望 | **{hold_count}** 只 |",
-            f"| 🔴 建议减仓/卖出 | **{sell_count}** 只 |",
-            f"| 📈 平均看多评分 | **{avg_score:.1f}** 分 |",
+            f"| 🟢 {labels['buy_label']} | **{buy_count}** {labels['stock_unit_compact']} |",
+            f"| 🟡 {labels['watch_label']} | **{hold_count}** {labels['stock_unit_compact']} |",
+            f"| 🔴 {labels['sell_label']} | **{sell_count}** {labels['stock_unit_compact']} |",
+            f"| 📈 {labels['avg_score_label']} | **{avg_score:.1f}** |",
             "",
             "---",
             "",
@@ -539,24 +683,29 @@ class NotificationService(
         
         # Issue #262: summary_only 时仅输出摘要，跳过个股详情
         if self._report_summary_only:
-            report_lines.extend(["## 📊 分析结果摘要", ""])
+            report_lines.extend([f"## 📊 {labels['summary_heading']}", ""])
             for r in sorted_results:
-                emoji = r.get_emoji()
+                _, emoji, _ = self._get_signal_level(r)
                 report_lines.append(
-                    f"{emoji} **{r.name}({r.code})**: {r.operation_advice} | "
-                    f"评分 {r.sentiment_score} | {r.trend_prediction}"
+                    f"{emoji} **{self._get_display_name(r, report_language)}({r.code})**: "
+                    f"{localize_operation_advice(r.operation_advice, report_language)} | "
+                    f"{labels['score_label']} {r.sentiment_score} | "
+                    f"{localize_trend_prediction(r.trend_prediction, report_language)}"
                 )
         else:
-            report_lines.extend(["## 📈 个股详细分析", ""])
+            report_lines.extend([f"## 📈 {labels['report_title']}", ""])
             # 逐个股票的详细分析
             for result in sorted_results:
-                emoji = result.get_emoji()
+                _, emoji, _ = self._get_signal_level(result)
                 confidence_stars = result.get_confidence_stars() if hasattr(result, 'get_confidence_stars') else '⭐⭐'
                 
                 report_lines.extend([
-                    f"### {emoji} {result.name} ({result.code})",
+                    f"### {emoji} {self._get_display_name(result, report_language)} ({result.code})",
                     "",
-                    f"**操作建议：{result.operation_advice}** | **综合评分：{result.sentiment_score}分** | **趋势预测：{result.trend_prediction}** | **置信度：{confidence_stars}**",
+                    f"**{labels['action_advice_label']}：{localize_operation_advice(result.operation_advice, report_language)}** | "
+                    f"**{labels['score_label']}：{result.sentiment_score}** | "
+                    f"**{labels['trend_label']}：{localize_trend_prediction(result.trend_prediction, report_language)}** | "
+                    f"**Confidence：{confidence_stars}**",
                     "",
                 ])
 
@@ -681,7 +830,7 @@ class NotificationService(
         # 底部信息（去除免责声明）
         report_lines.extend([
             "",
-            f"*报告生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*",
+            f"*{labels['generated_at_label']}：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*",
         ])
         
         return "\n".join(report_lines)
@@ -703,55 +852,20 @@ class NotificationService(
         if not value or value == 'N/A':
             return value
         prefixes = ['理想买入点：', '次优买入点：', '止损位：', '目标位：',
-                     '理想买入点:', '次优买入点:', '止损位:', '目标位:']
+                     '理想买入点:', '次优买入点:', '止损位:', '目标位:',
+                     'Ideal Entry:', 'Secondary Entry:', 'Stop Loss:', 'Target:']
         for prefix in prefixes:
             if value.startswith(prefix):
                 return value[len(prefix):]
         return value
 
     def _get_signal_level(self, result: AnalysisResult) -> tuple:
-        """
-        Get signal level and color based on operation advice.
-
-        Priority: advice string takes precedence over score.
-        Score-based fallback is used only when advice doesn't match
-        any known value.
-
-        Returns:
-            (signal_text, emoji, color_tag)
-        """
-        advice = result.operation_advice
-        score = result.sentiment_score
-
-        # Advice-first lookup (exact match takes priority)
-        advice_map = {
-            '强烈买入': ('强烈买入', '💚', '强买'),
-            '买入': ('买入', '🟢', '买入'),
-            '加仓': ('买入', '🟢', '买入'),
-            '持有': ('持有', '🟡', '持有'),
-            '观望': ('观望', '⚪', '观望'),
-            '减仓': ('减仓', '🟠', '减仓'),
-            '卖出': ('卖出', '🔴', '卖出'),
-            '强烈卖出': ('卖出', '🔴', '卖出'),
-        }
-        if advice in advice_map:
-            return advice_map[advice]
-
-        # Score-based fallback when advice is unrecognized
-        if score >= 80:
-            return ('强烈买入', '💚', '强买')
-        elif score >= 65:
-            return ('买入', '🟢', '买入')
-        elif score >= 55:
-            return ('持有', '🟡', '持有')
-        elif score >= 45:
-            return ('观望', '⚪', '观望')
-        elif score >= 35:
-            return ('减仓', '🟠', '减仓')
-        elif score < 35:
-            return ('卖出', '🔴', '卖出')
-        else:
-            return ('观望', '⚪', '观望')
+        """Get localized signal level and color based on operation advice."""
+        return get_signal_level(
+            result.operation_advice,
+            result.sentiment_score,
+            self._get_report_language(result),
+        )
     
     def generate_dashboard_report(
         self,
@@ -771,6 +885,14 @@ class NotificationService(
             Markdown 格式的决策仪表盘日报
         """
         config = get_config()
+        report_language = self._get_report_language(results)
+        labels = get_report_labels(report_language)
+        reason_label = "Rationale" if report_language == "en" else "操作理由"
+        risk_warning_label = "Risk Warning" if report_language == "en" else "风险提示"
+        technical_heading = "Technicals" if report_language == "en" else "技术面"
+        ma_label = "Moving Averages" if report_language == "en" else "均线"
+        volume_analysis_label = "Volume" if report_language == "en" else "量能"
+        news_heading = "News Flow" if report_language == "en" else "消息面"
         if getattr(config, 'report_renderer_enabled', False) and results:
             from src.services.report_renderer import render
             out = render(
@@ -778,7 +900,10 @@ class NotificationService(
                 results=results,
                 report_date=report_date,
                 summary_only=self._report_summary_only,
-                extra_context=self._get_history_compare_context(results),
+                extra_context={
+                    **self._get_history_compare_context(results),
+                    "report_language": report_language,
+                },
             )
             if out:
                 return out
@@ -795,24 +920,27 @@ class NotificationService(
         hold_count = sum(1 for r in results if getattr(r, 'decision_type', '') in ('hold', ''))
 
         report_lines = [
-            f"# 🎯 {report_date} 决策仪表盘",
+            f"# 🎯 {report_date} {labels['dashboard_title']}",
             "",
-            f"> 共分析 **{len(results)}** 只股票 | 🟢买入:{buy_count} 🟡观望:{hold_count} 🔴卖出:{sell_count}",
+            f"> {labels['analyzed_prefix']} **{len(results)}** {labels['stock_unit']} | "
+            f"🟢{labels['buy_label']}:{buy_count} 🟡{labels['watch_label']}:{hold_count} 🔴{labels['sell_label']}:{sell_count}",
             "",
         ]
 
         # === 新增：分析结果摘要 (Issue #112) ===
         if results:
             report_lines.extend([
-                "## 📊 分析结果摘要",
+                f"## 📊 {labels['summary_heading']}",
                 "",
             ])
             for r in sorted_results:
                 _, signal_emoji, _ = self._get_signal_level(r)
-                display_name = self._escape_md(r.name)
+                display_name = self._get_display_name(r, report_language)
                 report_lines.append(
-                    f"{signal_emoji} **{display_name}({r.code})**: {r.operation_advice} | "
-                    f"评分 {r.sentiment_score} | {r.trend_prediction}"
+                    f"{signal_emoji} **{display_name}({r.code})**: "
+                    f"{localize_operation_advice(r.operation_advice, report_language)} | "
+                    f"{labels['score_label']} {r.sentiment_score} | "
+                    f"{localize_trend_prediction(r.trend_prediction, report_language)}"
                 )
             report_lines.extend([
                 "",
@@ -827,8 +955,7 @@ class NotificationService(
                 dashboard = result.dashboard if hasattr(result, 'dashboard') and result.dashboard else {}
                 
                 # 股票名称（优先使用 dashboard 或 result 中的名称，转义 *ST 等特殊字符）
-                raw_name = result.name if result.name and not result.name.startswith('股票') else f'股票{result.code}'
-                stock_name = self._escape_md(raw_name)
+                stock_name = self._get_display_name(result, report_language)
                 
                 report_lines.extend([
                     f"## {signal_emoji} {stock_name} ({result.code})",
@@ -839,58 +966,58 @@ class NotificationService(
                 intel = dashboard.get('intelligence', {}) if dashboard else {}
                 if intel:
                     report_lines.extend([
-                        "### 📰 重要信息速览",
+                        f"### 📰 {labels['info_heading']}",
                         "",
                     ])
                     # 舆情情绪总结
                     if intel.get('sentiment_summary'):
-                        report_lines.append(f"**💭 舆情情绪**: {intel['sentiment_summary']}")
+                        report_lines.append(f"**💭 {labels['sentiment_summary_label']}**: {intel['sentiment_summary']}")
                     # 业绩预期
                     if intel.get('earnings_outlook'):
-                        report_lines.append(f"**📊 业绩预期**: {intel['earnings_outlook']}")
+                        report_lines.append(f"**📊 {labels['earnings_outlook_label']}**: {intel['earnings_outlook']}")
                     # 风险警报（醒目显示）
                     risk_alerts = intel.get('risk_alerts', [])
                     if risk_alerts:
                         report_lines.append("")
-                        report_lines.append("**🚨 风险警报**:")
+                        report_lines.append(f"**🚨 {labels['risk_alerts_label']}**:")
                         for alert in risk_alerts:
                             report_lines.append(f"- {alert}")
                     # 利好催化
                     catalysts = intel.get('positive_catalysts', [])
                     if catalysts:
                         report_lines.append("")
-                        report_lines.append("**✨ 利好催化**:")
+                        report_lines.append(f"**✨ {labels['positive_catalysts_label']}**:")
                         for cat in catalysts:
                             report_lines.append(f"- {cat}")
                     # 最新消息
                     if intel.get('latest_news'):
                         report_lines.append("")
-                        report_lines.append(f"**📢 最新动态**: {intel['latest_news']}")
+                        report_lines.append(f"**📢 {labels['latest_news_label']}**: {intel['latest_news']}")
                     report_lines.append("")
                 
                 # ========== 核心结论 ==========
                 core = dashboard.get('core_conclusion', {}) if dashboard else {}
                 one_sentence = core.get('one_sentence', result.analysis_summary)
-                time_sense = core.get('time_sensitivity', '本周内')
+                time_sense = core.get('time_sensitivity', labels['default_time_sensitivity'])
                 pos_advice = core.get('position_advice', {})
                 
                 report_lines.extend([
-                    "### 📌 核心结论",
+                    f"### 📌 {labels['core_conclusion_heading']}",
                     "",
-                    f"**{signal_emoji} {signal_text}** | {result.trend_prediction}",
+                    f"**{signal_emoji} {signal_text}** | {localize_trend_prediction(result.trend_prediction, report_language)}",
                     "",
-                    f"> **一句话决策**: {one_sentence}",
+                    f"> **{labels['one_sentence_label']}**: {one_sentence}",
                     "",
-                    f"⏰ **时效性**: {time_sense}",
+                    f"⏰ **{labels['time_sensitivity_label']}**: {time_sense}",
                     "",
                 ])
                 # 持仓分类建议
                 if pos_advice:
                     report_lines.extend([
-                        "| 持仓情况 | 操作建议 |",
+                        f"| {labels['position_status_label']} | {labels['action_advice_label']} |",
                         "|---------|---------|",
-                        f"| 🆕 **空仓者** | {pos_advice.get('no_position', result.operation_advice)} |",
-                        f"| 💼 **持仓者** | {pos_advice.get('has_position', '继续持有')} |",
+                        f"| 🆕 **{labels['no_position_label']}** | {pos_advice.get('no_position', localize_operation_advice(result.operation_advice, report_language))} |",
+                        f"| 💼 **{labels['has_position_label']}** | {pos_advice.get('has_position', labels['continue_holding'])} |",
                         "",
                     ])
 
@@ -905,45 +1032,51 @@ class NotificationService(
                     chip_data = data_persp.get('chip_structure', {})
                     
                     report_lines.extend([
-                        "### 📊 数据透视",
+                        f"### 📊 {labels['data_perspective_heading']}",
                         "",
                     ])
                     # 趋势状态
                     if trend_data:
-                        is_bullish = "✅ 是" if trend_data.get('is_bullish', False) else "❌ 否"
+                        is_bullish = (
+                            f"✅ {labels['yes_label']}"
+                            if trend_data.get('is_bullish', False)
+                            else f"❌ {labels['no_label']}"
+                        )
                         report_lines.extend([
-                            f"**均线排列**: {trend_data.get('ma_alignment', 'N/A')} | 多头排列: {is_bullish} | 趋势强度: {trend_data.get('trend_score', 'N/A')}/100",
+                            f"**{labels['ma_alignment_label']}**: {trend_data.get('ma_alignment', 'N/A')} | "
+                            f"{labels['bullish_alignment_label']}: {is_bullish} | "
+                            f"{labels['trend_strength_label']}: {trend_data.get('trend_score', 'N/A')}/100",
                             "",
                         ])
                     # 价格位置
                     if price_data:
                         bias_status = price_data.get('bias_status', 'N/A')
-                        bias_emoji = "✅" if bias_status == "安全" else ("⚠️" if bias_status == "警戒" else "🚨")
                         report_lines.extend([
-                            "| 价格指标 | 数值 |",
+                            f"| {labels['price_metrics_label']} | {labels['current_price_label']} |",
                             "|---------|------|",
-                            f"| 当前价 | {price_data.get('current_price', 'N/A')} |",
-                            f"| MA5 | {price_data.get('ma5', 'N/A')} |",
-                            f"| MA10 | {price_data.get('ma10', 'N/A')} |",
-                            f"| MA20 | {price_data.get('ma20', 'N/A')} |",
-                            f"| 乖离率(MA5) | {price_data.get('bias_ma5', 'N/A')}% {bias_emoji}{bias_status} |",
-                            f"| 支撑位 | {price_data.get('support_level', 'N/A')} |",
-                            f"| 压力位 | {price_data.get('resistance_level', 'N/A')} |",
+                            f"| {labels['current_price_label']} | {price_data.get('current_price', 'N/A')} |",
+                            f"| {labels['ma5_label']} | {price_data.get('ma5', 'N/A')} |",
+                            f"| {labels['ma10_label']} | {price_data.get('ma10', 'N/A')} |",
+                            f"| {labels['ma20_label']} | {price_data.get('ma20', 'N/A')} |",
+                            f"| {labels['bias_ma5_label']} | {price_data.get('bias_ma5', 'N/A')}% {bias_status} |",
+                            f"| {labels['support_level_label']} | {price_data.get('support_level', 'N/A')} |",
+                            f"| {labels['resistance_level_label']} | {price_data.get('resistance_level', 'N/A')} |",
                             "",
                         ])
                     # 量能分析
                     if vol_data:
                         report_lines.extend([
-                            f"**量能**: 量比 {vol_data.get('volume_ratio', 'N/A')} ({vol_data.get('volume_status', '')}) | 换手率 {vol_data.get('turnover_rate', 'N/A')}%",
+                            f"**{labels['volume_label']}**: {labels['volume_ratio_label']} {vol_data.get('volume_ratio', 'N/A')} ({vol_data.get('volume_status', '')}) | "
+                            f"{labels['turnover_rate_label']} {vol_data.get('turnover_rate', 'N/A')}%",
                             f"💡 *{vol_data.get('volume_meaning', '')}*",
                             "",
                         ])
                     # 筹码结构
                     if chip_data:
-                        chip_health = chip_data.get('chip_health', 'N/A')
-                        chip_emoji = "✅" if chip_health == "健康" else ("⚠️" if chip_health == "一般" else "🚨")
+                        chip_health = localize_chip_health(chip_data.get('chip_health', 'N/A'), report_language)
                         report_lines.extend([
-                            f"**筹码**: 获利比例 {chip_data.get('profit_ratio', 'N/A')} | 平均成本 {chip_data.get('avg_cost', 'N/A')} | 集中度 {chip_data.get('concentration', 'N/A')} {chip_emoji}{chip_health}",
+                            f"**{labels['chip_label']}**: {chip_data.get('profit_ratio', 'N/A')} | {chip_data.get('avg_cost', 'N/A')} | "
+                            f"{chip_data.get('concentration', 'N/A')} {chip_health}",
                             "",
                         ])
                 
@@ -951,37 +1084,37 @@ class NotificationService(
                 battle = dashboard.get('battle_plan', {}) if dashboard else {}
                 if battle:
                     report_lines.extend([
-                        "### 🎯 作战计划",
+                        f"### 🎯 {labels['battle_plan_heading']}",
                         "",
                     ])
                     # 狙击点位
                     sniper = battle.get('sniper_points', {})
                     if sniper:
                         report_lines.extend([
-                            "**📍 狙击点位**",
+                            f"**📍 {labels['action_points_heading']}**",
                             "",
-                            "| 点位类型 | 价格 |",
+                            f"| {labels['action_points_heading']} | {labels['current_price_label']} |",
                             "|---------|------|",
-                            f"| 🎯 理想买入点 | {self._clean_sniper_value(sniper.get('ideal_buy', 'N/A'))} |",
-                            f"| 🔵 次优买入点 | {self._clean_sniper_value(sniper.get('secondary_buy', 'N/A'))} |",
-                            f"| 🛑 止损位 | {self._clean_sniper_value(sniper.get('stop_loss', 'N/A'))} |",
-                            f"| 🎊 目标位 | {self._clean_sniper_value(sniper.get('take_profit', 'N/A'))} |",
+                            f"| 🎯 {labels['ideal_buy_label']} | {self._clean_sniper_value(sniper.get('ideal_buy', 'N/A'))} |",
+                            f"| 🔵 {labels['secondary_buy_label']} | {self._clean_sniper_value(sniper.get('secondary_buy', 'N/A'))} |",
+                            f"| 🛑 {labels['stop_loss_label']} | {self._clean_sniper_value(sniper.get('stop_loss', 'N/A'))} |",
+                            f"| 🎊 {labels['take_profit_label']} | {self._clean_sniper_value(sniper.get('take_profit', 'N/A'))} |",
                             "",
                         ])
                     # 仓位策略
                     position = battle.get('position_strategy', {})
                     if position:
                         report_lines.extend([
-                            f"**💰 仓位建议**: {position.get('suggested_position', 'N/A')}",
-                            f"- 建仓策略: {position.get('entry_plan', 'N/A')}",
-                            f"- 风控策略: {position.get('risk_control', 'N/A')}",
+                            f"**💰 {labels['suggested_position_label']}**: {position.get('suggested_position', 'N/A')}",
+                            f"- {labels['entry_plan_label']}: {position.get('entry_plan', 'N/A')}",
+                            f"- {labels['risk_control_label']}: {position.get('risk_control', 'N/A')}",
                             "",
                         ])
                     # 检查清单
                     checklist = battle.get('action_checklist', []) if battle else []
                     if checklist:
                         report_lines.extend([
-                            "**✅ 检查清单**",
+                            f"**✅ {labels['checklist_heading']}**",
                             "",
                         ])
                         for item in checklist:
@@ -993,30 +1126,30 @@ class NotificationService(
                     # 操作理由
                     if result.buy_reason:
                         report_lines.extend([
-                            f"**💡 操作理由**: {result.buy_reason}",
+                            f"**💡 {reason_label}**: {result.buy_reason}",
                             "",
                         ])
                     # 风险提示
                     if result.risk_warning:
                         report_lines.extend([
-                            f"**⚠️ 风险提示**: {result.risk_warning}",
+                            f"**⚠️ {risk_warning_label}**: {result.risk_warning}",
                             "",
                         ])
                     # 技术面分析
                     if result.ma_analysis or result.volume_analysis:
                         report_lines.extend([
-                            "### 📊 技术面",
+                            f"### 📊 {technical_heading}",
                             "",
                         ])
                         if result.ma_analysis:
-                            report_lines.append(f"**均线**: {result.ma_analysis}")
+                            report_lines.append(f"**{ma_label}**: {result.ma_analysis}")
                         if result.volume_analysis:
-                            report_lines.append(f"**量能**: {result.volume_analysis}")
+                            report_lines.append(f"**{volume_analysis_label}**: {result.volume_analysis}")
                         report_lines.append("")
                     # 消息面
                     if result.news_summary:
                         report_lines.extend([
-                            "### 📰 消息面",
+                            f"### 📰 {news_heading}",
                             f"{result.news_summary}",
                             "",
                         ])
@@ -1029,7 +1162,7 @@ class NotificationService(
         # 底部（去除免责声明）
         report_lines.extend([
             "",
-            f"*报告生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*",
+            f"*{labels['generated_at_label']}：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*",
         ])
         
         return "\n".join(report_lines)
@@ -1047,6 +1180,8 @@ class NotificationService(
             精简版决策仪表盘
         """
         config = get_config()
+        report_language = self._get_report_language(results)
+        labels = get_report_labels(report_language)
         if getattr(config, 'report_renderer_enabled', False) and results:
             from src.services.report_renderer import render
             out = render(
@@ -1054,6 +1189,7 @@ class NotificationService(
                 results=results,
                 report_date=datetime.now().strftime('%Y-%m-%d'),
                 summary_only=self._report_summary_only,
+                extra_context={"report_language": report_language},
             )
             if out:
                 return out
@@ -1069,22 +1205,25 @@ class NotificationService(
         hold_count = sum(1 for r in results if getattr(r, 'decision_type', '') in ('hold', ''))
         
         lines = [
-            f"## 🎯 {report_date} 决策仪表盘",
+            f"## 🎯 {report_date} {labels['dashboard_title']}",
             "",
-            f"> {len(results)}只股票 | 🟢买入:{buy_count} 🟡观望:{hold_count} 🔴卖出:{sell_count}",
+            f"> {len(results)} {labels['stock_unit']} | "
+            f"🟢{labels['buy_label']}:{buy_count} 🟡{labels['watch_label']}:{hold_count} 🔴{labels['sell_label']}:{sell_count}",
             "",
         ]
         
         # Issue #262: summary_only 时仅输出摘要列表
         if self._report_summary_only:
-            lines.append("**📊 分析结果摘要**")
+            lines.append(f"**📊 {labels['summary_heading']}**")
             lines.append("")
             for r in sorted_results:
                 _, signal_emoji, _ = self._get_signal_level(r)
-                stock_name = self._escape_md(r.name if r.name and not r.name.startswith('股票') else f'股票{r.code}')
+                stock_name = self._get_display_name(r, report_language)
                 lines.append(
-                    f"{signal_emoji} **{stock_name}({r.code})**: {r.operation_advice} | "
-                    f"评分 {r.sentiment_score} | {r.trend_prediction}"
+                    f"{signal_emoji} **{stock_name}({r.code})**: "
+                    f"{localize_operation_advice(r.operation_advice, report_language)} | "
+                    f"{labels['score_label']} {r.sentiment_score} | "
+                    f"{localize_trend_prediction(r.trend_prediction, report_language)}"
                 )
         else:
             for result in sorted_results:
@@ -1095,8 +1234,7 @@ class NotificationService(
                 intel = dashboard.get('intelligence', {}) if dashboard else {}
                 
                 # 股票名称
-                stock_name = result.name if result.name and not result.name.startswith('股票') else f'股票{result.code}'
-                stock_name = self._escape_md(stock_name)
+                stock_name = self._get_display_name(result, report_language)
                 
                 # 标题行：信号等级 + 股票名称
                 lines.append(f"### {signal_emoji} **{signal_text}** | {stock_name}({result.code})")
@@ -1113,11 +1251,11 @@ class NotificationService(
                 
                 # 业绩预期
                 if intel.get('earnings_outlook'):
-                    outlook = intel['earnings_outlook'][:60]
-                    info_lines.append(f"📊 业绩: {outlook}")
+                    outlook = str(intel['earnings_outlook'])[:60]
+                    info_lines.append(f"📊 {labels['earnings_outlook_label']}: {outlook}")
                 if intel.get('sentiment_summary'):
-                    sentiment = intel['sentiment_summary'][:50]
-                    info_lines.append(f"💭 舆情: {sentiment}")
+                    sentiment = str(intel['sentiment_summary'])[:50]
+                    info_lines.append(f"💭 {labels['sentiment_summary_label']}: {sentiment}")
                 if info_lines:
                     lines.extend(info_lines)
                     lines.append("")
@@ -1125,34 +1263,36 @@ class NotificationService(
                 # 风险警报（最重要，醒目显示）
                 risks = intel.get('risk_alerts', []) if intel else []
                 if risks:
-                    lines.append("🚨 **风险**:")
+                    lines.append(f"🚨 **{labels['risk_alerts_label']}**:")
                     for risk in risks[:2]:  # 最多显示2条
-                        risk_text = risk[:50] + "..." if len(risk) > 50 else risk
+                        risk_str = str(risk)
+                        risk_text = risk_str[:50] + "..." if len(risk_str) > 50 else risk_str
                         lines.append(f"   • {risk_text}")
                     lines.append("")
                 
                 # 利好催化
                 catalysts = intel.get('positive_catalysts', []) if intel else []
                 if catalysts:
-                    lines.append("✨ **利好**:")
+                    lines.append(f"✨ **{labels['positive_catalysts_label']}**:")
                     for cat in catalysts[:2]:  # 最多显示2条
-                        cat_text = cat[:50] + "..." if len(cat) > 50 else cat
+                        cat_str = str(cat)
+                        cat_text = cat_str[:50] + "..." if len(cat_str) > 50 else cat_str
                         lines.append(f"   • {cat_text}")
                     lines.append("")
                 
                 # 狙击点位
                 sniper = battle.get('sniper_points', {}) if battle else {}
                 if sniper:
-                    ideal_buy = sniper.get('ideal_buy', '')
-                    stop_loss = sniper.get('stop_loss', '')
-                    take_profit = sniper.get('take_profit', '')
+                    ideal_buy = str(sniper.get('ideal_buy', ''))
+                    stop_loss = str(sniper.get('stop_loss', ''))
+                    take_profit = str(sniper.get('take_profit', ''))
                     points = []
                     if ideal_buy:
-                        points.append(f"🎯买点:{ideal_buy[:15]}")
+                        points.append(f"🎯{labels['ideal_buy_label']}:{ideal_buy[:15]}")
                     if stop_loss:
-                        points.append(f"🛑止损:{stop_loss[:15]}")
+                        points.append(f"🛑{labels['stop_loss_label']}:{stop_loss[:15]}")
                     if take_profit:
-                        points.append(f"🎊目标:{take_profit[:15]}")
+                        points.append(f"🎊{labels['take_profit_label']}:{take_profit[:15]}")
                     if points:
                         lines.append(" | ".join(points))
                         lines.append("")
@@ -1160,21 +1300,21 @@ class NotificationService(
                 # 持仓建议
                 pos_advice = core.get('position_advice', {}) if core else {}
                 if pos_advice:
-                    no_pos = pos_advice.get('no_position', '')
-                    has_pos = pos_advice.get('has_position', '')
+                    no_pos = str(pos_advice.get('no_position', ''))
+                    has_pos = str(pos_advice.get('has_position', ''))
                     if no_pos:
-                        lines.append(f"🆕 空仓者: {no_pos[:50]}")
+                        lines.append(f"🆕 {labels['no_position_label']}: {no_pos[:50]}")
                     if has_pos:
-                        lines.append(f"💼 持仓者: {has_pos[:50]}")
+                        lines.append(f"💼 {labels['has_position_label']}: {has_pos[:50]}")
                     lines.append("")
                 
                 # 检查清单简化版
                 checklist = battle.get('action_checklist', []) if battle else []
                 if checklist:
                     # 只显示不通过的项目
-                    failed_checks = [c for c in checklist if c.startswith('❌') or c.startswith('⚠️')]
+                    failed_checks = [str(c) for c in checklist if str(c).startswith('❌') or str(c).startswith('⚠️')]
                     if failed_checks:
-                        lines.append("**检查未通过项**:")
+                        lines.append(f"**{labels['failed_checks_heading']}**:")
                         for check in failed_checks[:3]:
                             lines.append(f"   {check[:40]}")
                         lines.append("")
@@ -1183,166 +1323,10 @@ class NotificationService(
                 lines.append("")
         
         # 底部
-        lines.append(f"*生成时间: {datetime.now().strftime('%H:%M')}*")
+        lines.append(f"*{labels['report_time_label']}: {datetime.now().strftime('%H:%M')}*")
         models = self._collect_models_used(results)
         if models:
-            lines.append(f"*分析模型: {', '.join(models)}*")
-
-        content = "\n".join(lines)
-
-        return content
-
-    def generate_simple_dashboard(self, results: List[AnalysisResult]) -> str:
-        """
-        生成简易版决策仪表盘（飞书专用）
-
-        仅包含三个核心部分：
-        1. 重要信息速览 - 舆情情绪、业绩预期、风险警报、利好催化
-        2. 核心结论 - 一句话决策、信号、趋势预测、持仓建议
-        3. 作战计划 - 狙击点位、仓位建议、检查清单
-
-        Args:
-            results: 分析结果列表
-
-        Returns:
-            简易版决策仪表盘
-        """
-        config = get_config()
-        if getattr(config, 'report_renderer_enabled', False) and results:
-            from src.services.report_renderer import render
-            out = render(
-                platform='simple',
-                results=results,
-                report_date=datetime.now().strftime('%Y-%m-%d'),
-                summary_only=self._report_summary_only,
-            )
-            if out:
-                return out
-
-        report_date = datetime.now().strftime('%Y-%m-%d')
-
-        # 按评分排序
-        sorted_results = sorted(results, key=lambda x: x.sentiment_score, reverse=True)
-
-        # 统计 - 使用 decision_type 字段准确统计
-        buy_count = sum(1 for r in results if getattr(r, 'decision_type', '') == 'buy')
-        sell_count = sum(1 for r in results if getattr(r, 'decision_type', '') == 'sell')
-        hold_count = sum(1 for r in results if getattr(r, 'decision_type', '') in ('hold', ''))
-
-        lines = [
-            f"## 🎯 {report_date} 决策简报",
-            "",
-            f"> 共分析 {len(results)} 只 | 🟢{buy_count} 🟡{hold_count} 🔴{sell_count}",
-            "",
-        ]
-
-        # Issue #262: summary_only 时仅输出摘要列表
-        if self._report_summary_only:
-            lines.append("**📊 分析结果摘要**")
-            lines.append("")
-            for r in sorted_results:
-                _, signal_emoji, _ = self._get_signal_level(r)
-                stock_name = self._escape_md(r.name if r.name and not r.name.startswith('股票') else f'股票{r.code}')
-                dash = r.dashboard if hasattr(r, 'dashboard') and r.dashboard else {}
-                core = dash.get('core_conclusion', {}) if dash else {}
-                one_sentence = (core.get('one_sentence') or r.analysis_summary or '')[:60]
-                lines.append(
-                    f"**{stock_name}({r.code})** {signal_emoji} {r.operation_advice} | 评分{r.sentiment_score} | {one_sentence}"
-                )
-        else:
-            for result in sorted_results:
-                signal_text, signal_emoji, _ = self._get_signal_level(result)
-                dashboard = result.dashboard if hasattr(result, 'dashboard') and result.dashboard else {}
-                core = dashboard.get('core_conclusion', {}) if dashboard else {}
-                battle = dashboard.get('battle_plan', {}) if dashboard else {}
-                intel = dashboard.get('intelligence', {}) if dashboard else {}
-
-                # 股票名称
-                stock_name = result.name if result.name and not result.name.startswith('股票') else f'股票{result.code}'
-                stock_name = self._escape_md(stock_name)
-
-                # 标题行
-                lines.append(f"---")
-                lines.append("")
-                lines.append(f"### {signal_emoji} {stock_name}({result.code})")
-                lines.append("")
-
-                # 1. 重要信息速览
-                lines.append("#### 📰 重要信息速览")
-                if intel.get('sentiment_summary'):
-                    sentiment = intel['sentiment_summary'][:50]
-                    lines.append(f"- 💭 **舆情情绪**: {sentiment}{'...' if len(intel['sentiment_summary']) > 50 else ''}")
-                if intel.get('earnings_outlook'):
-                    outlook = intel['earnings_outlook'][:60]
-                    lines.append(f"- 📊 **业绩预期**: {outlook}{'...' if len(intel['earnings_outlook']) > 60 else ''}")
-
-                # 风险警报
-                risks = intel.get('risk_alerts', []) if intel else []
-                if risks:
-                    lines.append("- 🚨 **风险警报**:")
-                    for risk in risks[:2]:
-                        risk_text = risk[:50] + "..." if len(risk) > 50 else risk
-                        lines.append(f"  - {risk_text}")
-
-                # 利好催化
-                catalysts = intel.get('positive_catalysts', []) if intel else []
-                if catalysts:
-                    lines.append("- ✨ **利好催化**:")
-                    for cat in catalysts[:2]:
-                        cat_text = cat[:50] + "..." if len(cat) > 50 else cat
-                        lines.append(f"  - {cat_text}")
-                lines.append("")
-
-                # 2. 核心结论
-                lines.append("#### 📌 核心结论")
-                one_sentence = core.get('one_sentence', result.analysis_summary) if core else result.analysis_summary
-                if one_sentence:
-                    lines.append(f"- **信号**: {signal_text} | **趋势**: {result.trend_prediction}")
-                    lines.append(f"- **一句话决策**: {one_sentence[:80]}{'...' if len(one_sentence) > 80 else ''}")
-
-                # 持仓建议
-                pos_advice = core.get('position_advice', {}) if core else {}
-                if pos_advice:
-                    no_pos = pos_advice.get('no_position', result.operation_advice) if pos_advice else result.operation_advice
-                    has_pos = pos_advice.get('has_position', '继续持有') if pos_advice else '继续持有'
-                    lines.append(f"- 🆕 **空仓者**: {no_pos[:50]}{'...' if len(no_pos) > 50 else ''}")
-                    lines.append(f"- 💼 **持仓者**: {has_pos[:50]}{'...' if len(has_pos) > 50 else ''}")
-                lines.append("")
-
-                # 3. 作战计划
-                lines.append("#### 🎯 作战计划")
-                sniper = battle.get('sniper_points', {}) if battle else {}
-                if sniper:
-                    points = []
-                    if sniper.get('ideal_buy'):
-                        points.append(f"🎯理想买点:{self._clean_sniper_value(sniper['ideal_buy'])[:15]}")
-                    if sniper.get('stop_loss'):
-                        points.append(f"🛑止损位:{self._clean_sniper_value(sniper['stop_loss'])[:15]}")
-                    if sniper.get('take_profit'):
-                        points.append(f"🎊目标位:{self._clean_sniper_value(sniper['take_profit'])[:15]}")
-                    if points:
-                        lines.append(f"- **狙击点位**: {' | '.join(points)}")
-
-                # 仓位建议
-                position = battle.get('position_strategy', {}) if battle else {}
-                if position.get('suggested_position'):
-                    lines.append(f"- 💰 **仓位建议**: {position['suggested_position'][:50]}{'...' if len(position['suggested_position']) > 50 else ''}")
-
-                # 检查清单
-                checklist = battle.get('action_checklist', []) if battle else []
-                if checklist:
-                    # 只显示不通过的项目
-                    failed_checks = [c for c in checklist if c.startswith('❌') or c.startswith('⚠️')]
-                    if failed_checks:
-                        lines.append("**检查清单**:")
-                        for check in failed_checks[:3]:
-                            lines.append(f"- [ ] {check[:40]}{'...' if len(check) > 40 else ''}")
-
-                lines.append("")
-
-        # 底部
-        lines.append("---")
-        lines.append(f"*{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*")
+            lines.append(f"*{labels['analysis_model_label']}: {', '.join(models)}*")
 
         content = "\n".join(lines)
 
@@ -1359,6 +1343,8 @@ class NotificationService(
             精简版 Markdown 内容
         """
         report_date = datetime.now().strftime('%Y-%m-%d')
+        report_language = self._get_report_language(results)
+        labels = get_report_labels(report_language)
 
         # 按评分排序
         sorted_results = sorted(results, key=lambda x: x.sentiment_score, reverse=True)
@@ -1370,19 +1356,25 @@ class NotificationService(
         avg_score = sum(r.sentiment_score for r in results) / len(results) if results else 0
 
         lines = [
-            f"## 📅 {report_date} 股票分析报告",
+            f"## 📅 {report_date} {labels['report_title']}",
             "",
-            f"> 共 **{len(results)}** 只 | 🟢买入:{buy_count} 🟡持有:{hold_count} 🔴卖出:{sell_count} | 均分:{avg_score:.0f}",
+            f"> {labels['analyzed_prefix']} **{len(results)}** {labels['stock_unit_compact']} | "
+            f"🟢{labels['buy_label']}:{buy_count} 🟡{labels['watch_label']}:{hold_count} 🔴{labels['sell_label']}:{sell_count} | "
+            f"{labels['avg_score_label']}:{avg_score:.0f}",
             "",
         ]
         
         # 每只股票精简信息（控制长度）
         for result in sorted_results:
-            emoji = result.get_emoji()
+            _, emoji, _ = self._get_signal_level(result)
             
             # 核心信息行
-            lines.append(f"### {emoji} {result.name}({result.code})")
-            lines.append(f"**{result.operation_advice}** | 评分:{result.sentiment_score} | {result.trend_prediction}")
+            lines.append(f"### {emoji} {self._get_display_name(result, report_language)}({result.code})")
+            lines.append(
+                f"**{localize_operation_advice(result.operation_advice, report_language)}** | "
+                f"{labels['score_label']}:{result.sentiment_score} | "
+                f"{localize_trend_prediction(result.trend_prediction, report_language)}"
+            )
             
             # 操作理由（截断）
             if hasattr(result, 'buy_reason') and result.buy_reason:
@@ -1404,11 +1396,11 @@ class NotificationService(
         # 底部（模型行在 --- 之前，Issue #528）
         models = self._collect_models_used(results)
         if models:
-            lines.append(f"*分析模型: {', '.join(models)}*")
+            lines.append(f"*{labels['analysis_model_label']}: {', '.join(models)}*")
         lines.extend([
             "---",
-            "*AI生成，仅供参考，不构成投资建议*",
-            f"*详细报告见 reports/report_{report_date.replace('-', '')}.md*"
+            f"*{labels['not_investment_advice']}*",
+            f"*{labels['details_report_hint']} reports/report_{report_date.replace('-', '')}.md*"
         ])
 
         content = "\n".join(lines)
@@ -1432,6 +1424,8 @@ class NotificationService(
         """
         if report_date is None:
             report_date = datetime.now().strftime('%Y-%m-%d')
+        report_language = self._get_report_language(results)
+        labels = get_report_labels(report_language)
         config = get_config()
         if getattr(config, 'report_renderer_enabled', False) and results:
             from src.services.report_renderer import render
@@ -1440,29 +1434,34 @@ class NotificationService(
                 results=results,
                 report_date=report_date,
                 summary_only=False,
+                extra_context={"report_language": report_language},
             )
             if out:
                 return out
         # Fallback: brief summary from dashboard report
         if not results:
-            return f"# {report_date} 决策简报\n\n无分析结果"
+            return f"# {report_date} {labels['brief_title']}\n\n{labels['no_results']}"
         sorted_results = sorted(results, key=lambda x: x.sentiment_score, reverse=True)
         buy_count = sum(1 for r in results if getattr(r, 'decision_type', '') == 'buy')
         sell_count = sum(1 for r in results if getattr(r, 'decision_type', '') == 'sell')
         hold_count = sum(1 for r in results if getattr(r, 'decision_type', '') in ('hold', ''))
         lines = [
-            f"# {report_date} 决策简报",
+            f"# {report_date} {labels['brief_title']}",
             "",
-            f"> {len(results)}只 | 🟢{buy_count} 🟡{hold_count} 🔴{sell_count}",
+            f"> {len(results)} {labels['stock_unit_compact']} | 🟢{buy_count} 🟡{hold_count} 🔴{sell_count}",
             "",
         ]
         for r in sorted_results:
             _, emoji, _ = self._get_signal_level(r)
-            name = r.name if r.name and not r.name.startswith('股票') else f'股票{r.code}'
+            name = self._get_display_name(r, report_language)
             dash = r.dashboard or {}
             core = dash.get('core_conclusion', {}) or {}
             one = (core.get('one_sentence') or r.analysis_summary or '')[:60]
-            lines.append(f"**{self._escape_md(name)}({r.code})** {emoji} {r.operation_advice} | 评分{r.sentiment_score} | {one}")
+            lines.append(
+                f"**{name}({r.code})** {emoji} "
+                f"{localize_operation_advice(r.operation_advice, report_language)} | "
+                f"{labels['score_label']} {r.sentiment_score} | {one}"
+            )
         lines.append("")
         lines.append(f"*{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*")
         return "\n".join(lines)
@@ -1480,6 +1479,8 @@ class NotificationService(
             Markdown 格式的单股报告
         """
         report_date = datetime.now().strftime('%Y-%m-%d %H:%M')
+        report_language = self._get_report_language(result)
+        labels = get_report_labels(report_language)
         signal_text, signal_emoji, _ = self._get_signal_level(result)
         dashboard = result.dashboard if hasattr(result, 'dashboard') and result.dashboard else {}
         core = dashboard.get('core_conclusion', {}) if dashboard else {}
@@ -1487,13 +1488,12 @@ class NotificationService(
         intel = dashboard.get('intelligence', {}) if dashboard else {}
         
         # 股票名称（转义 *ST 等特殊字符）
-        raw_name = result.name if result.name and not result.name.startswith('股票') else f'股票{result.code}'
-        stock_name = self._escape_md(raw_name)
+        stock_name = self._get_display_name(result, report_language)
         
         lines = [
             f"## {signal_emoji} {stock_name} ({result.code})",
             "",
-            f"> {report_date} | 评分: **{result.sentiment_score}** | {result.trend_prediction}",
+            f"> {report_date} | {labels['score_label']}: **{result.sentiment_score}** | {localize_trend_prediction(result.trend_prediction, report_language)}",
             "",
         ]
 
@@ -1503,7 +1503,7 @@ class NotificationService(
         one_sentence = core.get('one_sentence', result.analysis_summary) if core else result.analysis_summary
         if one_sentence:
             lines.extend([
-                "### 📌 核心结论",
+                f"### 📌 {labels['core_conclusion_heading']}",
                 "",
                 f"**{signal_text}**: {one_sentence}",
                 "",
@@ -1514,37 +1514,37 @@ class NotificationService(
         if intel:
             if intel.get('earnings_outlook'):
                 if not info_added:
-                    lines.append("### 📰 重要信息")
+                    lines.append(f"### 📰 {labels['info_heading']}")
                     lines.append("")
                     info_added = True
-                lines.append(f"📊 **业绩预期**: {intel['earnings_outlook'][:100]}")
+                lines.append(f"📊 **{labels['earnings_outlook_label']}**: {str(intel['earnings_outlook'])[:100]}")
             
             if intel.get('sentiment_summary'):
                 if not info_added:
-                    lines.append("### 📰 重要信息")
+                    lines.append(f"### 📰 {labels['info_heading']}")
                     lines.append("")
                     info_added = True
-                lines.append(f"💭 **舆情情绪**: {intel['sentiment_summary'][:80]}")
+                lines.append(f"💭 **{labels['sentiment_summary_label']}**: {str(intel['sentiment_summary'])[:80]}")
             
             # 风险警报
             risks = intel.get('risk_alerts', [])
             if risks:
                 if not info_added:
-                    lines.append("### 📰 重要信息")
+                    lines.append(f"### 📰 {labels['info_heading']}")
                     lines.append("")
                     info_added = True
                 lines.append("")
-                lines.append("🚨 **风险警报**:")
+                lines.append(f"🚨 **{labels['risk_alerts_label']}**:")
                 for risk in risks[:3]:
-                    lines.append(f"- {risk[:60]}")
+                    lines.append(f"- {str(risk)[:60]}")
             
             # 利好催化
             catalysts = intel.get('positive_catalysts', [])
             if catalysts:
                 lines.append("")
-                lines.append("✨ **利好催化**:")
+                lines.append(f"✨ **{labels['positive_catalysts_label']}**:")
                 for cat in catalysts[:3]:
-                    lines.append(f"- {cat[:60]}")
+                    lines.append(f"- {str(cat)[:60]}")
         
         if info_added:
             lines.append("")
@@ -1553,9 +1553,9 @@ class NotificationService(
         sniper = battle.get('sniper_points', {}) if battle else {}
         if sniper:
             lines.extend([
-                "### 🎯 操作点位",
+                f"### 🎯 {labels['action_points_heading']}",
                 "",
-                "| 买点 | 止损 | 目标 |",
+                f"| {labels['ideal_buy_label']} | {labels['stop_loss_label']} | {labels['take_profit_label']} |",
                 "|------|------|------|",
             ])
             ideal_buy = sniper.get('ideal_buy', '-')
@@ -1568,42 +1568,54 @@ class NotificationService(
         pos_advice = core.get('position_advice', {}) if core else {}
         if pos_advice:
             lines.extend([
-                "### 💼 持仓建议",
+                f"### 💼 {labels['position_advice_heading']}",
                 "",
-                f"- 🆕 **空仓者**: {pos_advice.get('no_position', result.operation_advice)}",
-                f"- 💼 **持仓者**: {pos_advice.get('has_position', '继续持有')}",
+                f"- 🆕 **{labels['no_position_label']}**: {pos_advice.get('no_position', localize_operation_advice(result.operation_advice, report_language))}",
+                f"- 💼 **{labels['has_position_label']}**: {pos_advice.get('has_position', labels['continue_holding'])}",
                 "",
             ])
         
         lines.append("---")
         model_used = normalize_model_used(getattr(result, "model_used", None))
         if model_used:
-            lines.append(f"*分析模型: {model_used}*")
-        lines.append("*AI生成，仅供参考，不构成投资建议*")
+            lines.append(f"*{labels['analysis_model_label']}: {model_used}*")
+        lines.append(f"*{labels['not_investment_advice']}*")
 
         return "\n".join(lines)
 
     # Display name mapping for realtime data sources
     _SOURCE_DISPLAY_NAMES = {
-        "tencent": "腾讯财经",
-        "akshare_em": "东方财富",
-        "akshare_sina": "新浪财经",
-        "akshare_qq": "腾讯财经",
-        "efinance": "东方财富(efinance)",
-        "tushare": "Tushare Pro",
-        "sina": "新浪财经",
-        "fallback": "降级兜底",
+        "tencent": {"zh": "腾讯财经", "en": "Tencent Finance"},
+        "akshare_em": {"zh": "东方财富", "en": "Eastmoney"},
+        "akshare_sina": {"zh": "新浪财经", "en": "Sina Finance"},
+        "akshare_qq": {"zh": "腾讯财经", "en": "Tencent Finance"},
+        "efinance": {"zh": "东方财富(efinance)", "en": "Eastmoney (efinance)"},
+        "tushare": {"zh": "Tushare Pro", "en": "Tushare Pro"},
+        "sina": {"zh": "新浪财经", "en": "Sina Finance"},
+        "stooq": {"zh": "Stooq", "en": "Stooq"},
+        "longbridge": {"zh": "长桥", "en": "Longbridge"},
+        "fallback": {"zh": "降级兜底", "en": "Fallback"},
     }
+
+    def _get_source_display_name(self, source: Any, language: Optional[str]) -> str:
+        raw_source = str(source or "N/A")
+        mapping = self._SOURCE_DISPLAY_NAMES.get(raw_source)
+        if not mapping:
+            return raw_source
+        return mapping[normalize_report_language(language)]
 
     def _append_market_snapshot(self, lines: List[str], result: AnalysisResult) -> None:
         snapshot = getattr(result, 'market_snapshot', None)
         if not snapshot:
             return
 
+        report_language = self._get_report_language(result)
+        labels = get_report_labels(report_language)
+
         lines.extend([
-            "### 📈 当日行情",
+            f"### 📈 {labels['market_snapshot_heading']}",
             "",
-            "| 收盘 | 昨收 | 开盘 | 最高 | 最低 | 涨跌幅 | 涨跌额 | 振幅 | 成交量 | 成交额 |",
+            f"| {labels['close_label']} | {labels['prev_close_label']} | {labels['open_label']} | {labels['high_label']} | {labels['low_label']} | {labels['change_pct_label']} | {labels['change_amount_label']} | {labels['amplitude_label']} | {labels['volume_label']} | {labels['amount_label']} |",
             "|------|------|------|------|------|-------|-------|------|--------|--------|",
             f"| {snapshot.get('close', 'N/A')} | {snapshot.get('prev_close', 'N/A')} | "
             f"{snapshot.get('open', 'N/A')} | {snapshot.get('high', 'N/A')} | "
@@ -1613,11 +1625,10 @@ class NotificationService(
         ])
 
         if "price" in snapshot:
-            raw_source = snapshot.get('source', 'N/A')
-            display_source = self._SOURCE_DISPLAY_NAMES.get(raw_source, raw_source)
+            display_source = self._get_source_display_name(snapshot.get('source', 'N/A'), report_language)
             lines.extend([
                 "",
-                "| 当前价 | 量比 | 换手率 | 行情来源 |",
+                f"| {labels['current_price_label']} | {labels['volume_ratio_label']} | {labels['turnover_rate_label']} | {labels['source_label']} |",
                 "|-------|------|--------|----------|",
                 f"| {snapshot.get('price', 'N/A')} | {snapshot.get('volume_ratio', 'N/A')} | "
                 f"{snapshot.get('turnover_rate', 'N/A')} | {display_source} |",
@@ -1649,7 +1660,11 @@ class NotificationService(
         self,
         content: str,
         email_stock_codes: Optional[List[str]] = None,
-        email_send_to_all: bool = False
+        email_send_to_all: bool = False,
+        route_type: Optional[str] = None,
+        severity: Optional[str] = None,
+        dedup_key: Optional[str] = None,
+        cooldown_key: Optional[str] = None,
     ) -> bool:
         """
         统一发送接口 - 向所有已配置的渠道发送
@@ -1666,6 +1681,10 @@ class NotificationService(
             content: 消息内容（Markdown 格式）
             email_stock_codes: 股票代码列表（可选，用于邮件渠道路由到对应分组邮箱，Issue #268）
             email_send_to_all: 邮件是否发往所有配置邮箱（用于大盘复盘等无股票归属的内容）
+            route_type: 通知路由类型；None 保持旧行为，report/alert/system_error 按配置过滤静态渠道
+            severity: 通知严重级别；未设置时按路由类型推断
+            dedup_key: 可选稳定去重 key；未设置时使用内容 hash
+            cooldown_key: 可选冷却 key；未设置时使用路由/级别默认 key
 
         Returns:
             是否至少有一个渠道发送成功
@@ -1679,11 +1698,30 @@ class NotificationService(
             logger.warning("通知服务不可用，跳过推送")
             return False
 
+        target_channels = self.get_channels_for_route(route_type)
+        if not target_channels:
+            if context_success:
+                logger.info("已通过消息上下文渠道完成推送（路由后无其他通知渠道）")
+                return True
+            logger.warning("通知路由 %s 未命中任何已配置渠道，跳过静态通知渠道", route_type)
+            return False
+
+        noise_decision = self.evaluate_noise_control(
+            content,
+            route_type=route_type,
+            severity=severity,
+            dedup_key=dedup_key,
+            cooldown_key=cooldown_key,
+        )
+        if not noise_decision.should_send:
+            logger.info(noise_decision.message)
+            return context_success
+
         # Markdown to image (Issue #289): convert once if any channel needs it.
         # Per-channel decision via _should_use_image_for_channel (see send() docstring for fallback rules).
         image_bytes = None
         channels_needing_image = {
-            ch for ch in self._available_channels
+            ch for ch in target_channels
             if ch.value in self._markdown_to_image_channels
         }
         if channels_needing_image:
@@ -1709,13 +1747,13 @@ class NotificationService(
                     hint,
                 )
 
-        channel_names = self.get_channel_names()
-        logger.info(f"正在向 {len(self._available_channels)} 个渠道发送通知：{channel_names}")
+        channel_names = ', '.join(ChannelDetector.get_channel_name(ch) for ch in target_channels)
+        logger.info(f"正在向 {len(target_channels)} 个渠道发送通知：{channel_names}")
 
         success_count = 0
         fail_count = 0
 
-        for channel in self._available_channels:
+        for channel in target_channels:
             channel_name = ChannelDetector.get_channel_name(channel)
             use_image = self._should_use_image_for_channel(channel, image_bytes)
             try:
@@ -1758,6 +1796,13 @@ class NotificationService(
                         result = self.send_to_custom(content)
                 elif channel == NotificationChannel.DISCORD:
                     result = self.send_to_discord(content)
+                elif channel == NotificationChannel.SLACK:
+                    if use_image:
+                        result = self._send_slack_image(
+                            image_bytes, fallback_content=content
+                        )
+                    else:
+                        result = self.send_to_slack(content)
                 elif channel == NotificationChannel.ASTRBOT:
                     result = self.send_to_astrbot(content)
                 else:
@@ -1774,6 +1819,10 @@ class NotificationService(
                 fail_count += 1
 
         logger.info(f"通知发送完成：成功 {success_count} 个，失败 {fail_count} 个")
+        if success_count > 0:
+            self.record_noise_control(noise_decision)
+        else:
+            self.release_noise_control(noise_decision)
         return success_count > 0 or context_success
    
     def save_report_to_file(
@@ -1808,12 +1857,6 @@ class NotificationService(
         
         logger.info(f"日报已保存到: {filepath}")
         return str(filepath)
-
-    # ===== 飞书多 Webhook 支持 =====
-    # 注意：以下方法继承自 FeishuSender，在此提供文档说明
-    # - get_feishu_webhook_aliases(): 获取所有已配置的飞书 Webhook 别名列表
-    # - send_to_feishu_by_alias(alias, content): 推送消息到指定别名的飞书群
-    # - send_to_feishu_webhook(url, content): 推送消息到指定 URL 的飞书群
 
 
 class NotificationBuilder:
@@ -1854,11 +1897,19 @@ class NotificationBuilder:
         
         适用于快速通知
         """
-        lines = ["📊 **今日自选股摘要**", ""]
+        report_language = normalize_report_language(
+            next((getattr(result, "report_language", None) for result in results if getattr(result, "report_language", None)), None)
+        )
+        labels = get_report_labels(report_language)
+        lines = [f"📊 **{labels['summary_heading']}**", ""]
         
         for r in sorted(results, key=lambda x: x.sentiment_score, reverse=True):
-            emoji = r.get_emoji()
-            lines.append(f"{emoji} {r.name}({r.code}): {r.operation_advice} | 评分 {r.sentiment_score}")
+            _, emoji, _ = get_signal_level(r.operation_advice, r.sentiment_score, report_language)
+            name = get_localized_stock_name(r.name, r.code, report_language)
+            lines.append(
+                f"{emoji} {name}({r.code}): {localize_operation_advice(r.operation_advice, report_language)} | "
+                f"{labels['score_label']} {r.sentiment_score}"
+            )
         
         return "\n".join(lines)
 
@@ -1890,6 +1941,7 @@ def send_daily_report(results: List[AnalysisResult]) -> bool:
 if __name__ == "__main__":
     # 测试代码
     logging.basicConfig(level=logging.DEBUG)
+    from src.analyzer import AnalysisResult
     
     # 模拟分析结果
     test_results = [
