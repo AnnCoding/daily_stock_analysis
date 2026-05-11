@@ -49,9 +49,40 @@ from src.core.market_review import run_market_review
 from src.webui_frontend import prepare_webui_frontend_assets
 from src.config import get_config, Config
 from src.logging_config import setup_logging
+from src.enums import ReportType
 
 
 logger = logging.getLogger(__name__)
+
+
+def _parse_report_type_arg(type_str: str) -> str:
+    """
+    解析命令行指定的报告类型，支持中文和英文别名
+
+    Args:
+        type_str: 用户输入的报告类型（完整版/full, 精简版/simple, 简洁版/brief）
+
+    Returns:
+        标准化的报告类型字符串 (full/simple/brief)
+    """
+    if not type_str:
+        return None
+
+    type_str = type_str.strip().lower()
+
+    # 中文别名映射
+    chinese_mapping = {
+        '完整版': 'full',
+        '精简版': 'simple',
+        '简洁版': 'brief',
+    }
+
+    # 如果是中文别名，转换为英文
+    if type_str in chinese_mapping:
+        return chinese_mapping[type_str]
+
+    # 英文别名直接返回（ReportType.from_str 会处理）
+    return type_str
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -67,6 +98,8 @@ def parse_arguments() -> argparse.Namespace:
   python main.py --stocks 600519,000001  # 指定分析特定股票
   python main.py --fa 蓝筹群        # 使用飞书别名对应的股票列表并推送到该群
   python main.py --fa 蓝筹群 --stocks 600519  # 分析指定股票并推送到蓝筹群
+  python main.py --fa 蓝筹群 --type 完整版  # 使用完整版报告推送到蓝筹群
+  python main.py --type full        # 使用英文别名指定完整版报告
   python main.py --no-notify        # 不发送推送通知
   python main.py --single-notify    # 启用单股推送模式（每分析完一只立即推送）
   python main.py --schedule         # 启用定时任务模式
@@ -223,6 +256,16 @@ def parse_arguments() -> argparse.Namespace:
         help='指定飞书 Webhook 别名，自动使用该群配置的股票列表（例如: --fa 蓝筹群）'
     )
 
+    # === 报告类型 ===
+    parser.add_argument(
+        '--type',
+        type=str,
+        default=None,
+        dest='report_type',
+        metavar='TYPE',
+        help='指定报告类型，覆盖配置文件 REPORT_TYPE。支持: 完整版(full), 精简版(simple), 简洁版(brief)'
+    )
+
     return parser.parse_args()
 
 
@@ -271,14 +314,34 @@ def _compute_trading_day_filter(
 def run_full_analysis(
     config: Config,
     args: argparse.Namespace,
-    stock_codes: Optional[List[str]] = None
+    stock_codes: Optional[List[str]] = None,
+    report_type_override: Optional[str] = None
 ):
     """
     执行完整的分析流程（个股 + 大盘复盘）
 
     这是定时任务调用的主函数
+
+    Args:
+        config: 配置对象
+        args: 命令行参数
+        stock_codes: 股票代码列表
+        report_type_override: 报告类型覆盖 (full/simple/brief)
     """
     try:
+        # 处理报告类型参数
+        effective_report_type = report_type_override
+        if effective_report_type is None:
+            # 从命令行参数解析
+            type_arg = getattr(args, 'report_type', None)
+            if type_arg:
+                effective_report_type = _parse_report_type_arg(type_arg)
+
+        # 如果有覆盖，修改 config.report_type 属性
+        if effective_report_type:
+            logger.info(f"使用命令行指定的报告类型: {effective_report_type}")
+            config.report_type = effective_report_type
+
         # Issue #529: Hot-reload STOCK_LIST from .env on each scheduled run
         if stock_codes is None:
             config.refresh_stock_list()

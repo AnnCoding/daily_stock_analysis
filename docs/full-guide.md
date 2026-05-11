@@ -93,7 +93,7 @@ daily_stock_analysis/
 | Secret 名称 | 说明 | 必填 |
 |------------|------|:----:|
 | `SINGLE_STOCK_NOTIFY` | 单股推送模式：设为 `true` 则每分析完一只股票立即推送 | 可选 |
-| `REPORT_TYPE` | 报告类型：`simple`(精简)、`full`(完整)、`brief`(3-5句概括)，Docker环境推荐设为 `full` | 可选 |
+| `REPORT_TYPE` | 报告类型：`simple`(精简)、`full`(完整)、`brief`(3-5句概括)，Docker环境推荐设为 `full`。也可通过 `--type` CLI 参数覆盖（支持中文别名：完整版/精简版/简洁版） | 可选 |
 | `REPORT_SUMMARY_ONLY` | 仅分析结果摘要：设为 `true` 时只推送汇总，不含个股详情；多股时适合快速浏览（默认 false，Issue #262） | 可选 |
 | `REPORT_TEMPLATES_DIR` | Jinja2 模板目录（相对项目根，默认 `templates`） | 可选 |
 | `REPORT_RENDERER_ENABLED` | 启用 Jinja2 模板渲染（默认 `false`，保证零回归） | 可选 |
@@ -551,6 +551,10 @@ python main.py --feishu-alias 蓝筹群
 
 # 也可以指定股票覆盖配置
 python main.py --fa 蓝筹群 --stocks 600519
+
+# 指定报告类型（支持中文别名：完整版/精简版/简洁版）
+python main.py --fa 蓝筹群 --type 完整版
+python main.py --fa 蓝筹群 --type full
 
 # 查看所有可用别名
 python main.py --help  # 显示已配置的别名列表

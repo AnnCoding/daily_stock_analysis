@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - 📱 **Feishu multi-webhook support** — configure multiple Feishu webhooks with different stock lists; format `FEISHU_WEBHOOK_N=url|alias|stocks` (e.g., `FEISHU_WEBHOOK_1=https://open.feishu.cn/...|蓝筹群|600519,300750`)
 - 🎯 **Feishu alias-based push** — new `--fa` / `--feishu-alias` CLI parameter to push to specific group; automatically uses that group's configured stock list
+- 📋 **Report type CLI parameter** — new `--type` CLI parameter to override `REPORT_TYPE` environment variable; supports Chinese aliases (完整版, 精简版, 简洁版) and English values (full, simple, brief); usage: `python main.py --fa 蓝筹群 --type 完整版`
 - 🗑️ **History batch deletion** — Web UI now supports multi-selection and batch deletion of analysis history; added `POST /api/v1/history/batch-delete` endpoint and `ConfirmDialog` component.
 - 🔐 **Auth settings API** — new `POST /api/v1/auth/settings` endpoint to enable or disable Web authentication at runtime and set the initial admin password when needed
 
