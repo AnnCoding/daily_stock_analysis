@@ -54,6 +54,7 @@ from data_provider.base import canonical_stock_code
 from src.webui_frontend import prepare_webui_frontend_assets
 from src.config import get_config, Config
 from src.logging_config import setup_logging
+from src.enums import ReportType
 
 
 logger = logging.getLogger(__name__)
@@ -202,6 +203,36 @@ def _reload_env_file_values_preserving_overrides() -> None:
     _RUNTIME_ENV_FILE_KEYS = managed_keys
 
 
+def _parse_report_type_arg(type_str: str) -> str:
+    """
+    解析命令行指定的报告类型，支持中文和英文别名
+
+    Args:
+        type_str: 用户输入的报告类型（完整版/full, 精简版/simple, 简洁版/brief）
+
+    Returns:
+        标准化的报告类型字符串 (full/simple/brief)
+    """
+    if not type_str:
+        return None
+
+    type_str = type_str.strip().lower()
+
+    # 中文别名映射
+    chinese_mapping = {
+        '完整版': 'full',
+        '精简版': 'simple',
+        '简洁版': 'brief',
+    }
+
+    # 如果是中文别名，转换为英文
+    if type_str in chinese_mapping:
+        return chinese_mapping[type_str]
+
+    # 英文别名直接返回（ReportType.from_str 会处理）
+    return type_str
+
+
 def parse_arguments() -> argparse.Namespace:
     """解析命令行参数"""
     parser = argparse.ArgumentParser(
@@ -213,6 +244,10 @@ def parse_arguments() -> argparse.Namespace:
   python main.py --debug            # 调试模式
   python main.py --dry-run          # 仅获取数据，不进行 AI 分析
   python main.py --stocks 600519,000001  # 指定分析特定股票
+  python main.py --fa 蓝筹群        # 使用飞书别名对应的股票列表并推送到该群
+  python main.py --fa 蓝筹群 --stocks 600519  # 分析指定股票并推送到蓝筹群
+  python main.py --fa 蓝筹群 --type 完整版  # 使用完整版报告推送到蓝筹群
+  python main.py --type full        # 使用英文别名指定完整版报告
   python main.py --no-notify        # 不发送推送通知
   python main.py --check-notify     # 检查通知配置，不发送通知
   python main.py --single-notify    # 启用单股推送模式（每分析完一只立即推送）
@@ -365,6 +400,27 @@ def parse_arguments() -> argparse.Namespace:
         help='强制回测（即使已有回测结果也重新计算）'
     )
 
+    # === 飞书多 Webhook 支持 ===
+    parser.add_argument(
+        '--feishu-alias',
+        '--fa',
+        type=str,
+        default=None,
+        dest='feishu_alias',
+        metavar='ALIAS',
+        help='指定飞书 Webhook 别名，自动使用该群配置的股票列表（例如: --fa 蓝筹群）'
+    )
+
+    # === 报告类型 ===
+    parser.add_argument(
+        '--type',
+        type=str,
+        default=None,
+        dest='report_type',
+        metavar='TYPE',
+        help='指定报告类型，覆盖配置文件 REPORT_TYPE。支持: 完整版(full), 精简版(simple), 简洁版(brief)'
+    )
+
     return parser.parse_args()
 
 
@@ -434,12 +490,19 @@ def _run_market_review_with_shared_lock(
 def run_full_analysis(
     config: Config,
     args: argparse.Namespace,
-    stock_codes: Optional[List[str]] = None
+    stock_codes: Optional[List[str]] = None,
+    report_type_override: Optional[str] = None
 ):
     """
     执行完整的分析流程（个股 + 大盘复盘）
 
     这是定时任务调用的主函数
+
+    Args:
+        config: 配置对象
+        args: 命令行参数
+        stock_codes: 股票代码列表
+        report_type_override: 报告类型覆盖 (full/simple/brief)
     """
     # Import pipeline modules outside the broad try/except so that import-time
     # failures propagate to the caller instead of being silently swallowed.
@@ -447,6 +510,19 @@ def run_full_analysis(
     from src.core.pipeline import StockAnalysisPipeline
 
     try:
+        # 处理报告类型参数
+        effective_report_type = report_type_override
+        if effective_report_type is None:
+            # 从命令行参数解析
+            type_arg = getattr(args, 'report_type', None)
+            if type_arg:
+                effective_report_type = _parse_report_type_arg(type_arg)
+
+        # 如果有覆盖，修改 config.report_type 属性
+        if effective_report_type:
+            logger.info(f"使用命令行指定的报告类型: {effective_report_type}")
+            config.report_type = effective_report_type
+
         # Issue #529: Hot-reload STOCK_LIST from .env on each scheduled run
         if stock_codes is None:
             config.refresh_stock_list()
@@ -496,7 +572,8 @@ def run_full_analysis(
             stock_codes=stock_codes,
             dry_run=args.dry_run,
             send_notification=not args.no_notify,
-            merge_notification=merge_notification
+            merge_notification=merge_notification,
+            feishu_alias=getattr(args, 'feishu_alias', None)
         )
 
         # Issue #128: 分析间隔 - 在个股分析和大盘分析之间添加延迟
@@ -526,6 +603,7 @@ def run_full_analysis(
                 send_notification=not args.no_notify,
                 merge_notification=merge_notification,
                 override_region=effective_region,
+                feishu_alias=getattr(args, 'feishu_alias', None),
             )
             # 如果有结果，赋值给 market_report 用于后续飞书文档生成
             if review_result:
@@ -797,6 +875,26 @@ def main() -> int:
     if args.stocks:
         stock_codes = [canonical_stock_code(c) for c in args.stocks.split(',') if (c or "").strip()]
         logger.info(f"使用命令行指定的股票列表: {stock_codes}")
+    elif args.feishu_alias:
+        # 使用飞书别名对应的股票列表
+        feishu_webhooks = getattr(config, 'feishu_webhooks', [])
+        webhook_found = False
+        for webhook in feishu_webhooks:
+            if webhook.get('alias') == args.feishu_alias:
+                webhook_stocks = webhook.get('stocks', [])
+                if webhook_stocks:
+                    stock_codes = webhook_stocks
+                    logger.info(f"使用飞书别名 '{args.feishu_alias}' 配置的股票列表: {stock_codes}")
+                else:
+                    # 如果别名没有配置股票列表，使用默认 STOCK_LIST
+                    stock_codes = config.stock_list
+                    logger.info(f"飞书别名 '{args.feishu_alias}' 未配置股票列表，使用默认列表: {stock_codes}")
+                webhook_found = True
+                break
+        if not webhook_found:
+            logger.error(f"未找到别名 '{args.feishu_alias}' 的飞书 Webhook 配置")
+            logger.error(f"可用别名: {[w.get('alias') for w in feishu_webhooks if w.get('alias')]}")
+            return 1
 
     # === 处理 --webui / --webui-only 参数，映射到 --serve / --serve-only ===
     if args.webui:
@@ -894,6 +992,7 @@ def main() -> int:
                 search_service=search_service,
                 send_notification=not args.no_notify,
                 override_region=effective_region,
+                feishu_alias=getattr(args, 'feishu_alias', None),
             )
             return 0
 
