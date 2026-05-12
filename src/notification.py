@@ -1691,6 +1691,9 @@ class NotificationService(
         """
         context_success = self.send_to_context(content)
 
+        # 如果已通过飞书 Stream 回复成功，跳过飞书 webhook 避免重复推送
+        feishu_info = self._extract_feishu_reply_info() if context_success else None
+
         if not self._available_channels:
             if context_success:
                 logger.info("已通过消息上下文渠道完成推送（无其他通知渠道）")
@@ -1746,6 +1749,13 @@ class NotificationService(
                     "Markdown 转图片失败，将回退为文本发送。请检查 MARKDOWN_TO_IMAGE_CHANNELS 配置并安装 %s",
                     hint,
                 )
+
+        # 过滤掉已通过 Stream 回复的渠道（避免同一群收到两条相同消息）
+        if feishu_info:
+            target_channels = [ch for ch in target_channels if ch != NotificationChannel.FEISHU]
+            if not target_channels:
+                logger.info("已通过飞书 Stream 回复，跳过飞书 webhook 推送")
+                return True
 
         channel_names = ', '.join(ChannelDetector.get_channel_name(ch) for ch in target_channels)
         logger.info(f"正在向 {len(target_channels)} 个渠道发送通知：{channel_names}")

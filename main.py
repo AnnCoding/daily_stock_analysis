@@ -929,6 +929,17 @@ def main() -> int:
     if bot_clients_started:
         start_bot_stream_clients(config)
 
+    # === 启动每日汇总调度器 ===
+    if start_serve:
+        try:
+            from src.services.daily_summary import DailySummaryScheduler
+            summary_hour = int(os.getenv("DAILY_SUMMARY_HOUR", "17"))
+            summary_minute = int(os.getenv("DAILY_SUMMARY_MINUTE", "0"))
+            _summary_scheduler = DailySummaryScheduler(hour=summary_hour, minute=summary_minute)
+            _summary_scheduler.start()
+        except Exception as e:
+            logger.warning(f"[Main] 每日汇总调度器启动失败: {e}")
+
     # === 仅 Web 服务模式：不自动执行分析 ===
     if args.serve_only:
         logger.info("模式: 仅 Web 服务")

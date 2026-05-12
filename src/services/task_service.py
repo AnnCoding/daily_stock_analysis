@@ -71,7 +71,8 @@ class TaskService:
         report_type: Union[ReportType, str] = ReportType.SIMPLE,
         source_message: Optional[BotMessage] = None,
         save_context_snapshot: Optional[bool] = None,
-        query_source: str = "bot"
+        query_source: str = "bot",
+        user_question: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         提交异步分析任务
@@ -82,6 +83,7 @@ class TaskService:
             source_message: 来源消息（用于回复）
             save_context_snapshot: 是否保存上下文快照
             query_source: 任务来源标识（bot/api/cli/system）
+            user_question: 用户的具体问题（如"今天要卖吗"），将注入作战计划
 
         Returns:
             任务信息字典
@@ -100,7 +102,8 @@ class TaskService:
             report_type,
             source_message,
             save_context_snapshot,
-            query_source
+            query_source,
+            user_question,
         )
 
         logger.info(f"[TaskService] 已提交股票 {code} 的分析任务, task_id={task_id}, report_type={report_type.value}")
@@ -145,7 +148,8 @@ class TaskService:
         report_type: ReportType = ReportType.SIMPLE,
         source_message: Optional[BotMessage] = None,
         save_context_snapshot: Optional[bool] = None,
-        query_source: str = "bot"
+        query_source: str = "bot",
+        user_question: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         执行单只股票分析
@@ -187,7 +191,8 @@ class TaskService:
                 code=code,
                 skip_analysis=False,
                 single_stock_notify=True,
-                report_type=report_type
+                report_type=report_type,
+                user_question=user_question,
             )
 
             if result and result.success:

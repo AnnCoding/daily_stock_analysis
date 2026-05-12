@@ -21,87 +21,148 @@ logger = logging.getLogger(__name__)
 class AnalyzeCommand(BotCommand):
     """
     股票分析命令
-    
+
     分析指定股票代码，生成 AI 分析报告并推送。
-    
+
     用法：
-        /analyze 600519       - 分析贵州茅台（精简报告）
-        /analyze 600519 full  - 分析并生成完整报告
+        /analyze 600519              - 分析贵州茅台（精简报告）
+        /analyze 比亚迪              - 支持股票名称
+        /analyze 600519 比亚迪 300750 - 支持多个股票
+        /analyze 600519 full          - 分析并生成完整报告
     """
-    
+
     @property
     def name(self) -> str:
         return "analyze"
-    
+
     @property
     def aliases(self) -> List[str]:
         return ["a", "分析", "查"]
-    
+
     @property
     def description(self) -> str:
-        return "分析指定股票"
-    
+        return "分析指定股票（支持代码或名称，多个用空格分隔）"
+
     @property
     def usage(self) -> str:
-        return "/analyze <股票代码> [full]"
-    
+        return "/analyze <股票代码或名称> [股票2] [股票3] [full]"
+
     def validate_args(self, args: List[str]) -> Optional[str]:
         """验证参数"""
         if not args:
-            return "请输入股票代码"
-        
-        code = args[0].upper()
+            return "请输入股票代码或名称"
 
-        # 验证股票代码格式
-        # A股：6位数字
-        # 港股：HK+5位数字
-        # 美股：1-5个大写字母+.+2个后缀字母
-        is_a_stock = re.match(r'^\d{6}$', code)
-        is_hk_stock = re.match(r'^HK\d{5}$', code)
-        is_us_stock = re.match(r'^[A-Z]{1,5}(\.[A-Z]{1,2})?$', code)
-
-        if not (is_a_stock or is_hk_stock or is_us_stock):
-            return f"无效的股票代码: {code}（A股6位数字 / 港股HK+5位数字 / 美股1-5个字母）"
-        
         return None
-    
+
     def execute(self, message: BotMessage, args: List[str]) -> BotResponse:
         """执行分析命令"""
-        code = canonical_stock_code(args[0])
-        
-        # 检查是否需要完整报告（默认精简，传 full/完整/详细 切换）
+        # 将所有参数按空格/逗号/顿号拆分
+        raw_items = []
+        for arg in args:
+            for part in re.split(r'[,，、\s]+', arg):
+                part = part.strip()
+                if part:
+                    raw_items.append(part)
+
+        # 分离报告类型参数
         report_type = "simple"
-        if len(args) > 1 and args[1].lower() in ["full", "完整", "详细"]:
-            report_type = "full"
-        logger.info(f"[AnalyzeCommand] 分析股票: {code}, 报告类型: {report_type}")
-        
+        type_keywords = ["full", "完整", "详细"]
+        stock_items = []
+        for item in raw_items:
+            if item.lower() in type_keywords:
+                report_type = "full"
+            else:
+                stock_items.append(item)
+
+        if not stock_items:
+            return BotResponse.error_response("请输入股票代码或名称")
+
+        # 解析所有股票，同时收集用户问题文本
+        codes = []
+        failed = []
+        question_parts = []
+        for item in stock_items:
+            code = self._resolve_stock_code(item)
+            if code:
+                codes.append(code)
+            else:
+                # 包含中文且不像代码的，视为用户问题
+                if re.search(r'[\u4e00-\u9fff]', item):
+                    question_parts.append(item)
+                else:
+                    failed.append(item)
+
+        if not codes:
+            return BotResponse.error_response(
+                f"无法识别: {', '.join(failed)}\n"
+                f"请输入股票代码（如 600519）或名称（如 比亚迪）"
+            )
+
+        # 拼接用户问题
+        user_question = '，'.join(question_parts) if question_parts else None
+
+        logger.info(f"[AnalyzeCommand] 分析股票: {codes}, 报告类型: {report_type}, 用户问题: {user_question}")
+
         try:
-            # 调用分析服务
             from src.services.task_service import get_task_service
             from src.enums import ReportType
-            
+
             service = get_task_service()
-            
-            # 提交异步分析任务
-            result = service.submit_analysis(
-                code=code,
-                report_type=ReportType.from_str(report_type),
-                source_message=message
-            )
-            
-            if result.get("success"):
-                task_id = result.get("task_id", "")
-                return BotResponse.markdown_response(
-                    f"✅ **分析任务已提交**\n\n"
-                    f"• 股票代码: `{code}`\n"
-                    f"• 报告类型: {ReportType.from_str(report_type).display_name}\n"
-                    f"• 任务 ID: `{task_id[:20]}...`\n\n"
-                    f"分析完成后将自动推送结果。"
+
+            # 提交分析任务
+            success_codes = []
+            for code in codes:
+                result = service.submit_analysis(
+                    code=code,
+                    report_type=ReportType.from_str(report_type),
+                    source_message=message,
+                    user_question=user_question
                 )
+                if result.get("success"):
+                    success_codes.append(code)
+                else:
+                    failed.append(code)
+
+            if success_codes:
+                code_list = "、".join(f"`{c}`" for c in success_codes)
+                msg = f"✅ **分析任务已提交**（{len(success_codes)} 只）\n\n{code_list}\n\n分析完成后将自动推送结果。"
+                if failed:
+                    msg += f"\n\n⚠️ 未识别: {', '.join(failed)}"
+                return BotResponse.markdown_response(msg)
             else:
-                error = result.get("error", "未知错误")
-                return BotResponse.error_response(f"提交分析任务失败: {error}")
-                
+                return BotResponse.error_response("提交分析任务失败")
+
         except Exception as e:
             logger.error(f"[AnalyzeCommand] 执行失败: {e}")
             return BotResponse.error_response(f"分析失败: {str(e)[:100]}")
+
+    def _resolve_stock_code(self, raw_input: str) -> Optional[str]:
+        """解析股票代码或名称为标准代码"""
+        from src.services.name_to_code_resolver import resolve_name_to_code
+
+        # 先尝试直接作为代码规范化
+        code = canonical_stock_code(raw_input)
+        if code:
+            upper = code.upper()
+            if re.match(r'^\d{6}$', upper) or \
+               re.match(r'^HK\d{5}$', upper) or \
+               re.match(r'^[A-Z]{1,5}(\.[A-Z]{1,2})?$', upper):
+                return code
+
+        # 尝试剥离前导非数字非字母字符（处理"下300001"等粘连情况）
+        stripped = re.sub(r'^[^\da-zA-Z]+', '', raw_input)
+        if stripped and stripped != raw_input:
+            code = canonical_stock_code(stripped)
+            if code:
+                upper = code.upper()
+                if re.match(r'^\d{6}$', upper) or \
+                   re.match(r'^HK\d{5}$', upper) or \
+                   re.match(r'^[A-Z]{1,5}(\.[A-Z]{1,2})?$', upper):
+                    return code
+
+        # 使用名称解析器（支持名称、拼音、模糊匹配）
+        resolved = resolve_name_to_code(raw_input)
+        if resolved:
+            return canonical_stock_code(resolved)
+
+        return None

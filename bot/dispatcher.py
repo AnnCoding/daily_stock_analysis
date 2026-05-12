@@ -290,6 +290,19 @@ class CommandDispatcher:
 
         return cmd_name, args, command, None
 
+    # 帮助意图关键词
+    _HELP_KEYWORDS = (
+        "你能做什么", "你能干嘛", "你会什么", "你有什么功能", "你有什么能力",
+        "帮我", "帮助", "功能列表", "功能介绍", "使用说明", "使用指南",
+        "有哪些功能", "有哪些命令", "怎么用", "如何使用",
+        "help", "hello", "hi", "你好", "嗨",
+    )
+
+    def _is_help_intent(self, text: str) -> bool:
+        """判断消息是否为帮助/功能相关提问"""
+        t = text.lower().strip()
+        return any(kw in t for kw in self._HELP_KEYWORDS)
+
     def _dispatch_sync(self, message: BotMessage) -> BotResponse:
         """Pure synchronous dispatch path for webhook/stream integrations."""
         cmd_name, args, command, early_response = self._prepare_dispatch(message)
@@ -300,6 +313,24 @@ class CommandDispatcher:
             nl_result = self._try_nl_routing_sync(message)
             if nl_result is not None:
                 return nl_result
+            # @机器人 + 帮助/功能相关提问 → 显示帮助
+            if message.mentioned and message.content.strip():
+                text = message.content.strip()
+                if self._is_help_intent(text):
+                    help_cmd = self.get_command("help")
+                    if help_cmd:
+                        return help_cmd.execute(message, [])
+
+            # @机器人 + 疑似股票名称/代码 → 直接触发分析
+            if message.mentioned and message.content.strip():
+                analyze_cmd = self.get_command("analyze")
+                if analyze_cmd:
+                    text = message.content.strip()
+                    if len(text) <= 200:
+                        # 按空格/逗号/顿号拆分为多个参数
+                        args = [p.strip() for p in re.split(r'[,，、\s]+', text) if p.strip()]
+                        if args:
+                            return analyze_cmd.execute(message, args)
             if message.mentioned:
                 return BotResponse.text_response(
                     "你好！我是股票分析助手。\n"

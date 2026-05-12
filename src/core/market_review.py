@@ -53,6 +53,7 @@ def run_market_review(
     send_notification: bool = True,
     merge_notification: bool = False,
     override_region: Optional[str] = None,
+    feishu_alias: Optional[str] = None,
 ) -> Optional[str]:
     """
     执行大盘复盘分析
