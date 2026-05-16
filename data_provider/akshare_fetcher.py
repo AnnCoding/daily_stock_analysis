@@ -94,20 +94,37 @@ _etf_realtime_cache: Dict[str, Any] = {
 def _is_etf_code(stock_code: str) -> bool:
     """
     判断代码是否为 ETF 基金
-    
+
     ETF 代码规则：
     - 上交所 ETF: 51xxxx, 52xxxx, 56xxxx, 58xxxx
     - 深交所 ETF: 15xxxx, 16xxxx, 18xxxx
-    
+
     Args:
         stock_code: 股票/基金代码
-        
+
     Returns:
         True 表示是 ETF 代码，False 表示是普通股票代码
     """
     etf_prefixes = ('51', '52', '56', '58', '15', '16', '18')
     code = stock_code.strip().split('.')[0]
     return code.startswith(etf_prefixes) and len(code) == 6
+
+
+def _is_open_end_fund_code(stock_code: str) -> bool:
+    """
+    判断代码是否为开放式基金（非上市交易型）。
+
+    委托 data_provider.base._is_open_end_fund_code 实现，
+    保持与全局判定逻辑一致。
+    """
+    from .base import _is_open_end_fund_code as _base_is_open_end_fund_code
+    return _base_is_open_end_fund_code(stock_code)
+
+
+def _strip_fund_prefix(code: str) -> str:
+    """Strip JJ prefix from fund code."""
+    from .base import strip_fund_prefix
+    return strip_fund_prefix(code)
 
 
 def _is_hk_code(stock_code: str) -> bool:
@@ -353,6 +370,8 @@ class AkshareFetcher(BaseFetcher):
             return self._fetch_hk_data(stock_code, start_date, end_date)
         elif _is_etf_code(stock_code):
             return self._fetch_etf_data(stock_code, start_date, end_date)
+        elif _is_open_end_fund_code(stock_code):
+            return self._fetch_open_end_fund_data(stock_code, start_date, end_date)
         else:
             return self._fetch_stock_data(stock_code, start_date, end_date)
     
@@ -581,11 +600,98 @@ class AkshareFetcher(BaseFetcher):
                 raise RateLimitError(f"Akshare 可能被限流: {e}") from e
             
             raise DataFetchError(f"Akshare 获取 ETF 数据失败: {e}") from e
-    
+
+    def _fetch_open_end_fund_data(self, stock_code: str, start_date: str, end_date: str) -> pd.DataFrame:
+        """
+        获取开放式基金历史净值数据
+
+        数据来源：ak.fund_open_fund_info_em(symbol, indicator="单位净值走势")
+        开放式基金只有每日净值（NAV），没有 OHLCV/成交量数据。
+        合成 OHLCV：open=high=low=close=净值, volume=amount=0
+
+        Args:
+            stock_code: 开放式基金代码（含 JJ 前缀），如 'JJ023408'
+            start_date: 开始日期，格式 'YYYY-MM-DD'
+            end_date: 结束日期，格式 'YYYY-MM-DD'
+
+        Returns:
+            标准化后的 DataFrame（含 STANDARD_COLUMNS）
+        """
+        import akshare as ak
+
+        # 剥掉 JJ 前缀用于 API 调用
+        pure_code = _strip_fund_prefix(stock_code)
+
+        self._set_random_user_agent()
+        self._enforce_rate_limit()
+
+        logger.info(f"[API调用] ak.fund_open_fund_info_em(symbol={pure_code}, indicator=单位净值走势)")
+
+        try:
+            import time as _time
+            api_start = _time.time()
+
+            df = ak.fund_open_fund_info_em(symbol=pure_code, indicator="单位净值走势")
+
+            api_elapsed = _time.time() - api_start
+
+            if df is None or df.empty:
+                raise DataFetchError(f"开放式基金 {pure_code} 净值数据为空")
+
+            logger.info(f"[API返回] ak.fund_open_fund_info_em 成功: 返回 {len(df)} 行数据, 耗时 {api_elapsed:.2f}s")
+            logger.debug(f"[API返回] 列名: {list(df.columns)}")
+
+            # 标准化列名：净值日期 -> 日期, 单位净值 -> 收盘
+            df = df.rename(columns={
+                '净值日期': '日期',
+                '单位净值': '收盘',
+                '日增长率': '涨跌幅',
+            })
+
+            # 后过滤日期范围（API 返回全部历史）
+            df['日期'] = pd.to_datetime(df['日期'])
+            start_dt = pd.to_datetime(start_date)
+            end_dt = pd.to_datetime(end_date)
+            df = df[(df['日期'] >= start_dt) & (df['日期'] <= end_dt)]
+
+            if df.empty:
+                raise DataFetchError(f"开放式基金 {pure_code} 在 {start_date}~{end_date} 范围内无净值数据")
+
+            # 合成 OHLCV
+            df['开盘'] = df['收盘']
+            df['最高'] = df['收盘']
+            df['最低'] = df['收盘']
+            df['成交量'] = 0
+            df['成交额'] = 0
+
+            # 统一列名为标准格式
+            df = df.rename(columns={
+                '日期': 'date',
+                '开盘': 'open',
+                '最高': 'high',
+                '最低': 'low',
+                '收盘': 'close',
+                '成交量': 'volume',
+                '成交额': 'amount',
+                '涨跌幅': 'pct_chg',
+            })
+            df['code'] = pure_code
+
+            keep_cols = ['code'] + STANDARD_COLUMNS
+            existing_cols = [col for col in keep_cols if col in df.columns]
+            df = df[existing_cols]
+
+            return df
+
+        except DataFetchError:
+            raise
+        except Exception as e:
+            raise DataFetchError(f"Akshare 获取开放式基金 {pure_code} 净值数据失败: {e}") from e
+
     def _fetch_us_data(self, stock_code: str, start_date: str, end_date: str) -> pd.DataFrame:
         """
         获取美股历史数据
-        
+
         数据来源：ak.stock_us_daily()（新浪财经接口）
         
         Args:
@@ -809,6 +915,8 @@ class AkshareFetcher(BaseFetcher):
                 logger.info(f"[熔断] 数据源 {source_key} 处于熔断状态，跳过")
                 return None
             return self._get_etf_realtime_quote(stock_code)
+        elif _is_open_end_fund_code(stock_code):
+            return self._get_open_end_fund_realtime_quote(stock_code)
         else:
             source_key = f"akshare_{source}"
             if not circuit_breaker.is_available(source_key):
@@ -1323,7 +1431,113 @@ class AkshareFetcher(BaseFetcher):
             logger.info(f"[API错误] 获取 ETF {stock_code} 实时行情失败: {e}")
             circuit_breaker.record_failure(source_key, str(e))
             return None
-    
+
+    # 开放式基金实时净值缓存
+    _fund_realtime_cache: Dict[str, Any] = {"data": None, "timestamp": 0, "ttl": 1200}
+
+    def _get_open_end_fund_realtime_quote(self, stock_code: str) -> Optional[UnifiedRealtimeQuote]:
+        """
+        获取开放式基金最新净值
+
+        数据来源：ak.fund_open_fund_daily_em()（全市场基金当日净值快照）
+        带缓存（TTL 20 分钟）
+
+        Args:
+            stock_code: 开放式基金代码（含 JJ 前缀）
+
+        Returns:
+            UnifiedRealtimeQuote 对象（price=净值, volume=0），获取失败返回 None
+        """
+        import akshare as ak
+
+        # 剥掉 JJ 前缀用于 API 查询
+        pure_code = _strip_fund_prefix(stock_code)
+
+        try:
+            current_time = time.time()
+            cache = AkshareFetcher._fund_realtime_cache
+            if (
+                cache["data"] is not None
+                and (current_time - cache["timestamp"]) < cache["ttl"]
+            ):
+                df = cache["data"]
+                logger.debug("[缓存命中] 使用缓存的开放式基金实时净值数据")
+            else:
+                self._set_random_user_agent()
+                self._enforce_rate_limit()
+
+                logger.info("[API调用] ak.fund_open_fund_daily_em() 获取开放式基金净值...")
+                import time as _time
+                api_start = _time.time()
+
+                df = ak.fund_open_fund_daily_em()
+
+                api_elapsed = _time.time() - api_start
+                if df is not None and not df.empty:
+                    logger.info(
+                        f"[API返回] ak.fund_open_fund_daily_em 成功: "
+                        f"返回 {len(df)} 条记录, 耗时 {api_elapsed:.2f}s"
+                    )
+                else:
+                    logger.info(f"[API返回] ak.fund_open_fund_daily_em 返回空数据")
+                    df = pd.DataFrame()
+
+                cache["data"] = df
+                cache["timestamp"] = current_time
+
+            if df is None or df.empty:
+                logger.info(f"[实时净值] 开放式基金净值数据为空，跳过 {pure_code}")
+                return None
+
+            # 查找指定基金（用纯代码匹配）
+            row = df[df["基金代码"] == pure_code]
+            if row.empty:
+                logger.info(f"[API返回] 未找到开放式基金 {pure_code} 的净值数据")
+                return None
+
+            row = row.iloc[0]
+
+            # 列名为动态日期前缀格式，如 "2026-05-12-单位净值"
+            # 需要按后缀匹配找到净值和增长率
+            def _get_fund_field(row_data, suffix):
+                """从动态日期前缀列名中提取值，优先取当天，回退到前一天。"""
+                for col in row_data.index:
+                    if str(col).endswith(suffix):
+                        val = row_data.get(col)
+                        if val not in (None, "") and not pd.isna(val):
+                            return val
+                return None
+
+            nav = safe_float(_get_fund_field(row, "-单位净值"))
+            change_pct = safe_float(_get_fund_field(row, "日增长率"))
+
+            # 如果当天净值为空（QDII 等 T+2 基金），取前一日期列
+            if nav is None or nav == 0:
+                nav = safe_float(_get_fund_field(row, "-累计净值"))
+
+            quote = UnifiedRealtimeQuote(
+                code=pure_code,
+                name=str(row.get("基金简称", "")),
+                source=RealtimeSource.AKSHARE_EM,
+                price=nav,
+                change_pct=change_pct,
+                change_amount=0,
+                volume=0,
+                amount=0,
+                volume_ratio=0,
+                turnover_rate=0,
+            )
+
+            logger.info(
+                f"[基金实时净值] {pure_code} {quote.name}: "
+                f"净值={quote.price}, 日增长率={quote.change_pct}%"
+            )
+            return quote
+
+        except Exception as e:
+            logger.info(f"[API错误] 获取开放式基金 {stock_code} 实时净值失败: {e}")
+            return None
+
     def _get_hk_realtime_quote(self, stock_code: str) -> Optional[UnifiedRealtimeQuote]:
         """
         获取港股实时行情数据
@@ -1473,6 +1687,11 @@ class AkshareFetcher(BaseFetcher):
         # ETF/指数没有筹码分布数据
         if _is_etf_code(stock_code):
             logger.debug(f"[API跳过] {stock_code} 是 ETF/指数，无筹码分布数据")
+            return None
+
+        # 开放式基金没有筹码分布数据
+        if _is_open_end_fund_code(stock_code):
+            logger.debug(f"[API跳过] {stock_code} 是开放式基金，无筹码分布数据")
             return None
         
         try:

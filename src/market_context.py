@@ -122,3 +122,46 @@ def get_market_guidelines(stock_code: Optional[str], lang: str = "zh") -> str:
     market = detect_market(stock_code)
     lang_key = "en" if lang == "en" else "zh"
     return _MARKET_GUIDELINES.get(market, _MARKET_GUIDELINES["cn"])[lang_key]
+
+
+# -- Open-end fund context --
+
+_FUND_ROLE = {
+    "zh": "开放式基金",
+    "en": "open-end fund",
+}
+
+_FUND_GUIDELINES = {
+    "zh": (
+        "- 本次分析对象为 **开放式基金**（非上市交易型）。\n"
+        "- 开放式基金仅有每日净值（NAV），无 OHLCV/成交量/换手率数据。\n"
+        "- 请关注：基金经理变动、持仓结构、规模变动、申购赎回状态、费率及业绩比较基准。\n"
+        "- 严禁将量能、筹码分布、龙虎榜、换手率相关分析纳入结论。"
+    ),
+    "en": (
+        "- This analysis covers an **open-end fund** (non-exchange-traded).\n"
+        "- Open-end funds only have daily NAV; no OHLCV/volume/turnover data.\n"
+        "- Focus on: fund manager changes, portfolio holdings, AUM changes, subscription/redemption status, fees, and benchmark performance.\n"
+        "- Do NOT include volume, chip distribution, dragon-tiger or turnover-related analysis."
+    ),
+}
+
+
+def is_open_end_fund(stock_code: Optional[str]) -> bool:
+    """Check if the code is an open-end fund (non-exchange-traded)."""
+    if not stock_code:
+        return False
+    from data_provider.base import _is_open_end_fund_code
+    return _is_open_end_fund_code(stock_code)
+
+
+def get_fund_role(lang: str = "zh") -> str:
+    """Return fund role description for LLM prompt."""
+    lang_key = "en" if lang == "en" else "zh"
+    return _FUND_ROLE[lang_key]
+
+
+def get_fund_guidelines(lang: str = "zh") -> str:
+    """Return fund-specific analysis guidelines for LLM prompt."""
+    lang_key = "en" if lang == "en" else "zh"
+    return _FUND_GUIDELINES[lang_key]

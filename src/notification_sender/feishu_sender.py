@@ -21,6 +21,7 @@ from src.formatters import (
     chunk_content_by_max_bytes,
     format_feishu_markdown,
 )
+from src.feishu_card_builder import build_template_card
 
 
 logger = logging.getLogger(__name__)
@@ -225,27 +226,10 @@ class FeishuSender:
                 logger.error(f"响应内容: {response.text}")
                 return False
 
-        # 1) 优先使用交互卡片（支持 Markdown 渲染）
+        # 1) 优先使用交互卡片（使用飞书卡片模板）
         card_payload = {
             "msg_type": "interactive",
-            "card": {
-                "config": {"wide_screen_mode": True},
-                "header": {
-                    "title": {
-                        "tag": "plain_text",
-                        "content": "股票智能分析报告"
-                    }
-                },
-                "elements": [
-                    {
-                        "tag": "div",
-                        "text": {
-                            "tag": "lark_md",
-                            "content": prepared_content
-                        }
-                    }
-                ]
-            }
+            "card": build_template_card(prepared_content, title="股票智能分析报告"),
         }
 
         if _post_payload(card_payload):

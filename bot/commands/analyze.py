@@ -41,16 +41,16 @@ class AnalyzeCommand(BotCommand):
 
     @property
     def description(self) -> str:
-        return "分析指定股票（支持代码或名称，多个用空格分隔）"
+        return "分析指定股票或基金（基金代码需加 JJ 前缀，如 JJ023408）"
 
     @property
     def usage(self) -> str:
-        return "/analyze <股票代码或名称> [股票2] [股票3] [full]"
+        return "/analyze <股票代码|JJ基金代码|名称> [股票2] [full]"
 
     def validate_args(self, args: List[str]) -> Optional[str]:
         """验证参数"""
         if not args:
-            return "请输入股票代码或名称"
+            return "请输入股票代码或 JJ+基金代码"
 
         return None
 
@@ -75,7 +75,7 @@ class AnalyzeCommand(BotCommand):
                 stock_items.append(item)
 
         if not stock_items:
-            return BotResponse.error_response("请输入股票代码或名称")
+            return BotResponse.error_response("请输入股票代码或 JJ+基金代码")
 
         # 解析所有股票，同时收集用户问题文本
         codes = []
@@ -95,7 +95,7 @@ class AnalyzeCommand(BotCommand):
         if not codes:
             return BotResponse.error_response(
                 f"无法识别: {', '.join(failed)}\n"
-                f"请输入股票代码（如 600519）或名称（如 比亚迪）"
+                f"请输入股票代码（如 600519）或 JJ+基金代码（如 JJ023408）"
             )
 
         # 拼接用户问题
@@ -124,11 +124,13 @@ class AnalyzeCommand(BotCommand):
                     failed.append(code)
 
             if success_codes:
-                code_list = "、".join(f"`{c}`" for c in success_codes)
-                msg = f"✅ **分析任务已提交**（{len(success_codes)} 只）\n\n{code_list}\n\n分析完成后将自动推送结果。"
-                if failed:
-                    msg += f"\n\n⚠️ 未识别: {', '.join(failed)}"
-                return BotResponse.markdown_response(msg)
+                logger.info(f"[AnalyzeCommand] 分析任务已提交: {success_codes}")
+                return BotResponse(
+                    text="",
+                    markdown=True,
+                    reaction_only=True,
+                    at_user=False,
+                )
             else:
                 return BotResponse.error_response("提交分析任务失败")
 
@@ -145,6 +147,7 @@ class AnalyzeCommand(BotCommand):
         if code:
             upper = code.upper()
             if re.match(r'^\d{6}$', upper) or \
+               re.match(r'^JJ\d{6}$', upper) or \
                re.match(r'^HK\d{5}$', upper) or \
                re.match(r'^[A-Z]{1,5}(\.[A-Z]{1,2})?$', upper):
                 return code
@@ -156,6 +159,7 @@ class AnalyzeCommand(BotCommand):
             if code:
                 upper = code.upper()
                 if re.match(r'^\d{6}$', upper) or \
+                   re.match(r'^JJ\d{6}$', upper) or \
                    re.match(r'^HK\d{5}$', upper) or \
                    re.match(r'^[A-Z]{1,5}(\.[A-Z]{1,2})?$', upper):
                     return code

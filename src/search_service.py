@@ -33,6 +33,7 @@ from tenacity import (
 )
 
 from data_provider.us_index_mapping import is_us_index_code
+from data_provider.base import _is_open_end_fund_code
 from src.config import (
     NEWS_STRATEGY_WINDOWS,
     normalize_news_strategy_profile,
@@ -2362,6 +2363,11 @@ class SearchService:
             return any(kw in name_upper for kw in SearchService._ETF_NAME_KEYWORDS)
         return False
 
+    @staticmethod
+    def is_open_end_fund(stock_code: str) -> bool:
+        """Judge if symbol is an open-end fund (non-exchange-traded)."""
+        return _is_open_end_fund_code(stock_code)
+
     @property
     def is_available(self) -> bool:
         """检查是否有可用的搜索引擎"""
@@ -2957,7 +2963,8 @@ class SearchService:
         self,
         stock_code: str,
         stock_name: str,
-        max_searches: int = 3
+        max_searches: int = 3,
+        is_open_end_fund: bool = False,
     ) -> Dict[str, SearchResponse]:
         """
         多维度情报搜索（同时使用多个引擎、多个维度）
@@ -2980,6 +2987,7 @@ class SearchService:
 
         is_foreign = self._is_foreign_stock(stock_code)
         is_index_etf = self.is_index_or_etf(stock_code, stock_name)
+        is_fund = is_open_end_fund
 
         if is_foreign:
             search_dimensions = [
@@ -3001,17 +3009,23 @@ class SearchService:
                     'name': 'risk_check',
                     'query': (
                         f"{stock_name} {stock_code} index performance outlook tracking error"
-                        if is_index_etf else f"{stock_name} risk insider selling lawsuit litigation"
+                        if is_index_etf
+                        else f"{stock_name} fund manager change NAV performance risk"
+                        if is_fund
+                        else f"{stock_name} risk insider selling lawsuit litigation"
                     ),
                     'desc': '风险排查',
-                    'tavily_topic': None if is_index_etf else 'news',
-                    'strict_freshness': not is_index_etf,
+                    'tavily_topic': None if (is_index_etf or is_fund) else 'news',
+                    'strict_freshness': not (is_index_etf or is_fund),
                 },
                 {
                     'name': 'earnings',
                     'query': (
                         f"{stock_name} {stock_code} index performance composition outlook"
-                        if is_index_etf else f"{stock_name} earnings revenue profit growth forecast"
+                        if is_index_etf
+                        else f"{stock_name} fund NAV holdings performance outlook"
+                        if is_fund
+                        else f"{stock_name} earnings revenue profit growth forecast"
                     ),
                     'desc': '业绩预期',
                     'tavily_topic': None,
@@ -3021,7 +3035,10 @@ class SearchService:
                     'name': 'industry',
                     'query': (
                         f"{stock_name} {stock_code} index sector allocation holdings"
-                        if is_index_etf else f"{stock_name} industry competitors market share outlook"
+                        if is_index_etf
+                        else f"{stock_name} fund portfolio sector allocation top holdings"
+                        if is_fund
+                        else f"{stock_name} industry competitors market share outlook"
                     ),
                     'desc': '行业分析',
                     'tavily_topic': None,
@@ -3048,17 +3065,23 @@ class SearchService:
                     'name': 'risk_check',
                     'query': (
                         f"{stock_name} 指数走势 跟踪误差 净值 表现"
-                        if is_index_etf else f"{stock_name} 减持 处罚 违规 诉讼 利空 风险"
+                        if is_index_etf
+                        else f"{stock_name} 基金经理变动 规模变化 申购赎回 风险"
+                        if is_fund
+                        else f"{stock_name} 减持 处罚 违规 诉讼 利空 风险"
                     ),
                     'desc': '风险排查',
-                    'tavily_topic': None if is_index_etf else 'news',
-                    'strict_freshness': not is_index_etf,
+                    'tavily_topic': None if (is_index_etf or is_fund) else 'news',
+                    'strict_freshness': not (is_index_etf or is_fund),
                 },
                 {
                     'name': 'announcements',
                     'query': (
                         f"{stock_name} {stock_code} 公告 指数调整 成分变化"
-                        if is_index_etf else f"{stock_name} {stock_code} 公司公告 重要公告 上交所 深交所 cninfo"
+                        if is_index_etf
+                        else f"{stock_name} {stock_code} 基金公告 持仓变化 分红"
+                        if is_fund
+                        else f"{stock_name} {stock_code} 公司公告 重要公告 上交所 深交所 cninfo"
                     ),
                     'desc': '公司公告',
                     'tavily_topic': 'news',
@@ -3068,7 +3091,10 @@ class SearchService:
                     'name': 'earnings',
                     'query': (
                         f"{stock_name} 指数成分 净值 跟踪表现"
-                        if is_index_etf else f"{stock_name} 业绩预告 财报 营收 净利润 同比增长"
+                        if is_index_etf
+                        else f"{stock_name} 基金净值 持仓 业绩 表现"
+                        if is_fund
+                        else f"{stock_name} 业绩预告 财报 营收 净利润 同比增长"
                     ),
                     'desc': '业绩预期',
                     'tavily_topic': None,
@@ -3078,7 +3104,10 @@ class SearchService:
                     'name': 'industry',
                     'query': (
                         f"{stock_name} 指数成分股 行业配置 权重"
-                        if is_index_etf else f"{stock_name} 所在行业 竞争对手 市场份额 行业前景"
+                        if is_index_etf
+                        else f"{stock_name} 基金持仓 行业配置 重仓股"
+                        if is_fund
+                        else f"{stock_name} 所在行业 竞争对手 市场份额 行业前景"
                     ),
                     'desc': '行业分析',
                     'tavily_topic': None,

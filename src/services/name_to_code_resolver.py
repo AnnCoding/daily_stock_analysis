@@ -23,6 +23,10 @@ logger = logging.getLogger(__name__)
 _akshare_cache: Optional[tuple[float, Dict[str, str]]] = None
 _AKSHARE_CACHE_TTL = 1800  # 30 MIN
 
+# AkShare fund name cache: (timestamp, name_to_code_dict)
+_akshare_fund_cache: Optional[tuple[float, Dict[str, str]]] = None
+_AKSHARE_FUND_CACHE_TTL = 3600  # 60 MIN
+
 
 def _contains_cjk(text: str) -> bool:
     """Return True when text contains CJK characters."""
@@ -122,6 +126,33 @@ def _get_akshare_name_to_code() -> Optional[Dict[str, str]]:
         return None
 
 
+def _get_akshare_fund_name_to_code() -> Optional[Dict[str, str]]:
+    """Fetch fund name->code from AkShare (ak.fund_name_em), with cache."""
+    global _akshare_fund_cache
+    now = time.time()
+    if _akshare_fund_cache is not None and (now - _akshare_fund_cache[0]) < _AKSHARE_FUND_CACHE_TTL:
+        return _akshare_fund_cache[1]
+    try:
+        import akshare as ak
+
+        df = ak.fund_name_em()
+        if df is None or df.empty:
+            return None
+        code_to_name = {}
+        for _, row in df.iterrows():
+            code = str(row.get("基金代码", "")).strip()
+            name = str(row.get("基金简称", "")).strip()
+            if code and name:
+                code_to_name[code] = name
+        result = _build_reverse_map_no_duplicates(code_to_name)
+        _akshare_fund_cache = (now, result)
+        logger.info(f"[NameResolver] AkShare fund cache loaded: {len(result)} name->code mappings")
+        return result
+    except Exception as e:
+        logger.warning(f"[NameResolver] AkShare fund fallback failed: {e}")
+        return None
+
+
 def _is_single_char_typo(input_name: str, candidate_name: str) -> bool:
     """Return True when two names only differ by one character position."""
     if not input_name or not candidate_name:
@@ -218,6 +249,12 @@ def resolve_name_to_code(name: str) -> Optional[str]:
         if typo_matches and _is_single_char_typo(s, typo_matches[0]):
             logger.debug(f"[NameResolver] 命中单字误写兜底: input={s}, matched={typo_matches[0]}")
             return all_name_to_code[typo_matches[0]]
+
+    # 6. AkShare fund name fallback
+    fund_map = _get_akshare_fund_name_to_code()
+    if fund_map and s in fund_map:
+        logger.debug(f"[NameResolver] 命中基金名称映射: {s} -> {fund_map[s]}")
+        return fund_map[s]
 
     logger.debug(f"[NameResolver] 解析失败: {s}")
     return None

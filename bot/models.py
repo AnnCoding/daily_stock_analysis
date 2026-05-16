@@ -79,16 +79,19 @@ class BotMessage:
         # 检查是否以命令前缀开头
         if not text.startswith(prefix):
             # 尝试匹配中文命令（无前缀）
-            chinese_commands = {
-                '分析': 'analyze',
-                '大盘': 'market',
-                '批量': 'batch',
-                '帮助': 'help',
-                '状态': 'status',
-            }
-            for cn_cmd, en_cmd in chinese_commands.items():
+            chinese_commands = [
+                ('分析大盘', 'market'),
+                ('分析', 'analyze'),
+                ('大盘', 'market'),
+                ('批量', 'batch'),
+                ('帮助', 'help'),
+                ('状态', 'status'),
+            ]
+            for cn_cmd, en_cmd in chinese_commands:
                 if text.startswith(cn_cmd):
                     args = text[len(cn_cmd):].strip().split()
+                    if not args:
+                        return en_cmd, []
                     return en_cmd, args
             return None, []
         
@@ -129,6 +132,7 @@ class BotResponse:
     markdown: bool = False
     at_user: bool = True
     reply_to_message: bool = True
+    reaction_only: bool = False
     extra: Dict[str, Any] = field(default_factory=dict)
     
     @classmethod

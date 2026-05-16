@@ -25,7 +25,7 @@ import pandas as pd
 from src.config import get_config, Config
 from src.storage import get_db
 from data_provider import DataFetcherManager
-from data_provider.base import normalize_stock_code
+from data_provider.base import normalize_stock_code, _is_open_end_fund_code, strip_fund_prefix
 from data_provider.realtime_types import ChipDistribution
 from src.analyzer import (
     GeminiAnalyzer,
@@ -264,7 +264,10 @@ class StockAnalysisPipeline:
         """
         stock_name = code
         try:
-            self._emit_progress(18, f"{code}：正在获取行情与筹码数据")
+            # 基金代码标志检测（JJ 前缀），原始 code 保留 JJ 前缀透传给 data_provider
+            is_open_end_fund = _is_open_end_fund_code(code)
+
+            self._emit_progress(18, f"{strip_fund_prefix(code)}：正在获取行情与筹码数据")
             # 获取股票名称（先走轻量名称路径，后续若 realtime_quote 有 name 再覆盖）
             stock_name = self.fetcher_manager.get_stock_name(code, allow_realtime=False)
 
@@ -295,14 +298,18 @@ class StockAnalysisPipeline:
                 stock_name = f'股票{code}'
 
             # Step 2: 获取筹码分布 - 使用统一入口，带熔断保护
+            # 开放式基金跳过筹码分布
             chip_data = None
             try:
-                chip_data = self.fetcher_manager.get_chip_distribution(code)
-                if chip_data:
-                    logger.info(f"{stock_name}({code}) 筹码分布: 获利比例={chip_data.profit_ratio:.1%}, "
-                              f"90%集中度={chip_data.concentration_90:.2%}")
+                if not is_open_end_fund:
+                    chip_data = self.fetcher_manager.get_chip_distribution(code)
+                    if chip_data:
+                        logger.info(f"{stock_name}({code}) 筹码分布: 获利比例={chip_data.profit_ratio:.1%}, "
+                                  f"90%集中度={chip_data.concentration_90:.2%}")
+                    else:
+                        logger.debug(f"{stock_name}({code}) 筹码分布获取失败或已禁用")
                 else:
-                    logger.debug(f"{stock_name}({code}) 筹码分布获取失败或已禁用")
+                    logger.debug(f"[API跳过] {stock_name}({code}) 是开放式基金，跳过筹码分布")
             except Exception as e:
                 logger.warning(f"{stock_name}({code}) 获取筹码分布失败: {e}")
 
@@ -329,6 +336,7 @@ class StockAnalysisPipeline:
                 fundamental_context = self.fetcher_manager.get_fundamental_context(
                     code,
                     budget_seconds=getattr(self.config, 'fundamental_stage_timeout_seconds', 1.5),
+                    is_open_end_fund=is_open_end_fund,
                 )
             except Exception as e:
                 logger.warning(f"{stock_name}({code}) 基本面聚合失败: {e}")
@@ -384,6 +392,7 @@ class StockAnalysisPipeline:
                     fundamental_context,
                     trend_result,
                     user_question=user_question,
+                    is_open_end_fund=is_open_end_fund,
                 )
 
             # Step 4: 多维度情报搜索（最新消息+风险排查+业绩预期）
@@ -396,7 +405,8 @@ class StockAnalysisPipeline:
                 intel_results = self.search_service.search_comprehensive_intel(
                     stock_code=code,
                     stock_name=stock_name,
-                    max_searches=5
+                    max_searches=5,
+                    is_open_end_fund=is_open_end_fund,
                 )
 
                 # 格式化情报报告
@@ -456,6 +466,9 @@ class StockAnalysisPipeline:
                     'today': {},
                     'yesterday': {}
                 }
+            # 透传基金标志给 _enhance_context
+            if is_open_end_fund:
+                context['is_open_end_fund'] = True
             
             # Step 6: 增强上下文数据（添加实时行情、筹码、趋势分析结果、股票名称）
             enhanced_context = self._enhance_context(
@@ -687,6 +700,11 @@ class StockAnalysisPipeline:
             context.get('code', ''), enhanced.get('stock_name', stock_name)
         )
 
+        # Open-end fund flag for analyzer prompt
+        # NOTE: code has already been stripped of JJ prefix in analyze_stock(),
+        # so we check the original flag passed through context.
+        enhanced['is_open_end_fund'] = context.get('is_open_end_fund', False)
+
         # P0: append unified fundamental block; keep as additional context only
         enhanced["fundamental_context"] = (
             fundamental_context
@@ -781,6 +799,7 @@ class StockAnalysisPipeline:
         fundamental_context: Optional[Dict[str, Any]] = None,
         trend_result: Optional[TrendAnalysisResult] = None,
         user_question: Optional[str] = None,
+        is_open_end_fund: bool = False,
     ) -> Optional[AnalysisResult]:
         """
         使用 Agent 模式分析单只股票。
@@ -799,6 +818,7 @@ class StockAnalysisPipeline:
                 "report_type": report_type.value,
                 "report_language": report_language,
                 "fundamental_context": fundamental_context,
+                "is_open_end_fund": is_open_end_fund,
             }
             if user_question:
                 initial_context["user_question"] = user_question
@@ -833,7 +853,10 @@ class StockAnalysisPipeline:
             if report_language == "en":
                 message = f"Analyze stock {code} ({stock_name}) and return the full decision dashboard JSON in English."
             else:
-                message = f"请分析股票 {code} ({stock_name})，并生成决策仪表盘报告。"
+                if initial_context.get("is_open_end_fund"):
+                    message = f"请分析基金 {code} ({stock_name})，并生成决策仪表盘报告。"
+                else:
+                    message = f"请分析股票 {code} ({stock_name})，并生成决策仪表盘报告。"
 
             # 将用户的具体问题注入到分析指令中
             if user_question:

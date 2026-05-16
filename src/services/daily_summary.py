@@ -19,6 +19,100 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
+# 市场行情区块
+# ---------------------------------------------------------------------------
+
+def _build_market_section(unique: list) -> list:
+    """
+    构建市场行情和风险提示区块。
+
+    Args:
+        unique: 已去重的分析记录列表（已排序）
+
+    Returns:
+        Markdown 行列表；获取失败时仅跳过行情，仍返回风险提示
+    """
+    indices = None
+    stats = None
+
+    try:
+        from data_provider.base import DataFetcherManager
+
+        manager = DataFetcherManager()
+        indices = manager.get_main_indices(region="cn")
+        stats = manager.get_market_stats()
+    except Exception as e:
+        logger.warning(f"[DailySummary] 获取市场行情异常: {e}")
+
+    lines = []
+
+    # --- 指数行情 ---
+    if indices:
+        lines.append("## 📈 市场行情")
+        for idx in indices:
+            name = idx.get("name", "")
+            current = idx.get("current", 0)
+            change_pct = idx.get("change_pct", 0)
+            direction = "↑" if change_pct > 0 else "↓" if change_pct < 0 else "-"
+            lines.append(f"- {name}: {current:,.2f} ({direction}{abs(change_pct):.2f}%)")
+    else:
+        logger.info("[DailySummary] 未获取到指数行情数据")
+
+    # --- 涨跌家数 + 市场温度 ---
+    if stats:
+        up = stats.get("up_count", 0)
+        down = stats.get("down_count", 0)
+        limit_up = stats.get("limit_up_count", 0)
+        limit_down = stats.get("limit_down_count", 0)
+        lines.append(
+            f"- 涨跌家数: {up}涨/{down}跌 | 涨停 {limit_up} | 跌停 {limit_down}"
+        )
+
+        # --- 市场温度 ---
+        if indices and up + down > 0:
+            participants = up + down
+            breadth_score = int(up / participants * 100)
+
+            index_changes = [
+                i.get("change_pct") for i in indices if i.get("change_pct") is not None
+            ]
+            index_score = 50
+            if index_changes:
+                avg_change = sum(index_changes) / len(index_changes)
+                index_score = int(max(0, min(100, 50 + avg_change * 12)))
+
+            limit_total = limit_up + limit_down
+            limit_score = 50
+            if limit_total:
+                limit_score = int(limit_up / limit_total * 100)
+
+            score = int(
+                round(breadth_score * 0.45 + index_score * 0.35 + limit_score * 0.20)
+            )
+            if score >= 70:
+                label = "强势"
+            elif score >= 55:
+                label = "偏暖"
+            elif score >= 40:
+                label = "震荡"
+            else:
+                label = "偏弱"
+
+            lines.append(f"- 市场温度: {score} 分 ({label})")
+    else:
+        logger.info("[DailySummary] 未获取到市场统计数据")
+
+    # --- 风险提示（始终计算，不依赖市场数据） ---
+    low_score_count = sum(1 for r in unique if (r.sentiment_score or 0) < 40)
+    if low_score_count > 0:
+        lines.append("")
+        lines.append("## ⚠️ 风险提示")
+        lines.append(f"- 低评分股票 {low_score_count} 只（评分<40），需重点关注")
+
+    return lines
+
+
+# ---------------------------------------------------------------------------
 # 汇总报告生成
 # ---------------------------------------------------------------------------
 
@@ -50,6 +144,13 @@ def generate_daily_summary() -> Optional[str]:
 
     unique = list(seen.values())
 
+    # 按评分降序排序
+    unique.sort(key=lambda r: r.sentiment_score or 0, reverse=True)
+
+    # 排序日志：输出前几只股票的评分，便于排查
+    top_scores = [(r.name or r.code, r.sentiment_score) for r in unique[:5]]
+    logger.info(f"[DailySummary] 排序后前5: {top_scores}")
+
     date_str = today.strftime('%Y-%m-%d')
     lines = [
         f"# 📊 每日分析汇总 ({date_str})",
@@ -58,7 +159,13 @@ def generate_daily_summary() -> Optional[str]:
         "",
     ]
 
-    for r in unique:
+    # 市场行情区块
+    market_section = _build_market_section(unique)
+    if market_section:
+        lines.extend(market_section)
+        lines.append("")
+
+    for idx, r in enumerate(unique, 1):
         score = r.sentiment_score or 0
         # 评分等级
         if score >= 80:
@@ -74,10 +181,10 @@ def generate_daily_summary() -> Optional[str]:
         trend = r.trend_prediction or "-"
         summary = (r.analysis_summary or "")[:80]
 
-        lines.append(f"**{r.name or r.code}** (`{r.code}`)")
-        lines.append(f"  评分: {score} {level} | 操作: {advice} | 趋势: {trend}")
+        lines.append(f"{idx}. **{r.name or r.code}** (`{r.code}`)")
+        lines.append(f"   评分: {score} {level} | 操作: {advice} | 趋势: {trend}")
         if summary:
-            lines.append(f"  > {summary}...")
+            lines.append(f"   > {summary}...")
         lines.append("")
 
     lines.append("---")

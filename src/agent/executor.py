@@ -655,6 +655,10 @@ class AgentExecutor:
             report_language = normalize_report_language(context.get("report_language", "zh"))
             if context.get("stock_code"):
                 parts.append(f"\n股票代码: {context['stock_code']}")
+            if context.get("is_open_end_fund"):
+                parts.append("\n标的类型: 开放式基金（仅有每日净值，无成交量/换手率/筹码数据）")
+                parts.append("分析约束：禁止使用RSI/乖离率/量比/止损位/目标位等交易型指标和建议，改为定投/赎回/同类排名等基金分析维度")
+                parts.append("⚠️ 调用工具时必须使用完整代码（包含JJ前缀），例如传 'JJ024239' 而非 '024239'")
             if context.get("report_type"):
                 parts.append(f"报告类型: {context['report_type']}")
             if report_language == "en":

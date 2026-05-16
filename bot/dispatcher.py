@@ -418,7 +418,8 @@ Return a JSON object (and NOTHING else) with these fields:
   * "chat" → the user is asking a general question related to finance
   * "none" → the message is irrelevant or you are unsure
 - "codes": a list of stock codes mentioned (may be empty).
-  Format: A-share 6-digit ("600519"), HK with prefix ("hk00700"), US ticker uppercase ("AAPL").
+  Format: A-share 6-digit ("600519"), HK with prefix ("hk00700"), US ticker uppercase ("AAPL"),
+  open-end fund with JJ prefix ("JJ023408").
 - "strategy": strategy/technique name if the user specified one, else null.
   e.g. "缠论", "MACD", "趋势跟踪", "chan_theory", etc.
 
@@ -454,6 +455,7 @@ User: "analyze TSLA and NVDA using trend strategy"
     _NL_PREFILTER = re.compile(
         r'(?:[036]\d{5}|(?:43|83|87|88|92)\d{4})'  # A-share / BSE 6-digit codes
         r'|(?:hk|HK)\d{5}'                    # HK code
+        r'|(?:[Jj][Jj])\d{6}'                 # JJ fund code prefix
         r'|(?<![a-zA-Z])[A-Z]{2,5}(?![a-zA-Z])'  # US ticker — UPPERCASE only, no IGNORECASE
         r'|分析|看看|查一?下|研究|诊断|怎么样|走势|趋势'
         r'|能买|可以买|涨还是跌|怎么看|能追|建议|目标价'

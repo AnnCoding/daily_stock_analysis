@@ -53,7 +53,7 @@ except (ValueError, TypeError):
 
 from src.patches.eastmoney_patch import eastmoney_patch
 from src.config import get_config
-from .base import BaseFetcher, DataFetchError, RateLimitError, STANDARD_COLUMNS,is_bse_code, is_st_stock, is_kc_cy_stock, normalize_stock_code, _is_hk_market
+from .base import BaseFetcher, DataFetchError, RateLimitError, STANDARD_COLUMNS,is_bse_code, is_st_stock, is_kc_cy_stock, normalize_stock_code, _is_hk_market, _is_open_end_fund_code
 from .realtime_types import (
     UnifiedRealtimeQuote, RealtimeSource,
     get_realtime_circuit_breaker,
@@ -363,6 +363,13 @@ class EfinanceFetcher(BaseFetcher):
         # 根据代码类型选择不同的获取方法
         if _is_etf_code(stock_code):
             return self._fetch_etf_data(stock_code, start_date, end_date)
+
+        # 开放式基金不支持 efinance，让 manager 降级到 AkshareFetcher
+        if _is_open_end_fund_code(stock_code):
+            raise DataFetchError(
+                f"EfinanceFetcher 不支持开放式基金 {stock_code}，请使用 AkshareFetcher"
+            )
+
         else:
             return self._fetch_stock_data(stock_code, start_date, end_date)
     
@@ -605,6 +612,10 @@ class EfinanceFetcher(BaseFetcher):
         # ETF 需要单独请求 ETF 实时行情接口
         if _is_etf_code(stock_code):
             return self._get_etf_realtime_quote(stock_code)
+
+        # 开放式基金由 AkshareFetcher 处理
+        if _is_open_end_fund_code(stock_code):
+            return None
 
         import efinance as ef
         circuit_breaker = get_realtime_circuit_breaker()

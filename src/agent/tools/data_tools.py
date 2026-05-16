@@ -275,7 +275,7 @@ get_realtime_quote_tool = ToolDefinition(
         ToolParameter(
             name="stock_code",
             type="string",
-            description="Stock code, e.g., '600519' (A-share), 'AAPL' (US), 'hk00700' (HK)",
+            description="Stock code, e.g., '600519' (A-share), 'AAPL' (US), 'hk00700' (HK), 'JJ024239' (fund). Pass exactly as given including JJ prefix.",
         ),
     ],
     handler=_handle_get_realtime_quote,
@@ -349,7 +349,7 @@ get_daily_history_tool = ToolDefinition(
         ToolParameter(
             name="stock_code",
             type="string",
-            description="Stock code, e.g., '600519' (A-share), 'AAPL' (US)",
+            description="Stock code, e.g., '600519' (A-share), 'AAPL' (US), 'JJ024239' (open-end fund). IMPORTANT: pass the code exactly as given, including any JJ prefix.",
         ),
         ToolParameter(
             name="days",
@@ -400,7 +400,7 @@ get_chip_distribution_tool = ToolDefinition(
         ToolParameter(
             name="stock_code",
             type="string",
-            description="A-share stock code, e.g., '600519'",
+            description="Stock code, e.g., '600519', 'JJ024239'. Pass exactly as given.",
         ),
     ],
     handler=_handle_get_chip_distribution,
@@ -441,7 +441,7 @@ get_analysis_context_tool = ToolDefinition(
         ToolParameter(
             name="stock_code",
             type="string",
-            description="Stock code, e.g., '600519'",
+            description="Stock code, e.g., '600519', 'JJ024239'. Pass exactly as given.",
         ),
     ],
     handler=_handle_get_analysis_context,
@@ -498,7 +498,7 @@ get_stock_info_tool = ToolDefinition(
         ToolParameter(
             name="stock_code",
             type="string",
-            description="A-share stock code, e.g., '600519'",
+            description="Stock code, e.g., '600519' (A-share), 'JJ024239' (open-end fund). Pass exactly as given including JJ prefix.",
         ),
     ],
     handler=_handle_get_stock_info,
@@ -683,7 +683,7 @@ get_capital_flow_tool = ToolDefinition(
         ToolParameter(
             name="stock_code",
             type="string",
-            description="A-share stock code, e.g., '600519'",
+            description="Stock code, e.g., '600519', 'JJ024239'. Pass exactly as given.",
         ),
     ],
     handler=_handle_get_capital_flow,

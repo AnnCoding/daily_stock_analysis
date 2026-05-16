@@ -72,6 +72,7 @@ def normalize_stock_code(stock_code: str) -> str:
     - 'SH600519'    -> '600519'   (strip SH prefix)
     - 'SZ000001'    -> '000001'   (strip SZ prefix)
     - 'BJ920748'    -> '920748'   (strip BJ prefix, BSE)
+    - 'JJ023408'    -> 'JJ023408' (keep JJ prefix for open-end funds)
     - 'sh600519'    -> '600519'   (case-insensitive)
     - '600519.SH'   -> '600519'   (strip .SH suffix)
     - '000001.SZ'   -> '000001'   (strip .SZ suffix)
@@ -82,9 +83,16 @@ def normalize_stock_code(stock_code: str) -> str:
 
     This function is applied at the DataProviderManager layer so that
     all individual fetchers receive a clean 6-digit code (for A-shares/ETFs).
+    JJ-prefixed fund codes are kept as-is for downstream fund detection.
     """
     code = stock_code.strip()
     upper = code.upper()
+
+    # Keep JJ prefix for open-end fund codes (e.g. JJ023408 -> JJ023408)
+    if upper.startswith(FUND_CODE_PREFIX):
+        candidate = upper[len(FUND_CODE_PREFIX):]
+        if candidate.isdigit() and len(candidate) == 6:
+            return upper  # Keep JJ023408 as-is
 
     # Normalize HK prefix to a canonical 5-digit form (e.g. hk1810 -> HK01810)
     if upper.startswith('HK') and not upper.startswith('HK.'):
@@ -117,6 +125,10 @@ def normalize_stock_code(stock_code: str) -> str:
 
 
 ETF_PREFIXES = ("51", "52", "56", "58", "15", "16", "18")
+
+# 开放式基金显式前缀：用户输入 JJ023408 时表示这是基金代码
+# JJ = 基金拼音首字母缩写，用于消除与 A 股代码的歧义
+FUND_CODE_PREFIX = "JJ"
 
 
 def _is_us_market(code: str) -> bool:
@@ -153,6 +165,37 @@ def _is_etf_code(code: str) -> bool:
         and len(normalized) == 6
         and normalized.startswith(ETF_PREFIXES)
     )
+
+
+def _is_open_end_fund_code(code: str) -> bool:
+    """
+    判定开放式基金代码（非上市交易型）。
+
+    要求用户显式使用 JJ 前缀（如 JJ023408）标识基金代码，
+    避免与 A 股 6 位数字代码产生歧义。
+
+    规则：
+    1. code 以 FUND_CODE_PREFIX ("JJ") 不区分大小写开头
+    2. 去掉 JJ 前缀后是 6 位纯数字
+    """
+    if not code:
+        return False
+    normalized = code.strip().upper()
+    if not normalized.startswith(FUND_CODE_PREFIX):
+        return False
+    digits = normalized[len(FUND_CODE_PREFIX):]
+    return digits.isdigit() and len(digits) == 6
+
+
+def strip_fund_prefix(code: str) -> str:
+    """
+    剥离 JJ 前缀，返回纯 6 位基金代码。
+
+    如果 code 不是基金代码，原样返回。
+    """
+    if _is_open_end_fund_code(code):
+        return code.strip()[len(FUND_CODE_PREFIX):]
+    return code
 
 
 def _market_tag(code: str) -> str:
@@ -1596,6 +1639,12 @@ class DataFetcherManager:
         if is_meaningful_stock_name(index_name, stock_code):
             return self._cache_stock_name(stock_code, index_name) or index_name
 
+        # 开放式基金：从基金净值快照获取名称（轻量，无需全市场行情）
+        if _is_open_end_fund_code(stock_code):
+            fund_name = self._get_fund_name_from_cache(stock_code)
+            if fund_name:
+                return fund_name
+
         # 2. 尝试从实时行情中获取（最快，可按需禁用）
         if allow_realtime:
             quote = self.get_realtime_quote(raw_stock_code or stock_code, log_final_failure=False)
@@ -1629,6 +1678,26 @@ class DataFetcherManager:
         # 4. 所有数据源都失败
         logger.warning(f"[股票名称] 所有数据源都无法获取 {stock_code} 的名称")
         return ""
+
+    def _get_fund_name_from_cache(self, stock_code: str) -> Optional[str]:
+        """从基金净值快照获取基金名称（复用 fund_realtime_cache）。"""
+        pure_code = strip_fund_prefix(stock_code)
+        try:
+            # 复用 akshare_fetcher 的缓存
+            from .akshare_fetcher import AkshareFetcher
+            cache = AkshareFetcher._fund_realtime_cache
+            df = cache.get("data")
+            if df is not None and not df.empty:
+                row = df[df["基金代码"] == pure_code]
+                if not row.empty:
+                    name = str(row.iloc[0].get("基金简称", "")).strip()
+                    if name and name != "nan":
+                        self._cache_stock_name(stock_code, name)
+                        logger.info(f"[基金名称] 从净值快照获取: {stock_code} -> {name}")
+                        return name
+        except Exception as e:
+            logger.debug(f"[基金名称] 获取失败: {e}")
+        return None
 
     def get_belong_boards(self, stock_code: str) -> List[Dict[str, Any]]:
         """
@@ -2090,7 +2159,8 @@ class DataFetcherManager:
     def get_fundamental_context(
         self,
         stock_code: str,
-        budget_seconds: Optional[float] = None
+        budget_seconds: Optional[float] = None,
+        is_open_end_fund: bool = False,
     ) -> Dict[str, Any]:
         """
         Aggregate fundamental blocks with fail-open semantics.
@@ -2107,6 +2177,7 @@ class DataFetcherManager:
         stock_code = normalize_stock_code(stock_code)
         market = _market_tag(stock_code)
         is_etf = _is_etf_code(stock_code)
+        is_fund = is_etf or is_open_end_fund
         if market in {"us", "hk"}:
             return self._build_market_not_supported(
                 market=market,
@@ -2304,7 +2375,7 @@ class DataFetcherManager:
         )
 
         # capital flow
-        if is_etf:
+        if is_fund:
             result_ctx["capital_flow"] = self._build_fundamental_block(
                 "not_supported",
                 {},
@@ -2368,8 +2439,8 @@ class DataFetcherManager:
             result_ctx["errors"].extend(result_ctx[block].get("errors", []))
             result_ctx["source_chain"].extend(result_ctx[block].get("source_chain", []))
 
-        if is_etf:
-            # Keep ETF downgrade semantics for overall status even when valuation is available.
+        if is_fund:
+            # Keep ETF/fund downgrade semantics for overall status even when valuation is available.
             result_ctx["status"] = (
                 "not_supported" if all(value == "not_supported" for value in block_statuses.values()) else "partial"
             )

@@ -42,6 +42,9 @@ try:
         ReplyMessageRequestBody,
         CreateMessageRequest,
         CreateMessageRequestBody,
+        CreateMessageReactionRequest,
+        CreateMessageReactionRequestBody,
+        EmojiBuilder,
     )
 
     FEISHU_SDK_AVAILABLE = True
@@ -53,6 +56,7 @@ except ImportError:
 from bot.models import BotMessage, BotResponse, ChatType
 from src.formatters import format_feishu_markdown, chunk_content_by_max_bytes
 from src.config import get_config
+from src.feishu_card_builder import build_template_card
 
 
 class FeishuReplyClient:
@@ -81,6 +85,40 @@ class FeishuReplyClient:
         config = get_config()
         self._max_bytes = getattr(config, 'feishu_max_bytes', 20000)
 
+    def add_reaction(self, message_id: str, emoji_type: str = "THUMBSUP") -> bool:
+        """
+        对消息添加表情回应
+
+        Args:
+            message_id: 消息 ID
+            emoji_type: 飞书系统表情名，如 THUMBSUP / OK / HEART
+
+        Returns:
+            是否成功
+        """
+        try:
+            request = CreateMessageReactionRequest.builder() \
+                .message_id(message_id) \
+                .request_body(
+                    CreateMessageReactionRequestBody.builder()
+                    .reaction_type(
+                        EmojiBuilder().emoji_type(emoji_type).build()
+                    )
+                    .build()
+                ) \
+                .build()
+            response = self._client.im.v1.message_reaction.create(request)
+            if not response.success():
+                logger.warning(
+                    "[Feishu Stream] 添加表情失败: code=%s, msg=%s",
+                    response.code, response.msg
+                )
+                return False
+            return True
+        except Exception as e:
+            logger.warning(f"[Feishu Stream] 添加表情异常: {e}")
+            return False
+
     def _send_interactive_card(self, content: str, message_id: Optional[str] = None,
                                chat_id: Optional[str] = None,
                                receive_id_type: str = "chat_id",
@@ -105,19 +143,8 @@ class FeishuReplyClient:
             if at_user and user_id:
                 final_content = f"<at user_id=\"{user_id}\"></at> {content}"
 
-            # 构建交互卡片 payload
-            card_data = {
-                "config": {"wide_screen_mode": True},
-                "elements": [
-                    {
-                        "tag": "div",
-                        "text": {
-                            "tag": "lark_md",
-                            "content": final_content
-                        }
-                    }
-                ]
-            }
+            # 构建交互卡片 payload（使用飞书卡片模板）
+            card_data = build_template_card(final_content)
 
             content_json = json.dumps(card_data)
 
@@ -336,7 +363,14 @@ class FeishuStreamHandler:
         try:
             response = self._on_message(bot_message)
 
-            if response and response.text:
+            if not response:
+                return
+
+            if response.reaction_only:
+                self._reply_client.add_reaction(bot_message.message_id)
+                return
+
+            if response.text:
                 self._reply_client.reply_text(
                     message_id=bot_message.message_id,
                     text=response.text,
