@@ -260,6 +260,14 @@ class DailySummaryScheduler:
             # 如果当前时间已过目标时间且今天还没发过
             today_str = now.strftime('%Y-%m-%d')
             if now >= target_time and self._last_sent_date != today_str:
+                # 非交易日跳过
+                from src.core.trading_calendar import get_open_markets_today
+                open_markets = get_open_markets_today()
+                if not open_markets:
+                    logger.info("[DailySummary] 今日所有市场休市，跳过汇总推送")
+                    self._last_sent_date = today_str
+                    self._stop_event.wait(60)
+                    continue
                 try:
                     send_daily_summary()
                     self._last_sent_date = today_str
