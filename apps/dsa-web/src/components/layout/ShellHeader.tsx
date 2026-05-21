@@ -1,7 +1,7 @@
-import type React from 'react';
-import { Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
-import { ThemeToggle } from '../theme/ThemeToggle';
+import type React from "react";
+import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { ThemeToggle } from "../theme/ThemeToggle";
 
 type ShellHeaderProps = {
   collapsed: boolean;
@@ -10,10 +10,10 @@ type ShellHeaderProps = {
 };
 
 const TITLES: Record<string, { title: string; description: string }> = {
-  '/': { title: '首页', description: '股票分析与历史报告工作台' },
-  '/chat': { title: '问股', description: '多轮策略问答与历史会话管理' },
-  '/backtest': { title: '回测', description: '回测任务与结果浏览' },
-  '/settings': { title: '设置', description: '系统配置、模型与认证管理' },
+  "/": { title: "首页", description: "股票分析与历史报告工作台" },
+  "/chat": { title: "问股", description: "多轮策略问答与历史会话管理" },
+  "/backtest": { title: "回测", description: "回测任务与结果浏览" },
+  "/settings": { title: "设置", description: "系统配置、模型与认证管理" },
 };
 
 export const ShellHeader: React.FC<ShellHeaderProps> = ({
@@ -22,7 +22,10 @@ export const ShellHeader: React.FC<ShellHeaderProps> = ({
   onOpenMobileNav,
 }) => {
   const location = useLocation();
-  const current = TITLES[location.pathname] ?? { title: 'Daily Stock Analysis', description: 'Web workspace' };
+  const current = TITLES[location.pathname] ?? {
+    title: "Daily Stock Analysis",
+    description: "Web workspace",
+  };
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/60 bg-background/84 backdrop-blur-xl">
@@ -40,14 +43,22 @@ export const ShellHeader: React.FC<ShellHeaderProps> = ({
           type="button"
           onClick={onToggleSidebar}
           className="hidden h-10 w-10 items-center justify-center rounded-xl border border-border/70 bg-card/70 text-secondary-text transition-colors hover:bg-hover hover:text-foreground lg:inline-flex"
-          aria-label={collapsed ? '展开侧边栏' : '折叠侧边栏'}
+          aria-label={collapsed ? "展开侧边栏" : "折叠侧边栏"}
         >
-          {collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
+          {collapsed ? (
+            <PanelLeftOpen className="h-5 w-5" />
+          ) : (
+            <PanelLeftClose className="h-5 w-5" />
+          )}
         </button>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-foreground">{current.title}</p>
-          <p className="truncate text-xs text-secondary-text">{current.description}</p>
+          <p className="truncate text-sm font-semibold text-foreground">
+            {current.title}
+          </p>
+          <p className="truncate text-xs text-secondary-text">
+            {current.description}
+          </p>
         </div>
 
         <ThemeToggle />

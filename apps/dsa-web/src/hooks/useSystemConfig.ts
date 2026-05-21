@@ -1,22 +1,33 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { createParsedApiError, getParsedApiError, type ParsedApiError } from '../api/error';
-import { systemConfigApi, SystemConfigConflictError, SystemConfigValidationError } from '../api/systemConfig';
+import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  createParsedApiError,
+  getParsedApiError,
+  type ParsedApiError,
+} from "../api/error";
+import {
+  systemConfigApi,
+  SystemConfigConflictError,
+  SystemConfigValidationError,
+} from "../api/systemConfig";
 import type {
   ConfigValidationIssue,
   SystemConfigCategorySchema,
   SystemConfigItem,
   SystemConfigUpdateItem,
-} from '../types/systemConfig';
+} from "../types/systemConfig";
 
-type ToastState = {
-  type: 'success';
-  message: string;
-} | {
-  type: 'error';
-  error: ParsedApiError;
-} | null;
+type ToastState =
+  | {
+      type: "success";
+      message: string;
+    }
+  | {
+      type: "error";
+      error: ParsedApiError;
+    }
+  | null;
 
-type RetryAction = 'load' | 'save' | null;
+type RetryAction = "load" | "save" | null;
 
 type SaveResult = {
   success: boolean;
@@ -46,33 +57,40 @@ function sortItemsByOrder(items: SystemConfigItem[]): SystemConfigItem[] {
   });
 }
 
-function isMultiValueSchema(schema: SystemConfigItem['schema'] | undefined): boolean {
+function isMultiValueSchema(
+  schema: SystemConfigItem["schema"] | undefined,
+): boolean {
   const validation = (schema?.validation ?? {}) as Record<string, unknown>;
   return Boolean(validation.multiValue ?? validation.multi_value);
 }
 
-function normalizeFieldValue(value: string, schema: SystemConfigItem['schema'] | undefined): string {
+function normalizeFieldValue(
+  value: string,
+  schema: SystemConfigItem["schema"] | undefined,
+): string {
   if (!isMultiValueSchema(schema)) {
     return value;
   }
 
   return value
-    .split(',')
+    .split(",")
     .map((entry) => entry.trim())
     .filter((entry) => entry.length > 0)
-    .join(',');
+    .join(",");
 }
 
 export function useSystemConfig() {
   // Server state
-  const [configVersion, setConfigVersion] = useState<string>('');
-  const [maskToken, setMaskToken] = useState<string>('******');
+  const [configVersion, setConfigVersion] = useState<string>("");
+  const [maskToken, setMaskToken] = useState<string>("******");
   const [serverItems, setServerItems] = useState<SystemConfigItem[]>([]);
 
   // UI state
   const [draftValues, setDraftValues] = useState<Record<string, string>>({});
-  const [activeCategory, setActiveCategory] = useState<string>('base');
-  const [validationIssues, setValidationIssues] = useState<ConfigValidationIssue[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string>("base");
+  const [validationIssues, setValidationIssues] = useState<
+    ConfigValidationIssue[]
+  >([]);
   const [toast, setToast] = useState<ToastState>(null);
 
   // Request state
@@ -113,8 +131,10 @@ export function useSystemConfig() {
       if (!categoryMap.has(category)) {
         categoryMap.set(category, {
           category,
-          title: category.replace('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
-          description: '',
+          title: category
+            .replace("_", " ")
+            .replace(/\b\w/g, (char) => char.toUpperCase()),
+          description: "",
           displayOrder: CATEGORY_DISPLAY_ORDER[category] ?? 999,
           fields: [],
         });
@@ -122,13 +142,15 @@ export function useSystemConfig() {
       categoryMap.get(category)?.fields.push(item.schema);
     }
 
-    return [...categoryMap.values()].sort((a, b) => a.displayOrder - b.displayOrder);
+    return [...categoryMap.values()].sort(
+      (a, b) => a.displayOrder - b.displayOrder,
+    );
   }, [mergedItems]);
 
   const itemsByCategory = useMemo(() => {
     const map: Record<string, SystemConfigItem[]> = {};
     for (const item of mergedItems) {
-      const category = item.schema?.category ?? 'uncategorized';
+      const category = item.schema?.category ?? "uncategorized";
       if (!map[category]) {
         map[category] = [];
       }
@@ -181,7 +203,7 @@ export function useSystemConfig() {
 
       setServerItems(sorted);
       setConfigVersion(version);
-      setMaskToken(token || '******');
+      setMaskToken(token || "******");
 
       setDraftValues((prevDraft) => {
         const nextDraft: Record<string, string> = {};
@@ -194,7 +216,8 @@ export function useSystemConfig() {
           if (preserveDirty) {
             const previousServerValue = previousServerMap[item.key]?.value;
             const hasDraft = prevDraft[item.key] !== undefined;
-            const wasDirty = hasDraft && prevDraft[item.key] !== previousServerValue;
+            const wasDirty =
+              hasDraft && prevDraft[item.key] !== previousServerValue;
             nextDraft[item.key] = wasDirty ? prevDraft[item.key] : item.value;
             continue;
           }
@@ -204,7 +227,7 @@ export function useSystemConfig() {
         return nextDraft;
       });
 
-      const defaultCategory = sorted[0]?.schema?.category || 'base';
+      const defaultCategory = sorted[0]?.schema?.category || "base";
       setActiveCategory((current) => {
         const exists = sorted.some((item) => item.schema?.category === current);
         return exists ? current : defaultCategory;
@@ -226,7 +249,7 @@ export function useSystemConfig() {
       return true;
     } catch (error: unknown) {
       setLoadError(getParsedApiError(error));
-      setRetryAction('load');
+      setRetryAction("load");
       return false;
     } finally {
       setIsLoading(false);
@@ -243,15 +266,18 @@ export function useSystemConfig() {
     setSaveError(null);
   }, [serverItems]);
 
-  const applyPartialUpdate = useCallback((updatedItems: Array<{ key: string; value: string }>) => {
-    setDraftValues((prevDraft) => {
-      const nextDraft = { ...prevDraft };
-      for (const item of updatedItems) {
-        nextDraft[item.key] = item.value;
-      }
-      return nextDraft;
-    });
-  }, []);
+  const applyPartialUpdate = useCallback(
+    (updatedItems: Array<{ key: string; value: string }>) => {
+      setDraftValues((prevDraft) => {
+        const nextDraft = { ...prevDraft };
+        for (const item of updatedItems) {
+          nextDraft[item.key] = item.value;
+        }
+        return nextDraft;
+      });
+    },
+    [],
+  );
 
   const refreshAfterExternalSave = useCallback(
     async (committedKeys: string[]) => {
@@ -275,7 +301,10 @@ export function useSystemConfig() {
     return dirtyKeys
       .map((key) => {
         const serverItem = serverItemByKey[key];
-        const normalizedValue = normalizeFieldValue(draftValues[key] ?? '', serverItem?.schema);
+        const normalizedValue = normalizeFieldValue(
+          draftValues[key] ?? "",
+          serverItem?.schema,
+        );
         return {
           key,
           value: normalizedValue,
@@ -283,15 +312,18 @@ export function useSystemConfig() {
       })
       .filter((item) => {
         const serverItem = serverItemByKey[item.key];
-        const normalizedCurrent = normalizeFieldValue(serverItem?.value ?? '', serverItem?.schema);
+        const normalizedCurrent = normalizeFieldValue(
+          serverItem?.value ?? "",
+          serverItem?.schema,
+        );
         return item.value !== normalizedCurrent;
       });
   }, [dirtyKeys, draftValues, serverItemByKey]);
 
   const save = useCallback(async (): Promise<SaveResult> => {
     if (!hasDirty) {
-      setToast({ type: 'success', message: '当前没有可保存的修改。' });
-      return { success: true, message: '当前没有可保存的修改' };
+      setToast({ type: "success", message: "当前没有可保存的修改。" });
+      return { success: true, message: "当前没有可保存的修改" };
     }
 
     setIsSaving(true);
@@ -301,20 +333,24 @@ export function useSystemConfig() {
     const changedItems = getChangedItems();
 
     try {
-      const validateResult = await systemConfigApi.validate({ items: changedItems });
+      const validateResult = await systemConfigApi.validate({
+        items: changedItems,
+      });
       setValidationIssues(validateResult.issues || []);
 
       if (!validateResult.valid) {
-        setSaveError(createParsedApiError({
-          title: '配置校验未通过',
-          message: '请先修正表单错误后再保存。',
-          rawMessage: '配置校验未通过，请先修正表单错误。',
-          category: 'http_error',
-        }));
-        setRetryAction('save');
+        setSaveError(
+          createParsedApiError({
+            title: "配置校验未通过",
+            message: "请先修正表单错误后再保存。",
+            rawMessage: "配置校验未通过，请先修正表单错误。",
+            category: "http_error",
+          }),
+        );
+        setRetryAction("save");
         return {
           success: false,
-          message: '配置校验未通过',
+          message: "配置校验未通过",
           issues: validateResult.issues,
         };
       }
@@ -327,49 +363,49 @@ export function useSystemConfig() {
       });
 
       const refreshed = await systemConfigApi.getConfig(true);
-      applyServerPayload(refreshed.items, refreshed.configVersion, refreshed.maskToken);
+      applyServerPayload(
+        refreshed.items,
+        refreshed.configVersion,
+        refreshed.maskToken,
+      );
 
       const warningText = updateResult.warnings?.length
-        ? `；警告：${updateResult.warnings.join('；')}`
-        : '';
-      setToast({ type: 'success', message: `配置已更新${warningText}` });
+        ? `；警告：${updateResult.warnings.join("；")}`
+        : "";
+      setToast({ type: "success", message: `配置已更新${warningText}` });
       return { success: true };
     } catch (error: unknown) {
       if (error instanceof SystemConfigValidationError) {
         setValidationIssues(error.issues);
         setSaveError(error.parsedError);
       } else if (error instanceof SystemConfigConflictError) {
-        setSaveError(createParsedApiError({
-          title: '配置版本冲突',
-          message: `${error.message}，请先重新加载配置。`,
-          rawMessage: error.parsedError.rawMessage,
-          status: error.parsedError.status,
-          category: error.parsedError.category,
-        }));
+        setSaveError(
+          createParsedApiError({
+            title: "配置版本冲突",
+            message: `${error.message}，请先重新加载配置。`,
+            rawMessage: error.parsedError.rawMessage,
+            status: error.parsedError.status,
+            category: error.parsedError.category,
+          }),
+        );
       } else {
         setSaveError(getParsedApiError(error));
       }
 
-      setToast({ type: 'error', error: getParsedApiError(error) });
-      setRetryAction('save');
-      return { success: false, message: '保存失败' };
+      setToast({ type: "error", error: getParsedApiError(error) });
+      setRetryAction("save");
+      return { success: false, message: "保存失败" };
     } finally {
       setIsSaving(false);
     }
-  }, [
-    applyServerPayload,
-    configVersion,
-    getChangedItems,
-    hasDirty,
-    maskToken,
-  ]);
+  }, [applyServerPayload, configVersion, getChangedItems, hasDirty, maskToken]);
 
   const retry = useCallback(async () => {
-    if (retryAction === 'load') {
+    if (retryAction === "load") {
       await load();
       return;
     }
-    if (retryAction === 'save') {
+    if (retryAction === "save") {
       await save();
     }
   }, [load, retryAction, save]);

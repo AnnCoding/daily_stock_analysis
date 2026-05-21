@@ -1,6 +1,6 @@
-import type { AnalysisReport } from '../types/analysis';
-import { historyApi } from '../api/history';
-import { validateStockCode } from './validation';
+import type { AnalysisReport } from "../types/analysis";
+import { historyApi } from "../api/history";
+import { validateStockCode } from "./validation";
 
 export interface ChatFollowUpContext {
   stock_code: string;
@@ -26,7 +26,9 @@ function hasInvalidFollowUpNameCharacter(value: string): boolean {
   });
 }
 
-export function sanitizeFollowUpStockCode(stockCode: string | null): string | null {
+export function sanitizeFollowUpStockCode(
+  stockCode: string | null,
+): string | null {
   if (!stockCode) {
     return null;
   }
@@ -35,15 +37,17 @@ export function sanitizeFollowUpStockCode(stockCode: string | null): string | nu
   return valid ? normalized : null;
 }
 
-export function sanitizeFollowUpStockName(stockName: string | null): string | null {
-  const normalized = stockName?.trim().replace(/\s+/g, ' ') ?? '';
+export function sanitizeFollowUpStockName(
+  stockName: string | null,
+): string | null {
+  const normalized = stockName?.trim().replace(/\s+/g, " ") ?? "";
   if (!normalized) {
     return null;
   }
 
   if (
-    normalized.length > MAX_FOLLOW_UP_NAME_LENGTH
-    || hasInvalidFollowUpNameCharacter(normalized)
+    normalized.length > MAX_FOLLOW_UP_NAME_LENGTH ||
+    hasInvalidFollowUpNameCharacter(normalized)
   ) {
     return null;
   }
@@ -51,7 +55,9 @@ export function sanitizeFollowUpStockName(stockName: string | null): string | nu
   return normalized;
 }
 
-export function parseFollowUpRecordId(recordId: string | null): number | undefined {
+export function parseFollowUpRecordId(
+  recordId: string | null,
+): number | undefined {
   if (!recordId || !/^\d+$/.test(recordId)) {
     return undefined;
   }
@@ -64,7 +70,10 @@ export function parseFollowUpRecordId(recordId: string | null): number | undefin
   return parsed;
 }
 
-export function buildFollowUpPrompt(stockCode: string, stockName: string | null): string {
+export function buildFollowUpPrompt(
+  stockCode: string,
+  stockName: string | null,
+): string {
   const displayName = stockName ? `${stockName}(${stockCode})` : stockCode;
   return `请深入分析 ${displayName}`;
 }

@@ -1,8 +1,14 @@
-import type React from 'react';
-import type { ReportLanguage, ReportStrategy as ReportStrategyType } from '../../types/analysis';
-import { Card } from '../common';
-import { DashboardPanelHeader } from '../dashboard';
-import { getReportText, normalizeReportLanguage } from '../../utils/reportLanguage';
+import type React from "react";
+import type {
+  ReportLanguage,
+  ReportStrategy as ReportStrategyType,
+} from "../../types/analysis";
+import { Card } from "../common";
+import { DashboardPanelHeader } from "../dashboard";
+import {
+  getReportText,
+  normalizeReportLanguage,
+} from "../../utils/reportLanguage";
 
 interface ReportStrategyProps {
   strategy?: ReportStrategyType;
@@ -15,21 +21,25 @@ interface StrategyItemProps {
   tone: string;
 }
 
-const StrategyItem: React.FC<StrategyItemProps> = ({
-  label,
-  value,
-  tone,
-}) => (
-  <div className="home-subpanel home-strategy-card p-3" style={{ ['--home-strategy-tone' as string]: `var(${tone})` }}>
+const StrategyItem: React.FC<StrategyItemProps> = ({ label, value, tone }) => (
+  <div
+    className="home-subpanel home-strategy-card p-3"
+    style={{ ["--home-strategy-tone" as string]: `var(${tone})` }}
+  >
     <div className="flex flex-col">
       <span className="home-strategy-label mb-0.5 text-xs">{label}</span>
-      <span className="home-strategy-value text-lg font-bold font-mono" style={!value ? { color: 'var(--text-muted-text)' } : undefined}>
-        {value || '—'}
+      <span
+        className="home-strategy-value text-lg font-bold font-mono"
+        style={!value ? { color: "var(--text-muted-text)" } : undefined}
+      >
+        {value || "—"}
       </span>
     </div>
     <div
       className="absolute bottom-0 left-0 right-0 h-0.5"
-      style={{ background: `linear-gradient(90deg, transparent, var(${tone}), transparent)` }}
+      style={{
+        background: `linear-gradient(90deg, transparent, var(${tone}), transparent)`,
+      }}
     />
   </div>
 );
@@ -37,7 +47,10 @@ const StrategyItem: React.FC<StrategyItemProps> = ({
 /**
  * 策略点位区组件 - 终端风格
  */
-export const ReportStrategy: React.FC<ReportStrategyProps> = ({ strategy, language = 'zh' }) => {
+export const ReportStrategy: React.FC<ReportStrategyProps> = ({
+  strategy,
+  language = "zh",
+}) => {
   if (!strategy) {
     return null;
   }
@@ -49,22 +62,22 @@ export const ReportStrategy: React.FC<ReportStrategyProps> = ({ strategy, langua
     {
       label: text.idealBuy,
       value: strategy.idealBuy,
-      tone: '--home-strategy-buy',
+      tone: "--home-strategy-buy",
     },
     {
       label: text.secondaryBuy,
       value: strategy.secondaryBuy,
-      tone: '--home-strategy-secondary',
+      tone: "--home-strategy-secondary",
     },
     {
       label: text.stopLoss,
       value: strategy.stopLoss,
-      tone: '--home-strategy-stop',
+      tone: "--home-strategy-stop",
     },
     {
       label: text.takeProfit,
       value: strategy.takeProfit,
-      tone: '--home-strategy-take',
+      tone: "--home-strategy-take",
     },
   ];
 

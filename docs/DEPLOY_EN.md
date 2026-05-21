@@ -4,12 +4,12 @@ This document explains how to deploy the AI Stock Analysis System to a server.
 
 ## Deployment Options Comparison
 
-| Option | Pros | Cons | Recommended For |
-|------|------|------|----------|
-| **Docker Compose** ⭐ | One-click deploy, isolated environment, easy migration, easy upgrade | Requires Docker installation | **Recommended**: Most scenarios |
-| **Direct Deployment** | Simple, no extra dependencies | Environment dependencies, migration difficulties | Temporary testing |
-| **Systemd Service** | System-level management, auto-start on boot | Complex configuration | Long-term stable operation |
-| **Supervisor** | Process management, auto-restart | Requires additional installation | Multi-process management |
+| Option                | Pros                                                                 | Cons                                             | Recommended For                 |
+| --------------------- | -------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------- |
+| **Docker Compose** ⭐ | One-click deploy, isolated environment, easy migration, easy upgrade | Requires Docker installation                     | **Recommended**: Most scenarios |
+| **Direct Deployment** | Simple, no extra dependencies                                        | Environment dependencies, migration difficulties | Temporary testing               |
+| **Systemd Service**   | System-level management, auto-start on boot                          | Complex configuration                            | Long-term stable operation      |
+| **Supervisor**        | Process management, auto-restart                                     | Requires additional installation                 | Multi-process management        |
 
 **Conclusion: Docker Compose is recommended for the fastest and most convenient migration!**
 
@@ -79,6 +79,7 @@ docker-compose -f ./docker/docker-compose.yml exec stock-analyzer python main.py
 ### 5. Data Persistence
 
 Data is automatically saved to host directories:
+
 - `./data/` - Database files
 - `./logs/` - Log files
 - `./reports/` - Analysis reports
@@ -139,6 +140,7 @@ sudo vim /etc/systemd/system/stock-analyzer.service
 ```
 
 Contents:
+
 ```ini
 [Unit]
 Description=AI Stock Analysis System
@@ -182,24 +184,24 @@ journalctl -u stock-analyzer -f
 
 ### Required Configuration
 
-| Config Item | Description | How to Get |
-|--------|------|----------|
-| `ANSPIRE_API_KEYS` / `AIHUBMIX_KEY` / `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` | Configure at least one AI model key; Anspire or AIHubMix is recommended first | Provider console |
-| `STOCK_LIST` | Watchlist | Comma-separated stock codes |
-| Notification channel | Configure at least one, such as WeChat Work, Feishu, Telegram, or email | Notification provider |
+| Config Item                                                                                     | Description                                                                   | How to Get                  |
+| ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------- |
+| `ANSPIRE_API_KEYS` / `AIHUBMIX_KEY` / `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` | Configure at least one AI model key; Anspire or AIHubMix is recommended first | Provider console            |
+| `STOCK_LIST`                                                                                    | Watchlist                                                                     | Comma-separated stock codes |
+| Notification channel                                                                            | Configure at least one, such as WeChat Work, Feishu, Telegram, or email       | Notification provider       |
 
 ### Optional Configuration
 
-| Config Item | Default | Description |
-|--------|--------|------|
-| `SCHEDULE_ENABLED` | `false` | Enable scheduled tasks |
-| `SCHEDULE_TIME` | `18:00` | Daily execution time |
-| `MARKET_REVIEW_ENABLED` | `true` | Enable market review |
-| `ANSPIRE_API_KEYS` | - | Anspire LLM and news search (recommended) |
-| `AIHUBMIX_KEY` | - | AIHubMix one-key multi-model access (recommended) |
-| `SERPAPI_API_KEYS` | - | SerpAPI realtime financial news search (recommended) |
-| `TAVILY_API_KEYS` | - | Tavily news search (optional) |
-| `MINIMAX_API_KEYS` | - | MiniMax search (optional) |
+| Config Item             | Default | Description                                          |
+| ----------------------- | ------- | ---------------------------------------------------- |
+| `SCHEDULE_ENABLED`      | `false` | Enable scheduled tasks                               |
+| `SCHEDULE_TIME`         | `18:00` | Daily execution time                                 |
+| `MARKET_REVIEW_ENABLED` | `true`  | Enable market review                                 |
+| `ANSPIRE_API_KEYS`      | -       | Anspire LLM and news search (recommended)            |
+| `AIHUBMIX_KEY`          | -       | AIHubMix one-key multi-model access (recommended)    |
+| `SERPAPI_API_KEYS`      | -       | SerpAPI realtime financial news search (recommended) |
+| `TAVILY_API_KEYS`       | -       | Tavily news search (optional)                        |
+| `MINIMAX_API_KEYS`      | -       | MiniMax search (optional)                            |
 
 ---
 
@@ -210,6 +212,7 @@ If server is in mainland China, accessing Gemini API requires proxy:
 ### Docker Method
 
 Edit `docker-compose.yml`:
+
 ```yaml
 environment:
   - http_proxy=http://your-proxy:port
@@ -219,6 +222,7 @@ environment:
 ### Direct Deployment Method
 
 Edit top of `main.py`:
+
 ```python
 os.environ["http_proxy"] = "http://your-proxy:port"
 os.environ["https_proxy"] = "http://your-proxy:port"
@@ -283,6 +287,7 @@ rm /opt/stock-analyzer/data/*.lock
 ### 4. Insufficient memory
 
 Adjust memory limits in `docker-compose.yml`:
+
 ```yaml
 deploy:
   resources:
@@ -316,12 +321,14 @@ docker-compose -f ./docker/docker-compose.yml up -d
 **The simplest option!** No server needed, leverages GitHub's free compute resources.
 
 ### Advantages
+
 - ✅ **Completely free** (2000 minutes/month)
 - ✅ **No server needed**
 - ✅ **Auto-scheduled execution**
 - ✅ **Zero maintenance cost**
 
 ### Limitations
+
 - ⚠️ Stateless (fresh environment each run)
 - ⚠️ Scheduled timing may have few minutes delay
 - ⚠️ Cannot provide HTTP API
@@ -350,32 +357,32 @@ Go to repo page → **Settings** → **Secrets and variables** → **Actions** �
 
 Add these Secrets:
 
-| Secret Name | Description | Required |
-|------------|------|------|
-| `ANSPIRE_API_KEYS` | Anspire Open API Key (one key for LLM and search) | Recommended |
-| `AIHUBMIX_KEY` | AIHubMix API Key (one key for multiple model families) | Recommended |
-| `ANTHROPIC_API_KEY` | Anthropic API Key | Optional |
-| `GEMINI_API_KEY` | Gemini AI API Key | Optional |
-| `OPENAI_API_KEY` | OpenAI-compatible API Key | Optional |
-| `WECHAT_WEBHOOK_URL` | WeChat Work Bot Webhook | Optional* |
-| `FEISHU_WEBHOOK_URL` | Feishu Bot Webhook | Optional* |
-| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token | Optional* |
-| `TELEGRAM_CHAT_ID` | Telegram Chat ID | Optional* |
-| `TELEGRAM_MESSAGE_THREAD_ID` | Telegram Topic ID | Optional* |
-| `EMAIL_SENDER` | Sender email | Optional* |
-| `EMAIL_PASSWORD` | Email authorization code | Optional* |
-| `SERVERCHAN3_SENDKEY` | ServerChan v3 Sendkey | Optional* |
-| `CUSTOM_WEBHOOK_URLS` | Custom Webhook (comma-separated for multiple) | Optional* |
-| `STOCK_LIST` | Watchlist, e.g., `600519,300750` | ✅ |
-| `SERPAPI_API_KEYS` | SerpAPI Key | Recommended |
-| `TAVILY_API_KEYS` | Tavily Search API Key | Optional |
-| `BOCHA_API_KEYS` | Bocha Search API Key | Optional |
-| `BRAVE_API_KEYS` | Brave Search API Key | Optional |
-| `MINIMAX_API_KEYS` | MiniMax Coding Plan Web Search | Optional |
-| `TUSHARE_TOKEN` | Tushare Token | Optional |
-| `GEMINI_MODEL` | Model name (default gemini-2.0-flash) | Optional |
+| Secret Name                  | Description                                            | Required    |
+| ---------------------------- | ------------------------------------------------------ | ----------- |
+| `ANSPIRE_API_KEYS`           | Anspire Open API Key (one key for LLM and search)      | Recommended |
+| `AIHUBMIX_KEY`               | AIHubMix API Key (one key for multiple model families) | Recommended |
+| `ANTHROPIC_API_KEY`          | Anthropic API Key                                      | Optional    |
+| `GEMINI_API_KEY`             | Gemini AI API Key                                      | Optional    |
+| `OPENAI_API_KEY`             | OpenAI-compatible API Key                              | Optional    |
+| `WECHAT_WEBHOOK_URL`         | WeChat Work Bot Webhook                                | Optional\*  |
+| `FEISHU_WEBHOOK_URL`         | Feishu Bot Webhook                                     | Optional\*  |
+| `TELEGRAM_BOT_TOKEN`         | Telegram Bot Token                                     | Optional\*  |
+| `TELEGRAM_CHAT_ID`           | Telegram Chat ID                                       | Optional\*  |
+| `TELEGRAM_MESSAGE_THREAD_ID` | Telegram Topic ID                                      | Optional\*  |
+| `EMAIL_SENDER`               | Sender email                                           | Optional\*  |
+| `EMAIL_PASSWORD`             | Email authorization code                               | Optional\*  |
+| `SERVERCHAN3_SENDKEY`        | ServerChan v3 Sendkey                                  | Optional\*  |
+| `CUSTOM_WEBHOOK_URLS`        | Custom Webhook (comma-separated for multiple)          | Optional\*  |
+| `STOCK_LIST`                 | Watchlist, e.g., `600519,300750`                       | ✅          |
+| `SERPAPI_API_KEYS`           | SerpAPI Key                                            | Recommended |
+| `TAVILY_API_KEYS`            | Tavily Search API Key                                  | Optional    |
+| `BOCHA_API_KEYS`             | Bocha Search API Key                                   | Optional    |
+| `BRAVE_API_KEYS`             | Brave Search API Key                                   | Optional    |
+| `MINIMAX_API_KEYS`           | MiniMax Coding Plan Web Search                         | Optional    |
+| `TUSHARE_TOKEN`              | Tushare Token                                          | Optional    |
+| `GEMINI_MODEL`               | Model name (default gemini-2.0-flash)                  | Optional    |
 
-> *Note: Configure at least one notification channel, multiple channels supported for simultaneous push
+> \*Note: Configure at least one notification channel, multiple channels supported for simultaneous push
 
 #### 3. Verify Workflow File
 
@@ -412,7 +419,7 @@ Modify time: Edit cron expression in `.github/workflows/daily_analysis.yml`:
 
 ```yaml
 schedule:
-  - cron: '0 10 * * 1-5'  # UTC time, +8 = Beijing time
+  - cron: "0 10 * * 1-5" # UTC time, +8 = Beijing time
 ```
 
 Common cron examples:
@@ -428,6 +435,7 @@ Common cron examples:
 Method 1: Modify repo Secret `STOCK_LIST`
 
 Method 2: Modify code directly then push:
+
 ```bash
 # Modify .env.example or set default value in code
 git commit -am "Update stock list"

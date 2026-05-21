@@ -1,38 +1,47 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { cn } from '../utils/cn';
-import { agentApi } from '../api/agent';
-import { ApiErrorAlert, Badge, Button, ConfirmDialog, EmptyState, InlineAlert, ScrollArea, Tooltip } from '../components/common';
-import { getParsedApiError } from '../api/error';
-import type { SkillInfo } from '../api/agent';
-import { DashboardStateBlock } from '../components/dashboard';
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { cn } from "../utils/cn";
+import { agentApi } from "../api/agent";
+import {
+  ApiErrorAlert,
+  Badge,
+  Button,
+  ConfirmDialog,
+  EmptyState,
+  InlineAlert,
+  ScrollArea,
+  Tooltip,
+} from "../components/common";
+import { getParsedApiError } from "../api/error";
+import type { SkillInfo } from "../api/agent";
+import { DashboardStateBlock } from "../components/dashboard";
 import {
   useAgentChatStore,
   type Message,
   type ProgressStep,
-} from '../stores/agentChatStore';
-import { downloadSession, formatSessionAsMarkdown } from '../utils/chatExport';
-import type { ChatFollowUpContext } from '../utils/chatFollowUp';
+} from "../stores/agentChatStore";
+import { downloadSession, formatSessionAsMarkdown } from "../utils/chatExport";
+import type { ChatFollowUpContext } from "../utils/chatFollowUp";
 import {
   buildFollowUpPrompt,
   parseFollowUpRecordId,
   resolveChatFollowUpContext,
   sanitizeFollowUpStockCode,
   sanitizeFollowUpStockName,
-} from '../utils/chatFollowUp';
-import { isNearBottom } from '../utils/chatScroll';
-import { getReportText } from '../utils/reportLanguage';
+} from "../utils/chatFollowUp";
+import { isNearBottom } from "../utils/chatScroll";
+import { getReportText } from "../utils/reportLanguage";
 
 // Quick question examples shown on empty state
 const QUICK_QUESTIONS = [
-  { label: '用缠论分析茅台', skill: 'chan_theory' },
-  { label: '波浪理论看宁德时代', skill: 'wave_theory' },
-  { label: '分析比亚迪趋势', skill: 'bull_trend' },
-  { label: '箱体震荡技能看中芯国际', skill: 'box_oscillation' },
-  { label: '分析腾讯 hk00700', skill: 'bull_trend' },
-  { label: '用情绪周期分析东方财富', skill: 'emotion_cycle' },
+  { label: "用缠论分析茅台", skill: "chan_theory" },
+  { label: "波浪理论看宁德时代", skill: "wave_theory" },
+  { label: "分析比亚迪趋势", skill: "bull_trend" },
+  { label: "箱体震荡技能看中芯国际", skill: "box_oscillation" },
+  { label: "分析腾讯 hk00700", skill: "bull_trend" },
+  { label: "用情绪周期分析东方财富", skill: "emotion_cycle" },
 ];
 
 const MAX_SELECTED_SKILLS = 3;
@@ -45,21 +54,25 @@ const getMessageSkillNames = (msg: Message): string[] => {
   return [];
 };
 
-const getMessageSkillLabel = (msg: Message): string => getMessageSkillNames(msg).join('、');
+const getMessageSkillLabel = (msg: Message): string =>
+  getMessageSkillNames(msg).join("、");
 
 const ChatPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [skills, setSkills] = useState<SkillInfo[]>([]);
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [showSkillDesc, setShowSkillDesc] = useState<string | null>(null);
-  const [expandedThinking, setExpandedThinking] = useState<Set<string>>(new Set());
+  const [expandedThinking, setExpandedThinking] = useState<Set<string>>(
+    new Set(),
+  );
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sending, setSending] = useState(false);
-  const [isFollowUpContextLoading, setIsFollowUpContextLoading] = useState(false);
+  const [isFollowUpContextLoading, setIsFollowUpContextLoading] =
+    useState(false);
   const [sendToast, setSendToast] = useState<{
-    type: 'success' | 'error';
+    type: "success" | "error";
     message: string;
   } | null>(null);
   const [copiedMessages, setCopiedMessages] = useState<Set<string>>(new Set());
@@ -72,10 +85,10 @@ const ChatPage: React.FC = () => {
   const followUpHydrationTokenRef = useRef(0);
   const followUpContextRef = useRef<ChatFollowUpContext | null>(null);
   const shouldStickToBottomRef = useRef(true);
-  const pendingScrollBehaviorRef = useRef<ScrollBehavior>('auto');
+  const pendingScrollBehaviorRef = useRef<ScrollBehavior>("auto");
 
   // Get localized text (default to Chinese)
-  const text = getReportText('zh');
+  const text = getReportText("zh");
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -94,12 +107,15 @@ const ChatPage: React.FC = () => {
 
   // Set page title
   useEffect(() => {
-    document.title = '问股 - DSA';
+    document.title = "问股 - DSA";
   }, []);
 
-  useEffect(() => () => {
-    isMountedRef.current = false;
-  }, []);
+  useEffect(
+    () => () => {
+      isMountedRef.current = false;
+    },
+    [],
+  );
 
   const {
     messages,
@@ -128,15 +144,18 @@ const ChatPage: React.FC = () => {
     setShowJumpToBottom((prev) => (nearBottom ? false : prev));
   }, []);
 
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'auto') => {
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
     messagesEndRef.current?.scrollIntoView({ behavior });
   }, []);
 
-  const requestScrollToBottom = useCallback((behavior: ScrollBehavior = 'auto') => {
-    shouldStickToBottomRef.current = true;
-    pendingScrollBehaviorRef.current = behavior;
-    setShowJumpToBottom(false);
-  }, []);
+  const requestScrollToBottom = useCallback(
+    (behavior: ScrollBehavior = "auto") => {
+      shouldStickToBottomRef.current = true;
+      pendingScrollBehaviorRef.current = behavior;
+      setShowJumpToBottom(false);
+    },
+    [],
+  );
 
   const handleMessagesScroll = useCallback(() => {
     syncScrollState();
@@ -158,7 +177,7 @@ const ChatPage: React.FC = () => {
 
     const frame = window.requestAnimationFrame(() => {
       scrollToBottom(behavior);
-      pendingScrollBehaviorRef.current = loading ? 'auto' : 'smooth';
+      pendingScrollBehaviorRef.current = loading ? "auto" : "smooth";
     });
 
     return () => window.cancelAnimationFrame(frame);
@@ -166,7 +185,7 @@ const ChatPage: React.FC = () => {
 
   useEffect(() => {
     if (!loading) {
-      pendingScrollBehaviorRef.current = 'smooth';
+      pendingScrollBehaviorRef.current = "smooth";
     }
   }, [loading]);
 
@@ -179,27 +198,29 @@ const ChatPage: React.FC = () => {
   }, [loadInitialSession]);
 
   useEffect(() => {
-    agentApi.getSkills()
+    agentApi
+      .getSkills()
       .then((res) => {
         setSkills(res.skills);
-        const defaultId =
-          res.default_skill_id ||
-          res.skills[0]?.id ||
-          '';
+        const defaultId = res.default_skill_id || res.skills[0]?.id || "";
         setSelectedSkillIds(defaultId ? [defaultId] : []);
       })
       .catch((error) => {
-        console.error('Failed to load chat skills:', error);
+        console.error("Failed to load chat skills:", error);
       });
   }, []);
 
   const availableSkillIds = new Set(skills.map((skill) => skill.id));
-  const quickQuestions = QUICK_QUESTIONS.filter((question) => availableSkillIds.size === 0 || availableSkillIds.has(question.skill));
+  const quickQuestions = QUICK_QUESTIONS.filter(
+    (question) =>
+      availableSkillIds.size === 0 || availableSkillIds.has(question.skill),
+  );
   const selectedSkillIdSet = new Set(selectedSkillIds);
   const skillLimitReached = selectedSkillIds.length >= MAX_SELECTED_SKILLS;
 
   const getSkillNames = useCallback(
-    (skillIds: string[]) => skillIds.map((id) => skills.find((s) => s.id === id)?.name || id),
+    (skillIds: string[]) =>
+      skillIds.map((id) => skills.find((s) => s.id === id)?.name || id),
     [skills],
   );
 
@@ -228,20 +249,24 @@ const ChatPage: React.FC = () => {
 
   const handleStartNewChat = useCallback(() => {
     followUpContextRef.current = null;
-    requestScrollToBottom('auto');
+    requestScrollToBottom("auto");
     useAgentChatStore.getState().startNewChat();
     setSidebarOpen(false);
   }, [requestScrollToBottom]);
 
-  const handleSwitchSession = useCallback((targetSessionId: string) => {
-    requestScrollToBottom('auto');
-    switchSession(targetSessionId);
-    setSidebarOpen(false);
-  }, [requestScrollToBottom, switchSession]);
+  const handleSwitchSession = useCallback(
+    (targetSessionId: string) => {
+      requestScrollToBottom("auto");
+      switchSession(targetSessionId);
+      setSidebarOpen(false);
+    },
+    [requestScrollToBottom, switchSession],
+  );
 
   const confirmDelete = useCallback(() => {
     if (!deleteConfirmId) return;
-    agentApi.deleteChatSession(deleteConfirmId)
+    agentApi
+      .deleteChatSession(deleteConfirmId)
       .then(() => {
         loadSessions();
         if (deleteConfirmId === sessionId) {
@@ -249,16 +274,16 @@ const ChatPage: React.FC = () => {
         }
       })
       .catch((error) => {
-        console.error('Failed to delete chat session:', error);
+        console.error("Failed to delete chat session:", error);
       });
     setDeleteConfirmId(null);
   }, [deleteConfirmId, sessionId, loadSessions, handleStartNewChat]);
 
   // Handle follow-up from report page: ?stock=600519&name=贵州茅台&recordId=xxx
   useEffect(() => {
-    const stock = sanitizeFollowUpStockCode(searchParams.get('stock'));
-    const name = sanitizeFollowUpStockName(searchParams.get('name'));
-    const recordId = parseFollowUpRecordId(searchParams.get('recordId'));
+    const stock = sanitizeFollowUpStockCode(searchParams.get("stock"));
+    const name = sanitizeFollowUpStockName(searchParams.get("name"));
+    const recordId = parseFollowUpRecordId(searchParams.get("recordId"));
 
     if (!stock) {
       setSearchParams({}, { replace: true });
@@ -278,16 +303,24 @@ const ChatPage: React.FC = () => {
       stockCode: stock,
       stockName: name,
       recordId,
-    }).then((context) => {
-      if (!isMountedRef.current || followUpHydrationTokenRef.current !== hydrationToken) {
-        return;
-      }
-      followUpContextRef.current = context;
-    }).finally(() => {
-      if (isMountedRef.current && followUpHydrationTokenRef.current === hydrationToken) {
-        setIsFollowUpContextLoading(false);
-      }
-    });
+    })
+      .then((context) => {
+        if (
+          !isMountedRef.current ||
+          followUpHydrationTokenRef.current !== hydrationToken
+        ) {
+          return;
+        }
+        followUpContextRef.current = context;
+      })
+      .finally(() => {
+        if (
+          isMountedRef.current &&
+          followUpHydrationTokenRef.current === hydrationToken
+        ) {
+          setIsFollowUpContextLoading(false);
+        }
+      });
     setSearchParams({}, { replace: true });
   }, [searchParams, setSearchParams]);
 
@@ -295,8 +328,11 @@ const ChatPage: React.FC = () => {
     async (overrideMessage?: string, overrideSkillIds?: string[]) => {
       const msgText = (overrideMessage ?? input).trim();
       if (!msgText || loading) return;
-      const usedSkillIds = normalizeSelectedSkillIds(overrideSkillIds ?? selectedSkillIds);
-      const usedSkillNames = usedSkillIds.length > 0 ? getSkillNames(usedSkillIds) : ['通用'];
+      const usedSkillIds = normalizeSelectedSkillIds(
+        overrideSkillIds ?? selectedSkillIds,
+      );
+      const usedSkillNames =
+        usedSkillIds.length > 0 ? getSkillNames(usedSkillIds) : ["通用"];
 
       const payload = {
         message: msgText,
@@ -308,18 +344,27 @@ const ChatPage: React.FC = () => {
       followUpContextRef.current = null;
       setIsFollowUpContextLoading(false);
 
-      setInput('');
-      requestScrollToBottom('smooth');
+      setInput("");
+      requestScrollToBottom("smooth");
       await startStream(payload, {
         skillNames: usedSkillNames,
-        skillName: usedSkillNames.join('、'),
+        skillName: usedSkillNames.join("、"),
       });
     },
-    [getSkillNames, input, loading, normalizeSelectedSkillIds, requestScrollToBottom, selectedSkillIds, sessionId, startStream],
+    [
+      getSkillNames,
+      input,
+      loading,
+      normalizeSelectedSkillIds,
+      requestScrollToBottom,
+      selectedSkillIds,
+      sessionId,
+      startStream,
+    ],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -330,16 +375,22 @@ const ChatPage: React.FC = () => {
     handleSend(q.label, [q.skill]);
   };
 
-  const showSendFeedback = useCallback((nextToast: { type: 'success' | 'error'; message: string }, durationMs: number) => {
-    if (sendToastTimerRef.current !== null) {
-      window.clearTimeout(sendToastTimerRef.current);
-    }
-    setSendToast(nextToast);
-    sendToastTimerRef.current = window.setTimeout(() => {
-      setSendToast(null);
-      sendToastTimerRef.current = null;
-    }, durationMs);
-  }, []);
+  const showSendFeedback = useCallback(
+    (
+      nextToast: { type: "success" | "error"; message: string },
+      durationMs: number,
+    ) => {
+      if (sendToastTimerRef.current !== null) {
+        window.clearTimeout(sendToastTimerRef.current);
+      }
+      setSendToast(nextToast);
+      sendToastTimerRef.current = window.setTimeout(() => {
+        setSendToast(null);
+        sendToastTimerRef.current = null;
+      }, durationMs);
+    },
+    [],
+  );
 
   const toggleThinking = (msgId: string) => {
     setExpandedThinking((prev) => {
@@ -367,19 +418,22 @@ const ChatPage: React.FC = () => {
         delete copyResetTimerRef.current[msgId];
       }, 2000);
     } catch (err) {
-      console.error('Copy failed:', err);
+      console.error("Copy failed:", err);
     }
   };
 
   const downloadMessageAsMarkdown = useCallback((msg: Message) => {
     const skillLabel = getMessageSkillLabel(msg);
-    const heading = msg.role === 'user' ? '# 用户消息' : `# AI 回复${skillLabel ? ` · ${skillLabel}` : ''}`;
-    const content = [heading, '', msg.content].join('\n');
-    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+    const heading =
+      msg.role === "user"
+        ? "# 用户消息"
+        : `# AI 回复${skillLabel ? ` · ${skillLabel}` : ""}`;
+    const content = [heading, "", msg.content].join("\n");
+    const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
+    const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `${msg.role === 'user' ? 'user' : 'assistant'}-message-${msg.id}.md`;
+    anchor.download = `${msg.role === "user" ? "user" : "assistant"}-message-${msg.id}.md`;
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
@@ -387,22 +441,22 @@ const ChatPage: React.FC = () => {
   }, []);
 
   const getCurrentStage = (steps: ProgressStep[]): string => {
-    if (steps.length === 0) return '正在连接...';
+    if (steps.length === 0) return "正在连接...";
     const last = steps[steps.length - 1];
-    if (last.type === 'thinking') return last.message || 'AI 正在思考...';
-    if (last.type === 'tool_start')
+    if (last.type === "thinking") return last.message || "AI 正在思考...";
+    if (last.type === "tool_start")
       return `${last.display_name || last.tool}...`;
-    if (last.type === 'tool_done')
+    if (last.type === "tool_done")
       return `${last.display_name || last.tool} 完成`;
-    if (last.type === 'generating')
-      return last.message || '正在生成最终分析...';
-    return '处理中...';
+    if (last.type === "generating")
+      return last.message || "正在生成最终分析...";
+    return "处理中...";
   };
 
   const renderThinkingBlock = (msg: Message) => {
     if (!msg.thinkingSteps || msg.thinkingSteps.length === 0) return null;
     const isExpanded = expandedThinking.has(msg.id);
-    const toolSteps = msg.thinkingSteps.filter((s) => s.type === 'tool_done');
+    const toolSteps = msg.thinkingSteps.filter((s) => s.type === "tool_done");
     const totalDuration = toolSteps.reduce(
       (sum, s) => sum + (s.duration || 0),
       0,
@@ -415,7 +469,7 @@ const ChatPage: React.FC = () => {
         className="flex items-center gap-2 text-xs text-muted-text hover:text-secondary-text transition-colors mb-2 w-full text-left"
       >
         <svg
-          className={`w-3 h-3 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`}
+          className={`w-3 h-3 transition-transform flex-shrink-0 ${isExpanded ? "rotate-90" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -439,32 +493,33 @@ const ChatPage: React.FC = () => {
   const renderThinkingDetails = (steps: ProgressStep[]) => (
     <div className="mb-3 pl-5 border-l border-border/40 space-y-1.5 animate-fade-in">
       {steps.map((step, idx) => {
-        let statusClass = 'chat-progress-item-muted';
-        let iconClass = 'chat-progress-dot-muted';
-        let text = '';
-        if (step.type === 'thinking') {
+        let statusClass = "chat-progress-item-muted";
+        let iconClass = "chat-progress-dot-muted";
+        let text = "";
+        if (step.type === "thinking") {
           text = step.message || `第 ${step.step} 步：思考`;
-          statusClass = 'chat-progress-item-thinking';
-          iconClass = 'chat-progress-dot-thinking';
-        } else if (step.type === 'tool_start') {
+          statusClass = "chat-progress-item-thinking";
+          iconClass = "chat-progress-dot-thinking";
+        } else if (step.type === "tool_start") {
           text = `${step.display_name || step.tool}...`;
-          statusClass = 'chat-progress-item-tool';
-          iconClass = 'chat-progress-dot-tool';
-        } else if (step.type === 'tool_done') {
+          statusClass = "chat-progress-item-tool";
+          iconClass = "chat-progress-dot-tool";
+        } else if (step.type === "tool_done") {
           text = `${step.display_name || step.tool} (${step.duration}s)`;
-          statusClass = step.success ? 'chat-progress-item-success' : 'chat-progress-item-danger';
-          iconClass = step.success ? 'chat-progress-dot-success' : 'chat-progress-dot-danger';
-        } else if (step.type === 'generating') {
-          text = step.message || '生成分析';
-          statusClass = 'chat-progress-item-generating';
-          iconClass = 'chat-progress-dot-generating';
+          statusClass = step.success
+            ? "chat-progress-item-success"
+            : "chat-progress-item-danger";
+          iconClass = step.success
+            ? "chat-progress-dot-success"
+            : "chat-progress-dot-danger";
+        } else if (step.type === "generating") {
+          text = step.message || "生成分析";
+          statusClass = "chat-progress-item-generating";
+          iconClass = "chat-progress-dot-generating";
         }
         return (
-          <div
-            key={idx}
-            className={cn('chat-progress-item', statusClass)}
-          >
-            <span className={cn('chat-progress-dot', iconClass)} />
+          <div key={idx} className={cn("chat-progress-item", statusClass)}>
+            <span className={cn("chat-progress-dot", iconClass)} />
             <span className="leading-relaxed">{text}</span>
           </div>
         );
@@ -476,8 +531,18 @@ const ChatPage: React.FC = () => {
     <>
       <div className="flex items-center justify-between border-b border-white/5 bg-white/2 p-3.5">
         <h2 className="text-sm font-semibold text-cyan uppercase tracking-[0.2em] flex items-center gap-2">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
           历史对话
         </h2>
@@ -523,22 +588,23 @@ const ChatPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleSwitchSession(s.session_id)}
-                  className={`session-item ${s.session_id === sessionId ? 'active' : ''}`}
+                  className={`session-item ${s.session_id === sessionId ? "active" : ""}`}
                   aria-label={`切换到对话 ${s.title}`}
-                  aria-current={s.session_id === sessionId ? 'page' : undefined}
+                  aria-current={s.session_id === sessionId ? "page" : undefined}
                 >
                   <div className="indicator" />
                   <div className="content">
                     <span className="title">{s.title}</span>
                     <div className="mt-0.5 flex items-center gap-2">
-                      <span className="meta">
-                        {s.message_count} 条对话
-                      </span>
+                      <span className="meta">{s.message_count} 条对话</span>
                       {s.last_active && (
                         <>
                           <span className="separator" />
                           <span className="meta">
-                            {new Date(s.last_active).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
+                            {new Date(s.last_active).toLocaleDateString(
+                              "zh-CN",
+                              { month: "short", day: "numeric" },
+                            )}
                           </span>
                         </>
                       )}
@@ -692,13 +758,19 @@ const ChatPage: React.FC = () => {
                         try {
                           const content = formatSessionAsMarkdown(messages);
                           await agentApi.sendChat(content);
-                          showSendFeedback({ type: 'success', message: '已发送到通知渠道' }, 3000);
+                          showSendFeedback(
+                            { type: "success", message: "已发送到通知渠道" },
+                            3000,
+                          );
                         } catch (err) {
                           const parsed = getParsedApiError(err);
-                          showSendFeedback({
-                            type: 'error',
-                            message: parsed.message || '发送失败',
-                          }, 5000);
+                          showSendFeedback(
+                            {
+                              type: "error",
+                              message: parsed.message || "发送失败",
+                            },
+                            5000,
+                          );
                         } finally {
                           setSending(false);
                         }
@@ -752,8 +824,8 @@ const ChatPage: React.FC = () => {
           </p>
           {sendToast ? (
             <InlineAlert
-              variant={sendToast.type === 'success' ? 'success' : 'danger'}
-              title={sendToast.type === 'success' ? '发送成功' : '发送失败'}
+              variant={sendToast.type === "success" ? "success" : "danger"}
+              title={sendToast.type === "success" ? "发送成功" : "发送失败"}
               message={sendToast.message}
               className="max-w-md rounded-xl px-3 py-2 text-xs shadow-none"
             />
@@ -775,7 +847,7 @@ const ChatPage: React.FC = () => {
                   title="开始问股"
                   description="输入「分析 600519」或「茅台现在能买吗」，AI 将调用实时数据工具为您生成决策报告。"
                   className="max-w-2xl border-dashed bg-card/55"
-                  icon={(
+                  icon={
                     <svg
                       className="h-8 w-8"
                       fill="none"
@@ -789,8 +861,8 @@ const ChatPage: React.FC = () => {
                         d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                       />
                     </svg>
-                  )}
-                  action={(
+                  }
+                  action={
                     <div className="flex max-w-lg flex-wrap justify-center gap-2">
                       {quickQuestions.map((q, i) => (
                         <button
@@ -802,96 +874,107 @@ const ChatPage: React.FC = () => {
                         </button>
                       ))}
                     </div>
-                  )}
+                  }
                 />
               </div>
             ) : (
               messages.map((msg) => {
                 const skillLabel = getMessageSkillLabel(msg);
                 return (
-                <div
-                  key={msg.id}
-                  className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
-                >
                   <div
-                    className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold shadow-sm transition-all',
-                      msg.role === 'user' ? 'chat-avatar-user' : 'chat-avatar-ai'
-                    )}
+                    key={msg.id}
+                    className={`flex gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
                   >
-                    {msg.role === 'user' ? 'U' : 'AI'}
-                  </div>
-                  <div
-                    className={cn(
-                      'group/message min-w-0 w-fit max-w-[min(100%,48rem)] overflow-hidden px-5 py-3.5 transition-colors',
-                      msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'
-                    )}
-                  >
-                    {msg.role === 'assistant' && skillLabel && (
-                      <div className="mb-2">
-                        <Badge variant="info" className="chat-skill-badge shadow-none" aria-label={`技能 ${skillLabel}`}>
-                          <svg
-                            className="w-3 h-3"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                    <div
+                      className={cn(
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold shadow-sm transition-all",
+                        msg.role === "user"
+                          ? "chat-avatar-user"
+                          : "chat-avatar-ai",
+                      )}
+                    >
+                      {msg.role === "user" ? "U" : "AI"}
+                    </div>
+                    <div
+                      className={cn(
+                        "group/message min-w-0 w-fit max-w-[min(100%,48rem)] overflow-hidden px-5 py-3.5 transition-colors",
+                        msg.role === "user"
+                          ? "chat-bubble-user"
+                          : "chat-bubble-ai",
+                      )}
+                    >
+                      {msg.role === "assistant" && skillLabel && (
+                        <div className="mb-2">
+                          <Badge
+                            variant="info"
+                            className="chat-skill-badge shadow-none"
+                            aria-label={`技能 ${skillLabel}`}
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M13 10V3L4 14h7v7l9-11h-7z"
-                            />
-                          </svg>
-                          {skillLabel}
-                        </Badge>
-                      </div>
-                    )}
-                    {msg.role === 'assistant' && renderThinkingBlock(msg)}
-                    {msg.role === 'assistant' &&
-                      expandedThinking.has(msg.id) &&
-                      msg.thinkingSteps &&
-                      renderThinkingDetails(msg.thinkingSteps)}
-                    {msg.role === 'assistant' ? (
-                      <div className="relative">
-                        <div className="chat-message-actions">
-                          <button
-                            type="button"
-                            onClick={() => copyMessageToClipboard(msg.id, msg.content)}
-                            className="chat-copy-btn"
-                            aria-label={copiedMessages.has(msg.id) ? text.copied : text.copy}
-                          >
-                            {copiedMessages.has(msg.id) ? text.copied : text.copy}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => downloadMessageAsMarkdown(msg)}
-                            className="chat-copy-btn"
-                            aria-label="导出此条消息为 Markdown"
-                          >
-                            导出
-                          </button>
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                              />
+                            </svg>
+                            {skillLabel}
+                          </Badge>
                         </div>
-                        <div className="chat-prose pr-20 sm:pr-24">
-                          <Markdown remarkPlugins={[remarkGfm]}>
-                            {msg.content}
-                          </Markdown>
+                      )}
+                      {msg.role === "assistant" && renderThinkingBlock(msg)}
+                      {msg.role === "assistant" &&
+                        expandedThinking.has(msg.id) &&
+                        msg.thinkingSteps &&
+                        renderThinkingDetails(msg.thinkingSteps)}
+                      {msg.role === "assistant" ? (
+                        <div className="relative">
+                          <div className="chat-message-actions">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                copyMessageToClipboard(msg.id, msg.content)
+                              }
+                              className="chat-copy-btn"
+                              aria-label={
+                                copiedMessages.has(msg.id)
+                                  ? text.copied
+                                  : text.copy
+                              }
+                            >
+                              {copiedMessages.has(msg.id)
+                                ? text.copied
+                                : text.copy}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => downloadMessageAsMarkdown(msg)}
+                              className="chat-copy-btn"
+                              aria-label="导出此条消息为 Markdown"
+                            >
+                              导出
+                            </button>
+                          </div>
+                          <div className="chat-prose pr-20 sm:pr-24">
+                            <Markdown remarkPlugins={[remarkGfm]}>
+                              {msg.content}
+                            </Markdown>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      msg.content
-                        .split('\n')
-                        .map((line, i) => (
-                          <p
-                            key={i}
-                            className="mb-1 last:mb-0 leading-relaxed"
-                          >
-                            {line || '\u00A0'}
+                      ) : (
+                        msg.content.split("\n").map((line, i) => (
+                          <p key={i} className="mb-1 last:mb-0 leading-relaxed">
+                            {line || "\u00A0"}
                           </p>
                         ))
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
                 );
               })
             )}
@@ -924,8 +1007,8 @@ const ChatPage: React.FC = () => {
                 type="button"
                 className="pointer-events-auto chat-copy-btn shadow-soft-card"
                 onClick={() => {
-                  requestScrollToBottom('smooth');
-                  scrollToBottom('smooth');
+                  requestScrollToBottom("smooth");
+                  scrollToBottom("smooth");
                 }}
                 aria-label="查看最新消息"
               >
@@ -959,61 +1042,61 @@ const ChatPage: React.FC = () => {
                   className="rounded-xl px-3 py-2 text-xs shadow-none"
                 />
               ) : null}
-            {skills.length > 0 && (
-              <div className="flex flex-wrap items-start gap-x-5 gap-y-2">
-                <span className="text-xs text-muted-text font-medium uppercase tracking-wider flex-shrink-0 mt-1">
-                  策略
-                </span>
-                <label className="flex items-center gap-1.5 text-sm cursor-pointer group mt-0.5">
-                  <input
-                    type="checkbox"
-                    name="general-analysis"
-                    value=""
-                    checked={selectedSkillIds.length === 0}
-                    onChange={() => setSelectedSkillIds([])}
-                    className="chat-skill-checkbox"
-                  />
-                  <span
-                    className={`transition-colors text-sm ${selectedSkillIds.length === 0 ? 'text-foreground font-medium' : 'text-secondary-text group-hover:text-foreground'}`}
-                  >
-                    通用分析
+              {skills.length > 0 && (
+                <div className="flex flex-wrap items-start gap-x-5 gap-y-2">
+                  <span className="text-xs text-muted-text font-medium uppercase tracking-wider flex-shrink-0 mt-1">
+                    策略
                   </span>
-                </label>
-                {skills.map((s) => {
-                  const checked = selectedSkillIdSet.has(s.id);
-                  const disabled = !checked && skillLimitReached;
-                  return (
-                    <label
-                      key={s.id}
-                      className={`flex items-center gap-1.5 cursor-pointer group relative mt-0.5 ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
-                      onMouseEnter={() => setShowSkillDesc(s.id)}
-                      onMouseLeave={() => setShowSkillDesc(null)}
+                  <label className="flex items-center gap-1.5 text-sm cursor-pointer group mt-0.5">
+                    <input
+                      type="checkbox"
+                      name="general-analysis"
+                      value=""
+                      checked={selectedSkillIds.length === 0}
+                      onChange={() => setSelectedSkillIds([])}
+                      className="chat-skill-checkbox"
+                    />
+                    <span
+                      className={`transition-colors text-sm ${selectedSkillIds.length === 0 ? "text-foreground font-medium" : "text-secondary-text group-hover:text-foreground"}`}
                     >
-                      <input
-                        type="checkbox"
-                        name="skills"
-                        value={s.id}
-                        checked={checked}
-                        disabled={disabled}
-                        onChange={() => toggleSkillSelection(s.id)}
-                        className="chat-skill-checkbox"
-                      />
-                      <span
-                        className={`transition-colors text-sm ${checked ? 'text-foreground font-medium' : 'text-secondary-text group-hover:text-foreground'}`}
+                      通用分析
+                    </span>
+                  </label>
+                  {skills.map((s) => {
+                    const checked = selectedSkillIdSet.has(s.id);
+                    const disabled = !checked && skillLimitReached;
+                    return (
+                      <label
+                        key={s.id}
+                        className={`flex items-center gap-1.5 cursor-pointer group relative mt-0.5 ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+                        onMouseEnter={() => setShowSkillDesc(s.id)}
+                        onMouseLeave={() => setShowSkillDesc(null)}
                       >
-                        {s.name}
-                      </span>
-                      {showSkillDesc === s.id && s.description && (
-                        <div className="skill-desc-tooltip">
-                          <p className="skill-title">{s.name}</p>
-                          <p>{s.description}</p>
-                        </div>
-                      )}
-                    </label>
-                  );
-                })}
-              </div>
-            )}
+                        <input
+                          type="checkbox"
+                          name="skills"
+                          value={s.id}
+                          checked={checked}
+                          disabled={disabled}
+                          onChange={() => toggleSkillSelection(s.id)}
+                          className="chat-skill-checkbox"
+                        />
+                        <span
+                          className={`transition-colors text-sm ${checked ? "text-foreground font-medium" : "text-secondary-text group-hover:text-foreground"}`}
+                        >
+                          {s.name}
+                        </span>
+                        {showSkillDesc === s.id && s.description && (
+                          <div className="skill-desc-tooltip">
+                            <p className="skill-title">{s.name}</p>
+                            <p>{s.description}</p>
+                          </div>
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
 
               <div className="flex items-end gap-3">
                 <textarea
@@ -1024,10 +1107,10 @@ const ChatPage: React.FC = () => {
                   disabled={loading}
                   rows={1}
                   className="input-surface input-focus-glow flex-1 min-h-[44px] max-h-[200px] rounded-xl border bg-transparent px-4 py-2.5 text-sm transition-all focus:outline-none resize-none disabled:cursor-not-allowed disabled:opacity-60"
-                  style={{ height: 'auto' }}
+                  style={{ height: "auto" }}
                   onInput={(e) => {
                     const t = e.target as HTMLTextAreaElement;
-                    t.style.height = 'auto';
+                    t.style.height = "auto";
                     t.style.height = `${Math.min(t.scrollHeight, 200)}px`;
                   }}
                 />

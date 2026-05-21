@@ -624,6 +624,30 @@ class LLMUsage(Base):
     called_at = Column(DateTime, default=datetime.now, index=True)
 
 
+class UserSubscription(Base):
+    """用户自选股订阅 — 按用户 + 聊天唯一"""
+
+    __tablename__ = 'user_subscriptions'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    platform = Column(String(20), nullable=False)       # 'feishu'
+    user_id = Column(String(100), nullable=False)       # open_id
+    chat_id = Column(String(100), nullable=False)       # 群/私聊 chat_id
+    chat_type = Column(String(20), nullable=False)      # 'group' / 'private'
+    message_id = Column(String(100), nullable=True)     # 订阅消息 ID（群内回复用）
+    stock_codes = Column(Text, nullable=False)           # 逗号分隔
+    push_hour = Column(Integer, default=18)
+    push_minute = Column(Integer, default=0)
+    report_type = Column(String(10), default="simple")   # simple / full / brief
+    enabled = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    __table_args__ = (
+        UniqueConstraint('platform', 'user_id', 'chat_id', name='uq_sub_user_chat'),
+    )
+
+
 class DatabaseManager:
     """
     数据库管理器 - 单例模式

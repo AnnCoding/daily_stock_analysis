@@ -1,12 +1,12 @@
-import apiClient from './index';
-import { toCamelCase } from './utils';
+import apiClient from "./index";
+import { toCamelCase } from "./utils";
 import type {
   BacktestRunRequest,
   BacktestRunResponse,
   BacktestResultsResponse,
   BacktestResultItem,
   PerformanceMetrics,
-} from '../types/backtest';
+} from "../types/backtest";
 
 // ============ API ============
 
@@ -14,16 +14,19 @@ export const backtestApi = {
   /**
    * Trigger backtest evaluation
    */
-  run: async (params: BacktestRunRequest = {}): Promise<BacktestRunResponse> => {
+  run: async (
+    params: BacktestRunRequest = {},
+  ): Promise<BacktestRunResponse> => {
     const requestData: Record<string, unknown> = {};
     if (params.code) requestData.code = params.code;
     if (params.force) requestData.force = params.force;
-    if (params.evalWindowDays) requestData.eval_window_days = params.evalWindowDays;
+    if (params.evalWindowDays)
+      requestData.eval_window_days = params.evalWindowDays;
     if (params.minAgeDays != null) requestData.min_age_days = params.minAgeDays;
     if (params.limit) requestData.limit = params.limit;
 
     const response = await apiClient.post<Record<string, unknown>>(
-      '/api/v1/backtest/run',
+      "/api/v1/backtest/run",
       requestData,
     );
     return toCamelCase<BacktestRunResponse>(response.data);
@@ -32,15 +35,24 @@ export const backtestApi = {
   /**
    * Get paginated backtest results
    */
-  getResults: async (params: {
-    code?: string;
-    evalWindowDays?: number;
-    analysisDateFrom?: string;
-    analysisDateTo?: string;
-    page?: number;
-    limit?: number;
-  } = {}): Promise<BacktestResultsResponse> => {
-    const { code, evalWindowDays, analysisDateFrom, analysisDateTo, page = 1, limit = 20 } = params;
+  getResults: async (
+    params: {
+      code?: string;
+      evalWindowDays?: number;
+      analysisDateFrom?: string;
+      analysisDateTo?: string;
+      page?: number;
+      limit?: number;
+    } = {},
+  ): Promise<BacktestResultsResponse> => {
+    const {
+      code,
+      evalWindowDays,
+      analysisDateFrom,
+      analysisDateTo,
+      page = 1,
+      limit = 20,
+    } = params;
 
     const queryParams: Record<string, string | number> = { page, limit };
     if (code) queryParams.code = code;
@@ -49,7 +61,7 @@ export const backtestApi = {
     if (analysisDateTo) queryParams.analysis_date_to = analysisDateTo;
 
     const response = await apiClient.get<Record<string, unknown>>(
-      '/api/v1/backtest/results',
+      "/api/v1/backtest/results",
       { params: queryParams },
     );
 
@@ -58,30 +70,37 @@ export const backtestApi = {
       total: data.total,
       page: data.page,
       limit: data.limit,
-      items: (data.items || []).map(item => toCamelCase<BacktestResultItem>(item)),
+      items: (data.items || []).map((item) =>
+        toCamelCase<BacktestResultItem>(item),
+      ),
     };
   },
 
   /**
    * Get overall performance metrics
    */
-  getOverallPerformance: async (params: {
-    evalWindowDays?: number;
-    analysisDateFrom?: string;
-    analysisDateTo?: string;
-  } = {}): Promise<PerformanceMetrics | null> => {
+  getOverallPerformance: async (
+    params: {
+      evalWindowDays?: number;
+      analysisDateFrom?: string;
+      analysisDateTo?: string;
+    } = {},
+  ): Promise<PerformanceMetrics | null> => {
     try {
       const queryParams: Record<string, string | number> = {};
-      if (params.evalWindowDays) queryParams.eval_window_days = params.evalWindowDays;
-      if (params.analysisDateFrom) queryParams.analysis_date_from = params.analysisDateFrom;
-      if (params.analysisDateTo) queryParams.analysis_date_to = params.analysisDateTo;
+      if (params.evalWindowDays)
+        queryParams.eval_window_days = params.evalWindowDays;
+      if (params.analysisDateFrom)
+        queryParams.analysis_date_from = params.analysisDateFrom;
+      if (params.analysisDateTo)
+        queryParams.analysis_date_to = params.analysisDateTo;
       const response = await apiClient.get<Record<string, unknown>>(
-        '/api/v1/backtest/performance',
+        "/api/v1/backtest/performance",
         { params: queryParams },
       );
       return toCamelCase<PerformanceMetrics>(response.data);
     } catch (err: unknown) {
-      if (err && typeof err === 'object' && 'response' in err) {
+      if (err && typeof err === "object" && "response" in err) {
         const axiosErr = err as { response?: { status?: number } };
         if (axiosErr.response?.status === 404) return null;
       }
@@ -92,23 +111,29 @@ export const backtestApi = {
   /**
    * Get per-stock performance metrics
    */
-  getStockPerformance: async (code: string, params: {
-    evalWindowDays?: number;
-    analysisDateFrom?: string;
-    analysisDateTo?: string;
-  } = {}): Promise<PerformanceMetrics | null> => {
+  getStockPerformance: async (
+    code: string,
+    params: {
+      evalWindowDays?: number;
+      analysisDateFrom?: string;
+      analysisDateTo?: string;
+    } = {},
+  ): Promise<PerformanceMetrics | null> => {
     try {
       const queryParams: Record<string, string | number> = {};
-      if (params.evalWindowDays) queryParams.eval_window_days = params.evalWindowDays;
-      if (params.analysisDateFrom) queryParams.analysis_date_from = params.analysisDateFrom;
-      if (params.analysisDateTo) queryParams.analysis_date_to = params.analysisDateTo;
+      if (params.evalWindowDays)
+        queryParams.eval_window_days = params.evalWindowDays;
+      if (params.analysisDateFrom)
+        queryParams.analysis_date_from = params.analysisDateFrom;
+      if (params.analysisDateTo)
+        queryParams.analysis_date_to = params.analysisDateTo;
       const response = await apiClient.get<Record<string, unknown>>(
         `/api/v1/backtest/performance/${encodeURIComponent(code)}`,
         { params: queryParams },
       );
       return toCamelCase<PerformanceMetrics>(response.data);
     } catch (err: unknown) {
-      if (err && typeof err === 'object' && 'response' in err) {
+      if (err && typeof err === "object" && "response" in err) {
         const axiosErr = err as { response?: { status?: number } };
         if (axiosErr.response?.status === 404) return null;
       }

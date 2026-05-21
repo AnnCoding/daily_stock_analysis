@@ -100,6 +100,12 @@ class HelpCommand(BotCommand):
             f"• {prefix}market - 查看大盘复盘",
             "",
             f"• {prefix}batch - 批量分析自选股",
+            "",
+            f"• {prefix}subscribe 600519,hk00700 18:00 full - 订阅定时推送",
+            "",
+            f"• {prefix}subs - 查看我的订阅",
+            "",
+            f"• {prefix}unsubscribe - 取消订阅",
         ])
         
         return "\n".join(lines)

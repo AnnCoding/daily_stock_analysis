@@ -34,7 +34,7 @@ jobs:
       - name: 🐍 Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: "3.11"
       - name: 🤖 Check AI governance assets
         run: python scripts/check_ai_assets.py
 
@@ -48,8 +48,8 @@ jobs:
       - name: 🐍 Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
           cache-dependency-path: |
             requirements.txt
             .github/requirements-ci.txt
@@ -115,8 +115,8 @@ jobs:
       - name: 🟢 Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: apps/dsa-web/package-lock.json
       - name: 📦 Install
         run: npm ci

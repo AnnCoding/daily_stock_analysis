@@ -1,13 +1,19 @@
-import type React from 'react';
-import { useEffect, useRef, useState } from 'react';
-import type { ReportDetails as ReportDetailsType, ReportLanguage } from '../../types/analysis';
-import { Card } from '../common';
-import { DashboardPanelHeader } from '../dashboard';
-import { getReportText, normalizeReportLanguage } from '../../utils/reportLanguage';
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
+import type {
+  ReportDetails as ReportDetailsType,
+  ReportLanguage,
+} from "../../types/analysis";
+import { Card } from "../common";
+import { DashboardPanelHeader } from "../dashboard";
+import {
+  getReportText,
+  normalizeReportLanguage,
+} from "../../utils/reportLanguage";
 
 interface ReportDetailsProps {
   details?: ReportDetailsType;
-  recordId?: number;  // 分析历史记录主键 ID
+  recordId?: number; // 分析历史记录主键 ID
   language?: ReportLanguage;
 }
 
@@ -17,9 +23,9 @@ interface ReportDetailsProps {
 export const ReportDetails: React.FC<ReportDetailsProps> = ({
   details,
   recordId,
-  language = 'zh',
+  language = "zh",
 }) => {
-  type JsonPanel = 'raw' | 'snapshot';
+  type JsonPanel = "raw" | "snapshot";
   type CopiedPanelState = Record<JsonPanel, boolean>;
 
   const reportLanguage = normalizeReportLanguage(language);
@@ -66,7 +72,7 @@ export const ReportDetails: React.FC<ReportDetailsProps> = ({
         delete copyResetTimerRef.current[panel];
       }, 2000);
     } catch (err) {
-      console.error('Copy failed:', err);
+      console.error("Copy failed:", err);
     }
   };
 
@@ -121,17 +127,22 @@ export const ReportDetails: React.FC<ReportDetailsProps> = ({
             >
               <span className="text-xs text-foreground">{text.rawResult}</span>
               <svg
-                className={`w-3.5 h-3.5 text-muted-text transition-transform ${showRaw ? 'rotate-180' : ''}`}
+                className={`w-3.5 h-3.5 text-muted-text transition-transform ${showRaw ? "rotate-180" : ""}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </button>
             {showRaw && (
               <div className="mt-2 animate-fade-in min-w-0 overflow-hidden">
-                {renderJson(details.rawResult, 'raw')}
+                {renderJson(details.rawResult, "raw")}
               </div>
             )}
           </div>
@@ -145,19 +156,26 @@ export const ReportDetails: React.FC<ReportDetailsProps> = ({
               onClick={() => setShowSnapshot(!showSnapshot)}
               className="home-surface-button home-trace-toggle flex w-full items-center justify-between rounded-lg p-2.5"
             >
-              <span className="text-xs text-foreground">{text.analysisSnapshot}</span>
+              <span className="text-xs text-foreground">
+                {text.analysisSnapshot}
+              </span>
               <svg
-                className={`w-3.5 h-3.5 text-muted-text transition-transform ${showSnapshot ? 'rotate-180' : ''}`}
+                className={`w-3.5 h-3.5 text-muted-text transition-transform ${showSnapshot ? "rotate-180" : ""}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </button>
             {showSnapshot && (
               <div className="mt-2 animate-fade-in min-w-0 overflow-hidden">
-                {renderJson(details.contextSnapshot, 'snapshot')}
+                {renderJson(details.contextSnapshot, "snapshot")}
               </div>
             )}
           </div>

@@ -35,9 +35,7 @@
   "paths": {
     "/": {
       "get": {
-        "tags": [
-          "Health"
-        ],
+        "tags": ["Health"],
         "summary": "API 根路由",
         "description": "返回 API 运行状态信息",
         "operationId": "root",
@@ -57,9 +55,7 @@
     },
     "/api/health": {
       "get": {
-        "tags": [
-          "Health"
-        ],
+        "tags": ["Health"],
         "summary": "健康检查",
         "description": "用于负载均衡器或监控系统检查服务状态",
         "operationId": "healthCheck",
@@ -79,9 +75,7 @@
     },
     "/api/v1/analysis/analyze": {
       "post": {
-        "tags": [
-          "Analysis"
-        ],
+        "tags": ["Analysis"],
         "summary": "触发股票分析",
         "description": "启动 AI 智能分析任务，支持单只或多只股票批量分析",
         "operationId": "triggerAnalysis",
@@ -158,9 +152,7 @@
     },
     "/api/v1/analysis/tasks": {
       "get": {
-        "tags": [
-          "Analysis"
-        ],
+        "tags": ["Analysis"],
         "summary": "获取分析任务列表",
         "description": "获取当前所有分析任务，支持按状态筛选。返回进行中和最近完成的任务。",
         "operationId": "getAnalysisTasks",
@@ -202,9 +194,7 @@
     },
     "/api/v1/analysis/tasks/stream": {
       "get": {
-        "tags": [
-          "Analysis"
-        ],
+        "tags": ["Analysis"],
         "summary": "任务状态 SSE 流",
         "description": "通过 Server-Sent Events 实时推送任务状态变化。\n\n## 事件类型\n- `connected`: 连接成功\n- `task_created`: 新任务创建\n- `task_started`: 任务开始执行\n- `task_completed`: 任务完成\n- `task_failed`: 任务失败\n- `heartbeat`: 心跳（每 30 秒）",
         "operationId": "taskStream",
@@ -225,9 +215,7 @@
     },
     "/api/v1/history": {
       "get": {
-        "tags": [
-          "History"
-        ],
+        "tags": ["History"],
         "summary": "获取历史分析列表",
         "description": "分页获取历史分析记录摘要，支持按股票代码和日期范围筛选",
         "operationId": "getHistoryList",
@@ -296,9 +284,7 @@
     },
     "/api/v1/history/{query_id}": {
       "get": {
-        "tags": [
-          "History"
-        ],
+        "tags": ["History"],
         "summary": "获取历史报告详情",
         "description": "根据 query_id 获取完整的历史分析报告",
         "operationId": "getHistoryDetail",
@@ -339,9 +325,7 @@
     },
     "/api/v1/history/{query_id}/news": {
       "get": {
-        "tags": [
-          "History"
-        ],
+        "tags": ["History"],
         "summary": "获取历史报告关联新闻",
         "description": "根据 query_id 获取关联的新闻情报列表（为空也返回 200）",
         "operationId": "getHistoryNews",
@@ -393,9 +377,7 @@
     },
     "/api/v1/system/config": {
       "get": {
-        "tags": [
-          "SystemConfig"
-        ],
+        "tags": ["SystemConfig"],
         "summary": "获取系统配置",
         "description": "读取当前系统配置并返回分类后的字段列表。敏感字段返回真实值，前端自行控制显示/隐藏。",
         "operationId": "getSystemConfig",
@@ -444,9 +426,7 @@
         }
       },
       "put": {
-        "tags": [
-          "SystemConfig"
-        ],
+        "tags": ["SystemConfig"],
         "summary": "更新系统配置",
         "description": "按键更新系统配置。若字段值为掩码（如 ******），则保留原值不覆盖。",
         "operationId": "updateSystemConfig",
@@ -506,9 +486,7 @@
     },
     "/api/v1/system/config/export": {
       "get": {
-        "tags": [
-          "SystemConfig"
-        ],
+        "tags": ["SystemConfig"],
         "summary": "导出 `.env` 备份",
         "description": "返回当前已保存 `.env` 的原始文本内容，用于配置备份。",
         "operationId": "exportSystemConfig",
@@ -558,9 +536,7 @@
     },
     "/api/v1/system/config/import": {
       "post": {
-        "tags": [
-          "SystemConfig"
-        ],
+        "tags": ["SystemConfig"],
         "summary": "导入 `.env` 备份",
         "description": "按键级覆盖方式把备份文本合并到当前 `.env`，并沿用现有配置版本冲突保护。",
         "operationId": "importSystemConfig",
@@ -647,9 +623,7 @@
     },
     "/api/v1/system/config/validate": {
       "post": {
-        "tags": [
-          "SystemConfig"
-        ],
+        "tags": ["SystemConfig"],
         "summary": "校验配置",
         "description": "仅校验提交内容，不写入 .env。用于前端保存前预检查。",
         "operationId": "validateSystemConfig",
@@ -689,9 +663,7 @@
     },
     "/api/v1/system/config/schema": {
       "get": {
-        "tags": [
-          "SystemConfig"
-        ],
+        "tags": ["SystemConfig"],
         "summary": "获取配置字段元数据",
         "description": "返回配置分类、字段类型、校验规则和 UI 控件建议，用于前端动态渲染。",
         "operationId": "getSystemConfigSchema",
@@ -734,9 +706,7 @@
             "example": "1.0.0"
           }
         },
-        "required": [
-          "message"
-        ]
+        "required": ["message"]
       },
       "HealthResponse": {
         "type": "object",
@@ -750,9 +720,7 @@
             "format": "date-time"
           }
         },
-        "required": [
-          "status"
-        ]
+        "required": ["status"]
       },
       "AnalyzeRequest": {
         "type": "object",
@@ -768,19 +736,11 @@
             "items": {
               "type": "string"
             },
-            "example": [
-              "600519",
-              "000858"
-            ]
+            "example": ["600519", "000858"]
           },
           "report_type": {
             "type": "string",
-            "enum": [
-              "simple",
-              "detailed",
-              "full",
-              "brief"
-            ],
+            "enum": ["simple", "detailed", "full", "brief"],
             "default": "detailed",
             "description": "报告类型：simple(精简) / detailed(完整) / full(完整) / brief(简洁)"
           },
@@ -817,12 +777,7 @@
             "format": "date-time"
           }
         },
-        "required": [
-          "query_id",
-          "stock_code",
-          "report",
-          "created_at"
-        ]
+        "required": ["query_id", "stock_code", "report", "created_at"]
       },
       "TaskAccepted": {
         "type": "object",
@@ -833,10 +788,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending",
-              "processing"
-            ],
+            "enum": ["pending", "processing"],
             "example": "pending"
           },
           "message": {
@@ -844,10 +796,7 @@
             "example": "Analysis task accepted"
           }
         },
-        "required": [
-          "task_id",
-          "status"
-        ]
+        "required": ["task_id", "status"]
       },
       "BatchTaskAcceptedItem": {
         "type": "object",
@@ -862,20 +811,13 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending",
-              "processing"
-            ]
+            "enum": ["pending", "processing"]
           },
           "message": {
             "type": "string"
           }
         },
-        "required": [
-          "task_id",
-          "stock_code",
-          "status"
-        ]
+        "required": ["task_id", "stock_code", "status"]
       },
       "BatchDuplicateTaskItem": {
         "type": "object",
@@ -893,11 +835,7 @@
             "description": "错误信息"
           }
         },
-        "required": [
-          "stock_code",
-          "existing_task_id",
-          "message"
-        ]
+        "required": ["stock_code", "existing_task_id", "message"]
       },
       "BatchTaskAcceptedResponse": {
         "type": "object",
@@ -919,11 +857,7 @@
             "description": "汇总信息"
           }
         },
-        "required": [
-          "accepted",
-          "duplicates",
-          "message"
-        ]
+        "required": ["accepted", "duplicates", "message"]
       },
       "TaskStatus": {
         "type": "object",
@@ -933,12 +867,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending",
-              "processing",
-              "completed",
-              "failed"
-            ]
+            "enum": ["pending", "processing", "completed", "failed"]
           },
           "progress": {
             "type": "integer",
@@ -952,10 +881,7 @@
             "description": "错误信息（仅在 failed 时存在）"
           }
         },
-        "required": [
-          "task_id",
-          "status"
-        ]
+        "required": ["task_id", "status"]
       },
       "TaskInfo": {
         "type": "object",
@@ -975,12 +901,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending",
-              "processing",
-              "completed",
-              "failed"
-            ],
+            "enum": ["pending", "processing", "completed", "failed"],
             "description": "任务状态"
           },
           "progress": {
@@ -995,10 +916,7 @@
           },
           "report_type": {
             "type": "string",
-            "enum": [
-              "simple",
-              "detailed"
-            ],
+            "enum": ["simple", "detailed"],
             "description": "报告类型"
           },
           "created_at": {
@@ -1021,12 +939,7 @@
             "description": "错误信息"
           }
         },
-        "required": [
-          "task_id",
-          "stock_code",
-          "status",
-          "created_at"
-        ]
+        "required": ["task_id", "stock_code", "status", "created_at"]
       },
       "TaskListResponse": {
         "type": "object",
@@ -1052,12 +965,7 @@
             "description": "任务列表"
           }
         },
-        "required": [
-          "total",
-          "pending",
-          "processing",
-          "tasks"
-        ]
+        "required": ["total", "pending", "processing", "tasks"]
       },
       "DuplicateTaskError": {
         "type": "object",
@@ -1084,12 +992,7 @@
             "description": "已存在的任务 ID"
           }
         },
-        "required": [
-          "error",
-          "message",
-          "stock_code",
-          "existing_task_id"
-        ]
+        "required": ["error", "message", "stock_code", "existing_task_id"]
       },
       "HistoryListResponse": {
         "type": "object",
@@ -1111,12 +1014,7 @@
             }
           }
         },
-        "required": [
-          "total",
-          "page",
-          "limit",
-          "items"
-        ]
+        "required": ["total", "page", "limit", "items"]
       },
       "NewsIntelItem": {
         "type": "object",
@@ -1135,10 +1033,7 @@
             "description": "新闻链接"
           }
         },
-        "required": [
-          "title",
-          "url"
-        ]
+        "required": ["title", "url"]
       },
       "NewsIntelResponse": {
         "type": "object",
@@ -1156,10 +1051,7 @@
             "description": "新闻列表"
           }
         },
-        "required": [
-          "total",
-          "items"
-        ]
+        "required": ["total", "items"]
       },
       "HistoryItem": {
         "type": "object",
@@ -1190,11 +1082,7 @@
             "format": "date-time"
           }
         },
-        "required": [
-          "query_id",
-          "stock_code",
-          "created_at"
-        ]
+        "required": ["query_id", "stock_code", "created_at"]
       },
       "AnalysisReport": {
         "type": "object",
@@ -1249,13 +1137,7 @@
               "sentiment_label": {
                 "type": "string",
                 "description": "情绪标签",
-                "enum": [
-                  "极度悲观",
-                  "悲观",
-                  "中性",
-                  "乐观",
-                  "极度乐观"
-                ]
+                "enum": ["极度悲观", "悲观", "中性", "乐观", "极度乐观"]
               }
             }
           },
@@ -1300,10 +1182,7 @@
             }
           }
         },
-        "required": [
-          "meta",
-          "summary"
-        ]
+        "required": ["meta", "summary"]
       },
       "StockQuote": {
         "type": "object",
@@ -1351,10 +1230,7 @@
             "format": "date-time"
           }
         },
-        "required": [
-          "stock_code",
-          "current_price"
-        ]
+        "required": ["stock_code", "current_price"]
       },
       "SystemConfigFieldSchema": {
         "type": "object",
@@ -1474,12 +1350,7 @@
             }
           }
         },
-        "required": [
-          "category",
-          "title",
-          "display_order",
-          "fields"
-        ]
+        "required": ["category", "title", "display_order", "fields"]
       },
       "SystemConfigSchemaResponse": {
         "type": "object",
@@ -1496,10 +1367,7 @@
             }
           }
         },
-        "required": [
-          "schema_version",
-          "categories"
-        ]
+        "required": ["schema_version", "categories"]
       },
       "SystemConfigItem": {
         "type": "object",
@@ -1523,12 +1391,7 @@
             "$ref": "#/components/schemas/SystemConfigFieldSchema"
           }
         },
-        "required": [
-          "key",
-          "value",
-          "raw_value_exists",
-          "is_masked"
-        ]
+        "required": ["key", "value", "raw_value_exists", "is_masked"]
       },
       "SystemConfigResponse": {
         "type": "object",
@@ -1554,11 +1417,7 @@
             "format": "date-time"
           }
         },
-        "required": [
-          "config_version",
-          "mask_token",
-          "items"
-        ]
+        "required": ["config_version", "mask_token", "items"]
       },
       "ExportSystemConfigResponse": {
         "type": "object",
@@ -1577,10 +1436,7 @@
             "format": "date-time"
           }
         },
-        "required": [
-          "content",
-          "config_version"
-        ]
+        "required": ["content", "config_version"]
       },
       "SystemConfigUpdateItem": {
         "type": "object",
@@ -1595,10 +1451,7 @@
             "description": "字段新值；若敏感字段传入掩码 token 则表示保持原值"
           }
         },
-        "required": [
-          "key",
-          "value"
-        ]
+        "required": ["key", "value"]
       },
       "UpdateSystemConfigRequest": {
         "type": "object",
@@ -1623,10 +1476,7 @@
             "minItems": 1
           }
         },
-        "required": [
-          "config_version",
-          "items"
-        ]
+        "required": ["config_version", "items"]
       },
       "ImportSystemConfigRequest": {
         "type": "object",
@@ -1644,10 +1494,7 @@
             "default": true
           }
         },
-        "required": [
-          "config_version",
-          "content"
-        ]
+        "required": ["config_version", "content"]
       },
       "UpdateSystemConfigResponse": {
         "type": "object",
@@ -1702,9 +1549,7 @@
             "minItems": 1
           }
         },
-        "required": [
-          "items"
-        ]
+        "required": ["items"]
       },
       "ConfigValidationIssue": {
         "type": "object",
@@ -1722,10 +1567,7 @@
           },
           "severity": {
             "type": "string",
-            "enum": [
-              "error",
-              "warning"
-            ]
+            "enum": ["error", "warning"]
           },
           "expected": {
             "type": "string"
@@ -1734,12 +1576,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "key",
-          "code",
-          "message",
-          "severity"
-        ]
+        "required": ["key", "code", "message", "severity"]
       },
       "ValidateSystemConfigResponse": {
         "type": "object",
@@ -1755,10 +1592,7 @@
             }
           }
         },
-        "required": [
-          "valid",
-          "issues"
-        ]
+        "required": ["valid", "issues"]
       },
       "SystemConfigValidationErrorResponse": {
         "type": "object",
@@ -1778,11 +1612,7 @@
             }
           }
         },
-        "required": [
-          "error",
-          "message",
-          "issues"
-        ]
+        "required": ["error", "message", "issues"]
       },
       "SystemConfigConflictResponse": {
         "type": "object",
@@ -1799,11 +1629,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "error",
-          "message",
-          "current_config_version"
-        ]
+        "required": ["error", "message", "current_config_version"]
       },
       "ErrorResponse": {
         "type": "object",
@@ -1821,10 +1647,7 @@
             "description": "附加错误信息"
           }
         },
-        "required": [
-          "error",
-          "message"
-        ]
+        "required": ["error", "message"]
       }
     }
   }

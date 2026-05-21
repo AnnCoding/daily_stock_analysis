@@ -1,15 +1,24 @@
-import { create } from 'zustand';
-import { analysisApi, DuplicateTaskError } from '../api/analysis';
-import type { ParsedApiError } from '../api/error';
-import { getParsedApiError } from '../api/error';
-import { historyApi } from '../api/history';
-import type { AnalysisReport, HistoryItem, HistoryListResponse, TaskInfo } from '../types/analysis';
-import { getRecentStartDate, getTodayInShanghai } from '../utils/format';
-import { isObviouslyInvalidStockQuery, looksLikeStockCode, validateStockCode } from '../utils/validation';
+import { create } from "zustand";
+import { analysisApi, DuplicateTaskError } from "../api/analysis";
+import type { ParsedApiError } from "../api/error";
+import { getParsedApiError } from "../api/error";
+import { historyApi } from "../api/history";
+import type {
+  AnalysisReport,
+  HistoryItem,
+  HistoryListResponse,
+  TaskInfo,
+} from "../types/analysis";
+import { getRecentStartDate, getTodayInShanghai } from "../utils/format";
+import {
+  isObviouslyInvalidStockQuery,
+  looksLikeStockCode,
+  validateStockCode,
+} from "../utils/validation";
 
 const PAGE_SIZE = 20;
 
-type SelectionSource = 'manual' | 'autocomplete' | 'import' | 'image';
+type SelectionSource = "manual" | "autocomplete" | "import" | "image";
 
 type FetchHistoryOptions = {
   autoSelectFirst?: boolean;
@@ -72,8 +81,8 @@ export interface StockPoolState {
 }
 
 const initialState = {
-  query: '',
-  selectionSource: 'manual' as SelectionSource,
+  query: "",
+  selectionSource: "manual" as SelectionSource,
   notify: true,
   inputError: undefined,
   duplicateError: null,
@@ -127,7 +136,9 @@ async function fetchHistory(
 
     if (silent && reset) {
       const existingIds = new Set(get().historyItems.map((item) => item.id));
-      const newItems = response.items.filter((item) => !existingIds.has(item.id));
+      const newItems = response.items.filter(
+        (item) => !existingIds.has(item.id),
+      );
       if (newItems.length > 0) {
         set({ historyItems: [...newItems, ...get().historyItems] });
       }
@@ -144,13 +155,17 @@ async function fetchHistory(
     }
 
     if (!silent) {
-      const totalLoaded = reset ? response.items.length : get().historyItems.length;
+      const totalLoaded = reset
+        ? response.items.length
+        : get().historyItems.length;
       set({ hasMore: totalLoaded < response.total });
     }
 
     const visibleIds = new Set(get().historyItems.map((item) => item.id));
     set({
-      selectedHistoryIds: get().selectedHistoryIds.filter((id) => visibleIds.has(id)),
+      selectedHistoryIds: get().selectedHistoryIds.filter((id) =>
+        visibleIds.has(id),
+      ),
     });
 
     if (autoSelectFirst && response.items.length > 0 && !get().selectedReport) {
@@ -180,7 +195,7 @@ export const useStockPoolStore = create<StockPoolState>((set, get) => ({
   setQuery: (query) => {
     set({
       query,
-      selectionSource: 'manual',
+      selectionSource: "manual",
       inputError: undefined,
       duplicateError: null,
     });
@@ -188,7 +203,8 @@ export const useStockPoolStore = create<StockPoolState>((set, get) => ({
 
   clearError: () => set({ error: null }),
 
-  clearInlineMessages: () => set({ inputError: undefined, duplicateError: null }),
+  clearInlineMessages: () =>
+    set({ inputError: undefined, duplicateError: null }),
 
   setNotify: (notify) => set({ notify }),
 
@@ -258,7 +274,9 @@ export const useStockPoolStore = create<StockPoolState>((set, get) => ({
     const visibleIds = get().historyItems.map((item) => item.id);
     const selectedIds = get().selectedHistoryIds;
     const visibleSet = new Set(visibleIds);
-    const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id));
+    const allSelected =
+      visibleIds.length > 0 &&
+      visibleIds.every((id) => selectedIds.includes(id));
 
     set({
       selectedHistoryIds: allSelected
@@ -279,8 +297,9 @@ export const useStockPoolStore = create<StockPoolState>((set, get) => ({
       await historyApi.deleteRecords(recordIds);
 
       const deletedIds = new Set(recordIds);
-      const selectedWasDeleted = state.selectedReport?.meta.id !== undefined
-        && deletedIds.has(state.selectedReport.meta.id);
+      const selectedWasDeleted =
+        state.selectedReport?.meta.id !== undefined &&
+        deletedIds.has(state.selectedReport.meta.id);
 
       set({ selectedHistoryIds: [] });
 
@@ -312,17 +331,26 @@ export const useStockPoolStore = create<StockPoolState>((set, get) => ({
     const forceRefresh = options?.forceRefresh ?? false;
 
     if (!stockCodeInput) {
-      set({ inputError: '请输入股票代码', duplicateError: null });
+      set({ inputError: "请输入股票代码", duplicateError: null });
       return;
     }
 
-    if (selectionSource !== 'autocomplete' && isObviouslyInvalidStockQuery(stockCodeInput)) {
-      set({ inputError: '请输入有效的股票代码或股票名称', duplicateError: null });
+    if (
+      selectionSource !== "autocomplete" &&
+      isObviouslyInvalidStockQuery(stockCodeInput)
+    ) {
+      set({
+        inputError: "请输入有效的股票代码或股票名称",
+        duplicateError: null,
+      });
       return;
     }
 
     let normalizedStockCode = stockCodeInput;
-    if (selectionSource === 'autocomplete' || looksLikeStockCode(stockCodeInput)) {
+    if (
+      selectionSource === "autocomplete" ||
+      looksLikeStockCode(stockCodeInput)
+    ) {
       const { valid, message, normalized } = validateStockCode(stockCodeInput);
       if (!valid) {
         set({ inputError: message, duplicateError: null });
@@ -342,7 +370,7 @@ export const useStockPoolStore = create<StockPoolState>((set, get) => ({
     try {
       await analysisApi.analyzeAsync({
         stockCode: normalizedStockCode,
-        reportType: 'detailed',
+        reportType: "detailed",
         stockName,
         originalQuery: originalQuery || stockCodeInput,
         selectionSource,
@@ -355,8 +383,8 @@ export const useStockPoolStore = create<StockPoolState>((set, get) => ({
       }
 
       set({
-        query: '',
-        selectionSource: 'manual',
+        query: "",
+        selectionSource: "manual",
       });
     } catch (error) {
       if (requestId !== analyzeRequestSeq) {
@@ -402,12 +430,14 @@ export const useStockPoolStore = create<StockPoolState>((set, get) => ({
 
   syncTaskFailed: (task) => {
     get().syncTaskUpdated(task);
-    set({ error: getParsedApiError(task.error || '分析失败') });
+    set({ error: getParsedApiError(task.error || "分析失败") });
   },
 
   removeTask: (taskId) => {
     dismissedTaskIds.add(taskId);
-    set({ activeTasks: get().activeTasks.filter((task) => task.taskId !== taskId) });
+    set({
+      activeTasks: get().activeTasks.filter((task) => task.taskId !== taskId),
+    });
   },
 
   resetDashboardState: () => {

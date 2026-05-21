@@ -3,11 +3,11 @@ name: Desktop Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Existing release tag in semver format, e.g. v3.2.12'
+        description: "Existing release tag in semver format, e.g. v3.2.12"
         required: true
         type: string
 
@@ -39,13 +39,13 @@ jobs:
 
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
-          cache: 'pip'
+          python-version: "3.12"
+          cache: "pip"
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: |
             apps/dsa-web/package-lock.json
             apps/dsa-desktop/package-lock.json
@@ -63,7 +63,7 @@ jobs:
       - name: Build desktop package (Windows)
         shell: pwsh
         env:
-          DSA_SKIP_DEVMODE_CHECK: 'true'
+          DSA_SKIP_DEVMODE_CHECK: "true"
         run: |
           powershell -ExecutionPolicy Bypass -File scripts/build-all.ps1
 
@@ -142,13 +142,13 @@ jobs:
 
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
-          cache: 'pip'
+          python-version: "3.12"
+          cache: "pip"
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: |
             apps/dsa-web/package-lock.json
             apps/dsa-desktop/package-lock.json

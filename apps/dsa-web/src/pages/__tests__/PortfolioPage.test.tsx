@@ -1,8 +1,15 @@
-import type React from 'react';
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createApiError, createParsedApiError } from '../../api/error';
-import PortfolioPage from '../PortfolioPage';
+import type React from "react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createApiError, createParsedApiError } from "../../api/error";
+import PortfolioPage from "../PortfolioPage";
 
 const {
   getAccounts,
@@ -42,7 +49,7 @@ const {
   createAccount: vi.fn(),
 }));
 
-vi.mock('../../api/portfolio', () => ({
+vi.mock("../../api/portfolio", () => ({
   portfolioApi: {
     getAccounts,
     getSnapshot,
@@ -64,9 +71,13 @@ vi.mock('../../api/portfolio', () => ({
   },
 }));
 
-vi.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  PieChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+vi.mock("recharts", () => ({
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  PieChart: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   Pie: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Tooltip: () => null,
   Legend: () => null,
@@ -76,37 +87,39 @@ vi.mock('recharts', () => ({
 type AccountItem = {
   id: number;
   name: string;
-  market?: 'cn' | 'hk' | 'us';
+  market?: "cn" | "hk" | "us";
   baseCurrency?: string;
 };
 
-function makeAccounts(items: AccountItem[] = [{ id: 1, name: 'Main' }]) {
+function makeAccounts(items: AccountItem[] = [{ id: 1, name: "Main" }]) {
   return {
     accounts: items.map((item) => ({
       id: item.id,
       name: item.name,
-      broker: 'Demo',
-      market: item.market ?? 'us',
-      baseCurrency: item.baseCurrency ?? 'CNY',
+      broker: "Demo",
+      market: item.market ?? "us",
+      baseCurrency: item.baseCurrency ?? "CNY",
       isActive: true,
       ownerId: null,
-      createdAt: '2026-03-19T00:00:00Z',
-      updatedAt: '2026-03-19T00:00:00Z',
+      createdAt: "2026-03-19T00:00:00Z",
+      updatedAt: "2026-03-19T00:00:00Z",
     })),
   };
 }
 
-function makeSnapshot(options: {
-  accountId?: number;
-  fxStale?: boolean;
-  accountCount?: number;
-  positions?: Array<Record<string, unknown>>;
-} = {}) {
+function makeSnapshot(
+  options: {
+    accountId?: number;
+    fxStale?: boolean;
+    accountCount?: number;
+    positions?: Array<Record<string, unknown>>;
+  } = {},
+) {
   const accountId = options.accountId ?? 1;
   return {
-    asOf: '2026-03-19',
-    costMethod: 'fifo' as const,
-    currency: 'CNY',
+    asOf: "2026-03-19",
+    costMethod: "fifo" as const,
+    currency: "CNY",
     accountCount: options.accountCount ?? 1,
     totalCash: 1000,
     totalMarketValue: 2000,
@@ -121,11 +134,11 @@ function makeSnapshot(options: {
         accountId,
         accountName: `Account ${accountId}`,
         ownerId: null,
-        broker: 'Demo',
-        market: 'us',
-        baseCurrency: 'CNY',
-        asOf: '2026-03-19',
-        costMethod: 'fifo' as const,
+        broker: "Demo",
+        market: "us",
+        baseCurrency: "CNY",
+        asOf: "2026-03-19",
+        costMethod: "fifo" as const,
         totalCash: 1000,
         totalMarketValue: 2000,
         totalEquity: 3000,
@@ -142,10 +155,10 @@ function makeSnapshot(options: {
 
 function makeRisk() {
   return {
-    asOf: '2026-03-19',
+    asOf: "2026-03-19",
     accountId: null,
-    costMethod: 'fifo' as const,
-    currency: 'CNY',
+    costMethod: "fifo" as const,
+    currency: "CNY",
     thresholds: {},
     concentration: {
       totalMarketValue: 0,
@@ -194,15 +207,18 @@ async function waitForInitialLoad() {
   await waitFor(() => expect(listTrades).toHaveBeenCalledTimes(1));
 }
 
-describe('PortfolioPage FX refresh', () => {
+describe("PortfolioPage FX refresh", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
     getAccounts.mockResolvedValue(makeAccounts());
-    getSnapshot.mockImplementation(async ({ accountId }: { accountId?: number } = {}) => makeSnapshot({ accountId, fxStale: true }));
+    getSnapshot.mockImplementation(
+      async ({ accountId }: { accountId?: number } = {}) =>
+        makeSnapshot({ accountId, fxStale: true }),
+    );
     getRisk.mockResolvedValue(makeRisk());
     refreshFx.mockResolvedValue({
-      asOf: '2026-03-19',
+      asOf: "2026-03-19",
       accountCount: 1,
       refreshEnabled: true,
       disabledReason: null,
@@ -212,18 +228,40 @@ describe('PortfolioPage FX refresh', () => {
       errorCount: 0,
     });
     listImportBrokers.mockResolvedValue({
-      brokers: [{ broker: 'huatai', aliases: [], displayName: '华泰' }],
+      brokers: [{ broker: "huatai", aliases: [], displayName: "华泰" }],
     });
-    listTrades.mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });
-    listCashLedger.mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });
-    listCorporateActions.mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });
+    listTrades.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      pageSize: 20,
+    });
+    listCashLedger.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      pageSize: 20,
+    });
+    listCorporateActions.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      pageSize: 20,
+    });
     createTrade.mockResolvedValue({ id: 1 });
     deleteTrade.mockResolvedValue({ deleted: 1 });
     createCashLedger.mockResolvedValue({ id: 1 });
     deleteCashLedger.mockResolvedValue({ deleted: 1 });
     createCorporateAction.mockResolvedValue({ id: 1 });
     deleteCorporateAction.mockResolvedValue({ deleted: 1 });
-    parseCsvImport.mockResolvedValue({ broker: 'huatai', recordCount: 0, skippedCount: 0, errorCount: 0, records: [], errors: [] });
+    parseCsvImport.mockResolvedValue({
+      broker: "huatai",
+      recordCount: 0,
+      skippedCount: 0,
+      errorCount: 0,
+      records: [],
+      errors: [],
+    });
     commitCsvImport.mockResolvedValue({
       accountId: 1,
       recordCount: 0,
@@ -236,16 +274,18 @@ describe('PortfolioPage FX refresh', () => {
     createAccount.mockResolvedValue({ id: 1 });
   });
 
-  it('renders stale FX status with a manual refresh button', async () => {
+  it("renders stale FX status with a manual refresh button", async () => {
     render(<PortfolioPage />);
 
     await waitForInitialLoad();
 
-    expect(await screen.findByText('过期')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '刷新汇率' })).toBeInTheDocument();
+    expect(await screen.findByText("过期")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "刷新汇率" }),
+    ).toBeInTheDocument();
   });
 
-  it('refreshes FX for a single selected account and only reloads snapshot/risk', async () => {
+  it("refreshes FX for a single selected account and only reloads snapshot/risk", async () => {
     getSnapshot
       .mockResolvedValueOnce(makeSnapshot({ fxStale: true }))
       .mockResolvedValueOnce(makeSnapshot({ accountId: 1, fxStale: true }))
@@ -255,32 +295,43 @@ describe('PortfolioPage FX refresh', () => {
 
     await waitForInitialLoad();
 
-    const accountSelect = screen.getAllByRole('combobox')[0];
-    fireEvent.change(accountSelect, { target: { value: '1' } });
+    const accountSelect = screen.getAllByRole("combobox")[0];
+    fireEvent.change(accountSelect, { target: { value: "1" } });
 
     await waitFor(() => {
-      expect(getSnapshot).toHaveBeenLastCalledWith({ accountId: 1, costMethod: 'fifo' });
+      expect(getSnapshot).toHaveBeenLastCalledWith({
+        accountId: 1,
+        costMethod: "fifo",
+      });
     });
 
     const snapshotCallsBeforeRefresh = getSnapshot.mock.calls.length;
     const riskCallsBeforeRefresh = getRisk.mock.calls.length;
     const tradeCallsBeforeRefresh = listTrades.mock.calls.length;
 
-    fireEvent.click(screen.getByRole('button', { name: '刷新汇率' }));
+    fireEvent.click(screen.getByRole("button", { name: "刷新汇率" }));
 
-    await waitFor(() => expect(refreshFx).toHaveBeenCalledWith({ accountId: 1 }));
-    expect(await screen.findByText('汇率已刷新，共更新 1 对。')).toBeInTheDocument();
-    await waitFor(() => expect(getSnapshot).toHaveBeenCalledTimes(snapshotCallsBeforeRefresh + 1));
-    await waitFor(() => expect(getRisk).toHaveBeenCalledTimes(riskCallsBeforeRefresh + 1));
+    await waitFor(() =>
+      expect(refreshFx).toHaveBeenCalledWith({ accountId: 1 }),
+    );
+    expect(
+      await screen.findByText("汇率已刷新，共更新 1 对。"),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(getSnapshot).toHaveBeenCalledTimes(snapshotCallsBeforeRefresh + 1),
+    );
+    await waitFor(() =>
+      expect(getRisk).toHaveBeenCalledTimes(riskCallsBeforeRefresh + 1),
+    );
     expect(listTrades).toHaveBeenCalledTimes(tradeCallsBeforeRefresh);
     expect(listCashLedger).not.toHaveBeenCalled();
     expect(listCorporateActions).not.toHaveBeenCalled();
-    expect(screen.getByText('最新')).toBeInTheDocument();
+    expect(screen.getByText("最新")).toBeInTheDocument();
   });
 
-  it('refreshes FX for the full portfolio without sending accountId and shows neutral feedback when no pair exists', async () => {
+  it("refreshes FX for the full portfolio without sending accountId and shows neutral feedback when no pair exists", async () => {
     refreshFx.mockResolvedValueOnce({
-      asOf: '2026-03-19',
+      asOf: "2026-03-19",
       accountCount: 1,
       refreshEnabled: true,
       disabledReason: null,
@@ -294,15 +345,19 @@ describe('PortfolioPage FX refresh', () => {
 
     await waitForInitialLoad();
 
-    fireEvent.click(screen.getByRole('button', { name: '刷新汇率' }));
+    fireEvent.click(screen.getByRole("button", { name: "刷新汇率" }));
 
-    await waitFor(() => expect(refreshFx).toHaveBeenCalledWith({ accountId: undefined }));
-    expect(await screen.findByText('当前范围无可刷新的汇率对。')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(refreshFx).toHaveBeenCalledWith({ accountId: undefined }),
+    );
+    expect(
+      await screen.findByText("当前范围无可刷新的汇率对。"),
+    ).toBeInTheDocument();
   });
 
-  it('shows disabled feedback when FX online refresh is disabled even without a disabled reason', async () => {
+  it("shows disabled feedback when FX online refresh is disabled even without a disabled reason", async () => {
     refreshFx.mockResolvedValueOnce({
-      asOf: '2026-03-19',
+      asOf: "2026-03-19",
       accountCount: 1,
       refreshEnabled: false,
       pairCount: 1,
@@ -315,46 +370,89 @@ describe('PortfolioPage FX refresh', () => {
 
     await waitForInitialLoad();
 
-    fireEvent.click(screen.getByRole('button', { name: '刷新汇率' }));
+    fireEvent.click(screen.getByRole("button", { name: "刷新汇率" }));
 
-    expect(await screen.findByText('汇率在线刷新已被禁用。')).toBeInTheDocument();
+    expect(
+      await screen.findByText("汇率在线刷新已被禁用。"),
+    ).toBeInTheDocument();
   });
 
-  it('renders backend-provided position valuation fields and stale missing-price hint', async () => {
-    getSnapshot.mockResolvedValueOnce(makeSnapshot({ fxStale: true, positions: [
-      { symbol: 'HK00700', market: 'hk', currency: 'HKD', quantity: 10, avgCost: 400, totalCost: 4000, lastPrice: 420, marketValueBase: 4200, unrealizedPnlBase: 200, unrealizedPnlPct: 5, valuationCurrency: 'HKD', priceSource: 'history_close', priceDate: '2026-03-18', priceStale: true, priceAvailable: true },
-      { symbol: 'AAPL', market: 'us', currency: 'USD', quantity: 5, avgCost: 100, totalCost: 500, lastPrice: 0, marketValueBase: 0, unrealizedPnlBase: 0, unrealizedPnlPct: null, valuationCurrency: 'USD', priceSource: 'missing', priceDate: null, priceStale: true, priceAvailable: false },
-    ] }));
+  it("renders backend-provided position valuation fields and stale missing-price hint", async () => {
+    getSnapshot.mockResolvedValueOnce(
+      makeSnapshot({
+        fxStale: true,
+        positions: [
+          {
+            symbol: "HK00700",
+            market: "hk",
+            currency: "HKD",
+            quantity: 10,
+            avgCost: 400,
+            totalCost: 4000,
+            lastPrice: 420,
+            marketValueBase: 4200,
+            unrealizedPnlBase: 200,
+            unrealizedPnlPct: 5,
+            valuationCurrency: "HKD",
+            priceSource: "history_close",
+            priceDate: "2026-03-18",
+            priceStale: true,
+            priceAvailable: true,
+          },
+          {
+            symbol: "AAPL",
+            market: "us",
+            currency: "USD",
+            quantity: 5,
+            avgCost: 100,
+            totalCost: 500,
+            lastPrice: 0,
+            marketValueBase: 0,
+            unrealizedPnlBase: 0,
+            unrealizedPnlPct: null,
+            valuationCurrency: "USD",
+            priceSource: "missing",
+            priceDate: null,
+            priceStale: true,
+            priceAvailable: false,
+          },
+        ],
+      }),
+    );
 
     render(<PortfolioPage />);
 
     await waitForInitialLoad();
 
-    expect(await screen.findByText('HK00700')).toBeInTheDocument();
-    expect(screen.getByText('420.0000')).toBeInTheDocument();
-    expect(screen.getByText('HKD 4,200.00')).toBeInTheDocument();
-    expect(screen.getByText('+5.00%')).toBeInTheDocument();
-    expect(screen.getByText('收盘价 · 2026-03-18')).toBeInTheDocument();
-    expect(screen.getByText('缺价')).toBeInTheDocument();
-    expect(screen.getAllByText('--').length).toBeGreaterThanOrEqual(2);
+    expect(await screen.findByText("HK00700")).toBeInTheDocument();
+    expect(screen.getByText("420.0000")).toBeInTheDocument();
+    expect(screen.getByText("HKD 4,200.00")).toBeInTheDocument();
+    expect(screen.getByText("+5.00%")).toBeInTheDocument();
+    expect(screen.getByText("收盘价 · 2026-03-18")).toBeInTheDocument();
+    expect(screen.getByText("缺价")).toBeInTheDocument();
+    expect(screen.getAllByText("--").length).toBeGreaterThanOrEqual(2);
 
-    const hkRow = screen.getByText('HK00700').closest('tr');
-    const aaplRow = screen.getByText('AAPL').closest('tr');
+    const hkRow = screen.getByText("HK00700").closest("tr");
+    const aaplRow = screen.getByText("AAPL").closest("tr");
     expect(hkRow).not.toBeNull();
     expect(aaplRow).not.toBeNull();
 
-    const hkRowCells = within(hkRow as HTMLTableRowElement).getAllByRole('cell');
-    const aaplRowCells = within(aaplRow as HTMLTableRowElement).getAllByRole('cell');
-    expect(hkRowCells.at(-1)).toHaveClass('text-success');
-    expect(aaplRowCells.at(-1)).toHaveClass('text-secondary');
+    const hkRowCells = within(hkRow as HTMLTableRowElement).getAllByRole(
+      "cell",
+    );
+    const aaplRowCells = within(aaplRow as HTMLTableRowElement).getAllByRole(
+      "cell",
+    );
+    expect(hkRowCells.at(-1)).toHaveClass("text-success");
+    expect(aaplRowCells.at(-1)).toHaveClass("text-secondary");
   });
 
-  it('prefers disabled feedback over empty-pair feedback when refresh is disabled', async () => {
+  it("prefers disabled feedback over empty-pair feedback when refresh is disabled", async () => {
     refreshFx.mockResolvedValueOnce({
-      asOf: '2026-03-19',
+      asOf: "2026-03-19",
       accountCount: 1,
       refreshEnabled: false,
-      disabledReason: 'portfolio_fx_update_disabled',
+      disabledReason: "portfolio_fx_update_disabled",
       pairCount: 0,
       updatedCount: 0,
       staleCount: 0,
@@ -365,15 +463,19 @@ describe('PortfolioPage FX refresh', () => {
 
     await waitForInitialLoad();
 
-    fireEvent.click(screen.getByRole('button', { name: '刷新汇率' }));
+    fireEvent.click(screen.getByRole("button", { name: "刷新汇率" }));
 
-    expect(await screen.findByText('汇率在线刷新已被禁用。')).toBeInTheDocument();
-    expect(screen.queryByText('当前范围无可刷新的汇率对。')).not.toBeInTheDocument();
+    expect(
+      await screen.findByText("汇率在线刷新已被禁用。"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("当前范围无可刷新的汇率对。"),
+    ).not.toBeInTheDocument();
   });
 
-  it('shows warning feedback when FX refresh still falls back to stale rates', async () => {
+  it("shows warning feedback when FX refresh still falls back to stale rates", async () => {
     refreshFx.mockResolvedValueOnce({
-      asOf: '2026-03-19',
+      asOf: "2026-03-19",
       accountCount: 1,
       pairCount: 2,
       updatedCount: 1,
@@ -385,14 +487,14 @@ describe('PortfolioPage FX refresh', () => {
 
     await waitForInitialLoad();
 
-    fireEvent.click(screen.getByRole('button', { name: '刷新汇率' }));
+    fireEvent.click(screen.getByRole("button", { name: "刷新汇率" }));
 
     expect(await screen.findByText(/stale\/fallback 汇率/)).toBeInTheDocument();
   });
 
-  it('shows warning feedback when FX refresh returns online errors without stale pairs', async () => {
+  it("shows warning feedback when FX refresh returns online errors without stale pairs", async () => {
     refreshFx.mockResolvedValueOnce({
-      asOf: '2026-03-19',
+      asOf: "2026-03-19",
       accountCount: 1,
       pairCount: 1,
       updatedCount: 0,
@@ -408,22 +510,26 @@ describe('PortfolioPage FX refresh', () => {
     const riskCallsBeforeRefresh = getRisk.mock.calls.length;
     const tradeCallsBeforeRefresh = listTrades.mock.calls.length;
 
-    fireEvent.click(screen.getByRole('button', { name: '刷新汇率' }));
+    fireEvent.click(screen.getByRole("button", { name: "刷新汇率" }));
 
     expect(await screen.findByText(/在线刷新未完全成功/)).toBeInTheDocument();
-    await waitFor(() => expect(getSnapshot).toHaveBeenCalledTimes(snapshotCallsBeforeRefresh + 1));
-    await waitFor(() => expect(getRisk).toHaveBeenCalledTimes(riskCallsBeforeRefresh + 1));
+    await waitFor(() =>
+      expect(getSnapshot).toHaveBeenCalledTimes(snapshotCallsBeforeRefresh + 1),
+    );
+    await waitFor(() =>
+      expect(getRisk).toHaveBeenCalledTimes(riskCallsBeforeRefresh + 1),
+    );
     expect(listTrades).toHaveBeenCalledTimes(tradeCallsBeforeRefresh);
     expect(listCashLedger).not.toHaveBeenCalled();
     expect(listCorporateActions).not.toHaveBeenCalled();
   });
 
-  it('restores the button state and shows the existing error alert when FX refresh fails', async () => {
+  it("restores the button state and shows the existing error alert when FX refresh fails", async () => {
     refreshFx.mockRejectedValueOnce(
       createApiError(
         createParsedApiError({
-          title: '刷新失败',
-          message: '汇率服务暂时不可用',
+          title: "刷新失败",
+          message: "汇率服务暂时不可用",
         }),
       ),
     );
@@ -432,22 +538,28 @@ describe('PortfolioPage FX refresh', () => {
 
     await waitForInitialLoad();
 
-    const refreshButton = screen.getByRole('button', { name: '刷新汇率' });
+    const refreshButton = screen.getByRole("button", { name: "刷新汇率" });
     fireEvent.click(refreshButton);
 
-    const fxAlertTitle = await screen.findByText('刷新失败');
-    expect(fxAlertTitle.closest('[role="alert"]')).toHaveTextContent('汇率服务暂时不可用');
-    await waitFor(() => expect(screen.getByRole('button', { name: '刷新汇率' })).not.toBeDisabled());
+    const fxAlertTitle = await screen.findByText("刷新失败");
+    expect(fxAlertTitle.closest('[role="alert"]')).toHaveTextContent(
+      "汇率服务暂时不可用",
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "刷新汇率" }),
+      ).not.toBeDisabled(),
+    );
   });
 
-  it('does not keep success feedback when snapshot reload fails after FX refresh succeeds', async () => {
+  it("does not keep success feedback when snapshot reload fails after FX refresh succeeds", async () => {
     getSnapshot
       .mockResolvedValueOnce(makeSnapshot({ fxStale: true }))
       .mockRejectedValueOnce(
         createApiError(
           createParsedApiError({
-            title: '快照刷新失败',
-            message: '无法加载最新持仓快照',
+            title: "快照刷新失败",
+            message: "无法加载最新持仓快照",
           }),
         ),
       );
@@ -456,22 +568,43 @@ describe('PortfolioPage FX refresh', () => {
 
     await waitForInitialLoad();
 
-    fireEvent.click(screen.getByRole('button', { name: '刷新汇率' }));
+    fireEvent.click(screen.getByRole("button", { name: "刷新汇率" }));
 
-    const fxAlertTitle = await screen.findByText('快照刷新失败');
-    expect(fxAlertTitle.closest('[role="alert"]')).toHaveTextContent('无法加载最新持仓快照');
-    await waitFor(() => expect(screen.queryByText('汇率已刷新，共更新 1 对。')).not.toBeInTheDocument());
-    await waitFor(() => expect(screen.getByRole('button', { name: '刷新汇率' })).not.toBeDisabled());
+    const fxAlertTitle = await screen.findByText("快照刷新失败");
+    expect(fxAlertTitle.closest('[role="alert"]')).toHaveTextContent(
+      "无法加载最新持仓快照",
+    );
+    await waitFor(() =>
+      expect(
+        screen.queryByText("汇率已刷新，共更新 1 对。"),
+      ).not.toBeInTheDocument(),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "刷新汇率" }),
+      ).not.toBeDisabled(),
+    );
   });
 
-  it('drops late FX refresh results after switching to another account scope', async () => {
-    getAccounts.mockResolvedValueOnce(makeAccounts([{ id: 1, name: 'Main' }, { id: 2, name: 'Alt' }]));
-    getSnapshot.mockImplementation(async ({ accountId }: { accountId?: number } = {}) => {
-      if (accountId === 2) {
-        return makeSnapshot({ accountId: 2, fxStale: false });
-      }
-      return makeSnapshot({ accountId: accountId ?? 1, fxStale: true, accountCount: accountId ? 1 : 2 });
-    });
+  it("drops late FX refresh results after switching to another account scope", async () => {
+    getAccounts.mockResolvedValueOnce(
+      makeAccounts([
+        { id: 1, name: "Main" },
+        { id: 2, name: "Alt" },
+      ]),
+    );
+    getSnapshot.mockImplementation(
+      async ({ accountId }: { accountId?: number } = {}) => {
+        if (accountId === 2) {
+          return makeSnapshot({ accountId: 2, fxStale: false });
+        }
+        return makeSnapshot({
+          accountId: accountId ?? 1,
+          fxStale: true,
+          accountCount: accountId ? 1 : 2,
+        });
+      },
+    );
 
     const pendingRefresh = deferredPromise<{
       asOf: string;
@@ -487,23 +620,39 @@ describe('PortfolioPage FX refresh', () => {
 
     await waitForInitialLoad();
 
-    const accountSelect = screen.getAllByRole('combobox')[0];
-    fireEvent.change(accountSelect, { target: { value: '1' } });
-    await waitFor(() => expect(getSnapshot).toHaveBeenLastCalledWith({ accountId: 1, costMethod: 'fifo' }));
+    const accountSelect = screen.getAllByRole("combobox")[0];
+    fireEvent.change(accountSelect, { target: { value: "1" } });
+    await waitFor(() =>
+      expect(getSnapshot).toHaveBeenLastCalledWith({
+        accountId: 1,
+        costMethod: "fifo",
+      }),
+    );
 
-    fireEvent.click(screen.getByRole('button', { name: '刷新汇率' }));
-    expect(await screen.findByRole('button', { name: '刷新中...' })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "刷新汇率" }));
+    expect(
+      await screen.findByRole("button", { name: "刷新中..." }),
+    ).toBeDisabled();
 
-    fireEvent.change(accountSelect, { target: { value: '2' } });
-    await waitFor(() => expect(getSnapshot).toHaveBeenLastCalledWith({ accountId: 2, costMethod: 'fifo' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: '刷新汇率' })).not.toBeDisabled());
+    fireEvent.change(accountSelect, { target: { value: "2" } });
+    await waitFor(() =>
+      expect(getSnapshot).toHaveBeenLastCalledWith({
+        accountId: 2,
+        costMethod: "fifo",
+      }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "刷新汇率" }),
+      ).not.toBeDisabled(),
+    );
 
     const snapshotCallsAfterSwitch = getSnapshot.mock.calls.length;
     const riskCallsAfterSwitch = getRisk.mock.calls.length;
 
     await act(async () => {
       pendingRefresh.resolve({
-        asOf: '2026-03-19',
+        asOf: "2026-03-19",
         accountCount: 1,
         pairCount: 1,
         updatedCount: 1,
@@ -515,10 +664,12 @@ describe('PortfolioPage FX refresh', () => {
 
     expect(getSnapshot).toHaveBeenCalledTimes(snapshotCallsAfterSwitch);
     expect(getRisk).toHaveBeenCalledTimes(riskCallsAfterSwitch);
-    expect(screen.queryByText('汇率已刷新，共更新 1 对。')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("汇率已刷新，共更新 1 对。"),
+    ).not.toBeInTheDocument();
   });
 
-  it('drops late FX refresh results after switching cost method', async () => {
+  it("drops late FX refresh results after switching cost method", async () => {
     const pendingRefresh = deferredPromise<{
       asOf: string;
       accountCount: number;
@@ -533,21 +684,32 @@ describe('PortfolioPage FX refresh', () => {
 
     await waitForInitialLoad();
 
-    const costMethodSelect = screen.getAllByRole('combobox')[1];
+    const costMethodSelect = screen.getAllByRole("combobox")[1];
 
-    fireEvent.click(screen.getByRole('button', { name: '刷新汇率' }));
-    expect(await screen.findByRole('button', { name: '刷新中...' })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "刷新汇率" }));
+    expect(
+      await screen.findByRole("button", { name: "刷新中..." }),
+    ).toBeDisabled();
 
-    fireEvent.change(costMethodSelect, { target: { value: 'avg' } });
-    await waitFor(() => expect(getSnapshot).toHaveBeenLastCalledWith({ accountId: undefined, costMethod: 'avg' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: '刷新汇率' })).not.toBeDisabled());
+    fireEvent.change(costMethodSelect, { target: { value: "avg" } });
+    await waitFor(() =>
+      expect(getSnapshot).toHaveBeenLastCalledWith({
+        accountId: undefined,
+        costMethod: "avg",
+      }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "刷新汇率" }),
+      ).not.toBeDisabled(),
+    );
 
     const snapshotCallsAfterSwitch = getSnapshot.mock.calls.length;
     const riskCallsAfterSwitch = getRisk.mock.calls.length;
 
     await act(async () => {
       pendingRefresh.resolve({
-        asOf: '2026-03-19',
+        asOf: "2026-03-19",
         accountCount: 1,
         pairCount: 1,
         updatedCount: 1,
@@ -559,6 +721,8 @@ describe('PortfolioPage FX refresh', () => {
 
     expect(getSnapshot).toHaveBeenCalledTimes(snapshotCallsAfterSwitch);
     expect(getRisk).toHaveBeenCalledTimes(riskCallsAfterSwitch);
-    expect(screen.queryByText('汇率已刷新，共更新 1 对。')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("汇率已刷新，共更新 1 对。"),
+    ).not.toBeInTheDocument();
   });
 });

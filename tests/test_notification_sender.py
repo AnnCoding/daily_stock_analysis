@@ -200,7 +200,7 @@ class TestFeishuSender(unittest.TestCase):
         ).decode("utf-8")
         self.assertEqual(payload["sign"], expected_sign)
         self.assertEqual(
-            payload["card"]["elements"][0]["text"]["content"],
+            payload["card"]["data"]["template_variable"]["show_content"],
             "股票日报\nhello",
         )
 

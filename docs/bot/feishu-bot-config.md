@@ -10,6 +10,7 @@
 ### 模式一：群机器人 Webhook 推送
 
 适用场景：
+
 - 你只想把分析报告推送到飞书群
 - 不需要处理飞书消息回调
 - 不需要 Stream Bot
@@ -28,6 +29,7 @@ FEISHU_WEBHOOK_KEYWORD=股票日报
 ### 模式二：飞书应用 / Stream Bot / 云文档
 
 适用场景：
+
 - 你要做飞书应用机器人交互
 - 你要启用 Stream 模式
 - 你要用飞书云文档能力
@@ -41,6 +43,7 @@ FEISHU_STREAM_ENABLED=true
 ```
 
 注意：
+
 - `FEISHU_APP_ID` / `FEISHU_APP_SECRET` 不会直接开启群 Webhook 推送
 - 只想收通知时，不要只填 App ID / Secret，必须优先配置 `FEISHU_WEBHOOK_URL`
 - 如果你做的是应用机器人 / Stream Bot，可直接看文末保留的原流程截图参考
@@ -50,6 +53,7 @@ FEISHU_STREAM_ENABLED=true
 ### 1. 在飞书群里创建自定义机器人
 
 路径通常是：
+
 - 群聊
 - 群设置
 - 群机器人
@@ -148,36 +152,44 @@ FEISHU_APP_SECRET=...
 ### 1. 只填了 `FEISHU_APP_ID` / `FEISHU_APP_SECRET`
 
 现象：
+
 - 你觉得“飞书已经配好了”
 - 实际完全收不到群通知
 
 原因：
+
 - 这两个变量是应用模式用的，不是群 Webhook 推送入口
 
 正确做法：
+
 - 补 `FEISHU_WEBHOOK_URL`
 
 ### 2. 飞书机器人开启了关键词，但本地没配 `FEISHU_WEBHOOK_KEYWORD`
 
 现象：
+
 - 其他 App 能发
 - 本项目发不进去，或者飞书直接返回校验失败
 
 正确做法：
+
 - 把飞书机器人安全设置中的关键词原样填到 `FEISHU_WEBHOOK_KEYWORD`
 
 ### 3. 飞书机器人开启了签名校验，但本地没配 `FEISHU_WEBHOOK_SECRET`
 
 现象：
+
 - Webhook URL 看起来没问题
 - 但飞书返回签名相关错误
 
 正确做法：
+
 - 把机器人 secret 填到 `FEISHU_WEBHOOK_SECRET`
 
 ### 4. 机器人没在目标群里，或者没有发言权限
 
 检查：
+
 - 机器人是否真的被添加到了目标群
 - 群管理员是否限制了机器人发消息
 
@@ -186,6 +198,7 @@ FEISHU_APP_SECRET=...
 如果你在云服务器、Docker、GitHub Actions 上跑，出口 IP 可能和本地不同。
 
 检查：
+
 - 飞书机器人是否启用了 IP 白名单
 - 当前运行环境出口 IP 是否在白名单里
 

@@ -1,12 +1,15 @@
-import type React from 'react';
+import type React from "react";
 import type {
   ReportDetails as ReportDetailsType,
   ReportMeta,
   ReportSummary as ReportSummaryType,
-} from '../../types/analysis';
-import { Badge, Card, ScoreGauge } from '../common';
-import { formatDateTime } from '../../utils/format';
-import { getReportText, normalizeReportLanguage } from '../../utils/reportLanguage';
+} from "../../types/analysis";
+import { Badge, Card, ScoreGauge } from "../common";
+import { formatDateTime } from "../../utils/format";
+import {
+  getReportText,
+  normalizeReportLanguage,
+} from "../../utils/reportLanguage";
 
 interface ReportOverviewProps {
   meta: ReportMeta;
@@ -15,7 +18,7 @@ interface ReportOverviewProps {
   isHistory?: boolean;
 }
 
-type BoardStatus = 'leading' | 'lagging';
+type BoardStatus = "leading" | "lagging";
 
 type BoardSignal = {
   status: BoardStatus;
@@ -23,14 +26,14 @@ type BoardSignal = {
 };
 
 const normalizeBoardName = (value?: string): string =>
-  (value || '').trim().replace(/\s+/g, ' ');
+  (value || "").trim().replace(/\s+/g, " ");
 
 const coerceFiniteNumber = (value: unknown): number | undefined => {
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return Number.isFinite(value) ? value : undefined;
   }
-  if (typeof value === 'string') {
-    const trimmed = value.trim().replace(/%$/, '');
+  if (typeof value === "string") {
+    const trimmed = value.trim().replace(/%$/, "");
     if (!trimmed) {
       return undefined;
     }
@@ -40,10 +43,16 @@ const coerceFiniteNumber = (value: unknown): number | undefined => {
   return undefined;
 };
 
-const buildBoardSignalMap = (details?: ReportDetailsType): Map<string, BoardSignal> => {
+const buildBoardSignalMap = (
+  details?: ReportDetailsType,
+): Map<string, BoardSignal> => {
   const signalMap = new Map<string, BoardSignal>();
-  const topBoards = Array.isArray(details?.sectorRankings?.top) ? details.sectorRankings.top : [];
-  const bottomBoards = Array.isArray(details?.sectorRankings?.bottom) ? details.sectorRankings.bottom : [];
+  const topBoards = Array.isArray(details?.sectorRankings?.top)
+    ? details.sectorRankings.top
+    : [];
+  const bottomBoards = Array.isArray(details?.sectorRankings?.bottom)
+    ? details.sectorRankings.bottom
+    : [];
 
   topBoards.forEach((item) => {
     const normalizedName = normalizeBoardName(item?.name);
@@ -51,7 +60,7 @@ const buildBoardSignalMap = (details?: ReportDetailsType): Map<string, BoardSign
       return;
     }
     signalMap.set(normalizedName, {
-      status: 'leading',
+      status: "leading",
       changePct: coerceFiniteNumber(item.changePct),
     });
   });
@@ -62,7 +71,7 @@ const buildBoardSignalMap = (details?: ReportDetailsType): Map<string, BoardSign
       return;
     }
     signalMap.set(normalizedName, {
-      status: 'lagging',
+      status: "lagging",
       changePct: coerceFiniteNumber(item.changePct),
     });
   });
@@ -80,45 +89,49 @@ export const ReportOverview: React.FC<ReportOverviewProps> = ({
 }) => {
   const reportLanguage = normalizeReportLanguage(meta.reportLanguage);
   const text = getReportText(reportLanguage);
-  const relatedBoards = (Array.isArray(details?.belongBoards) ? details.belongBoards : [])
+  const relatedBoards = (
+    Array.isArray(details?.belongBoards) ? details.belongBoards : []
+  )
     .filter((board) => normalizeBoardName(board?.name).length > 0)
     .slice(0, 3);
   const boardSignals = buildBoardSignalMap(details);
 
-  const getPriceChangeStyle = (changePct: number | undefined): React.CSSProperties | undefined => {
+  const getPriceChangeStyle = (
+    changePct: number | undefined,
+  ): React.CSSProperties | undefined => {
     if (changePct === undefined || changePct === null) {
       return undefined;
     }
 
     if (changePct > 0) {
-      return { color: 'var(--home-price-up)' };
+      return { color: "var(--home-price-up)" };
     }
 
     if (changePct < 0) {
-      return { color: 'var(--home-price-down)' };
+      return { color: "var(--home-price-down)" };
     }
 
     return undefined;
   };
 
   const formatChangePct = (changePct: number | undefined): string => {
-    if (changePct === undefined || changePct === null) return '--';
-    const sign = changePct > 0 ? '+' : '';
+    if (changePct === undefined || changePct === null) return "--";
+    const sign = changePct > 0 ? "+" : "";
     return `${sign}${changePct.toFixed(2)}%`;
   };
 
   const getBoardStatusLabel = (status: BoardStatus): string => {
-    if (status === 'leading') {
+    if (status === "leading") {
       return text.leadingBoard;
     }
     return text.laggingBoard;
   };
 
-  const getBoardStatusVariant = (status: BoardStatus): 'success' | 'danger' => {
-    if (status === 'leading') {
-      return 'success';
+  const getBoardStatusVariant = (status: BoardStatus): "success" | "danger" => {
+    if (status === "leading") {
+      return "success";
     }
-    return 'danger';
+    return "danger";
   };
 
   return (
@@ -138,10 +151,16 @@ export const ReportOverview: React.FC<ReportOverviewProps> = ({
                   {/* 价格和涨跌幅 */}
                   {meta.currentPrice != null && (
                     <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-bold font-mono" style={getPriceChangeStyle(meta.changePct)}>
+                      <span
+                        className="text-xl font-bold font-mono"
+                        style={getPriceChangeStyle(meta.changePct)}
+                      >
                         {meta.currentPrice.toFixed(2)}
                       </span>
-                      <span className="text-sm font-semibold font-mono" style={getPriceChangeStyle(meta.changePct)}>
+                      <span
+                        className="text-sm font-semibold font-mono"
+                        style={getPriceChangeStyle(meta.changePct)}
+                      >
                         {formatChangePct(meta.changePct)}
                       </span>
                     </div>
@@ -152,8 +171,18 @@ export const ReportOverview: React.FC<ReportOverviewProps> = ({
                     {meta.stockCode}
                   </span>
                   <span className="text-xs text-muted-text flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
                     </svg>
                     {formatDateTime(meta.createdAt)}
                   </span>
@@ -178,16 +207,30 @@ export const ReportOverview: React.FC<ReportOverviewProps> = ({
               padding="sm"
               hoverable
               className="home-panel-card home-insight-card"
-              style={{ ['--home-insight-tone' as string]: 'var(--home-strategy-buy)' }}
+              style={{
+                ["--home-insight-tone" as string]: "var(--home-strategy-buy)",
+              }}
             >
               <div className="flex items-start gap-3">
                 <div className="home-insight-icon w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  <svg
+                    className="w-4 h-4 text-success"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                    />
                   </svg>
                 </div>
                 <div className="space-y-1.5">
-                  <h4 className="home-insight-title text-[11px] font-medium uppercase tracking-[0.16em]">{text.actionAdvice}</h4>
+                  <h4 className="home-insight-title text-[11px] font-medium uppercase tracking-[0.16em]">
+                    {text.actionAdvice}
+                  </h4>
                   <p className="home-insight-body text-sm leading-6">
                     {summary.operationAdvice || text.noAdvice}
                   </p>
@@ -201,16 +244,30 @@ export const ReportOverview: React.FC<ReportOverviewProps> = ({
               padding="sm"
               hoverable
               className="home-panel-card home-insight-card"
-              style={{ ['--home-insight-tone' as string]: 'var(--home-strategy-take)' }}
+              style={{
+                ["--home-insight-tone" as string]: "var(--home-strategy-take)",
+              }}
             >
               <div className="flex items-start gap-3">
                 <div className="home-insight-icon w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  <svg
+                    className="w-4 h-4 text-warning"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    />
                   </svg>
                 </div>
                 <div className="space-y-1.5">
-                  <h4 className="home-insight-title text-[11px] font-medium uppercase tracking-[0.16em]">{text.trendPrediction}</h4>
+                  <h4 className="home-insight-title text-[11px] font-medium uppercase tracking-[0.16em]">
+                    {text.trendPrediction}
+                  </h4>
                   <p className="home-insight-body text-sm leading-6">
                     {summary.trendPrediction || text.noPrediction}
                   </p>
@@ -220,10 +277,16 @@ export const ReportOverview: React.FC<ReportOverviewProps> = ({
           </div>
 
           {relatedBoards.length > 0 && (
-            <Card variant="bordered" padding="sm" className="home-panel-card text-left">
+            <Card
+              variant="bordered"
+              padding="sm"
+              className="home-panel-card text-left"
+            >
               <div className="mb-3 flex items-baseline gap-2">
                 <span className="label-uppercase">{text.boardLinkage}</span>
-                <h3 className="mt-0.5 text-base font-semibold text-foreground">{text.relatedBoards}</h3>
+                <h3 className="mt-0.5 text-base font-semibold text-foreground">
+                  {text.relatedBoards}
+                </h3>
               </div>
 
               <div className="space-y-2.5">
@@ -251,14 +314,16 @@ export const ReportOverview: React.FC<ReportOverviewProps> = ({
                           {getBoardStatusLabel(signal.status)}
                         </Badge>
                       )}
-                      {signal && signal.changePct !== undefined && signal.changePct !== null && (
-                        <span
-                          className="text-xs font-mono"
-                          style={getPriceChangeStyle(signal.changePct)}
-                        >
-                          {formatChangePct(signal.changePct)}
-                        </span>
-                      )}
+                      {signal &&
+                        signal.changePct !== undefined &&
+                        signal.changePct !== null && (
+                          <span
+                            className="text-xs font-mono"
+                            style={getPriceChangeStyle(signal.changePct)}
+                          >
+                            {formatChangePct(signal.changePct)}
+                          </span>
+                        )}
                     </div>
                   );
                 })}
@@ -269,10 +334,20 @@ export const ReportOverview: React.FC<ReportOverviewProps> = ({
 
         {/* 右侧：情绪指标 - 填满格子高度，消除与 STRATEGY POINTS 之间的空隙 */}
         <div className="flex flex-col self-stretch min-h-full">
-          <Card variant="bordered" padding="md" className="home-panel-card home-rail-card !overflow-visible flex-1 flex flex-col min-h-0">
+          <Card
+            variant="bordered"
+            padding="md"
+            className="home-panel-card home-rail-card !overflow-visible flex-1 flex flex-col min-h-0"
+          >
             <div className="text-center flex-1 flex flex-col justify-center">
-              <h3 className="mb-5 text-sm font-medium tracking-wide text-foreground">{text.marketSentiment}</h3>
-              <ScoreGauge score={summary.sentimentScore} size="lg" language={reportLanguage} />
+              <h3 className="mb-5 text-sm font-medium tracking-wide text-foreground">
+                {text.marketSentiment}
+              </h3>
+              <ScoreGauge
+                score={summary.sentimentScore}
+                size="lg"
+                language={reportLanguage}
+              />
             </div>
           </Card>
         </div>

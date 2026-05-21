@@ -1,22 +1,35 @@
-import type React from 'react';
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { createParsedApiError, getParsedApiError, type ParsedApiError } from '../api/error';
-import { authApi } from '../api/auth';
-import { useStockPoolStore } from '../stores';
+import type React from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import {
+  createParsedApiError,
+  getParsedApiError,
+  type ParsedApiError,
+} from "../api/error";
+import { authApi } from "../api/auth";
+import { useStockPoolStore } from "../stores";
 
 type AuthContextValue = {
   authEnabled: boolean;
   loggedIn: boolean;
   passwordSet: boolean;
   passwordChangeable: boolean;
-  setupState: 'enabled' | 'password_retained' | 'no_password';
+  setupState: "enabled" | "password_retained" | "no_password";
   isLoading: boolean;
   loadError: ParsedApiError | null;
-  login: (password: string, passwordConfirm?: string) => Promise<{ success: boolean; error?: ParsedApiError }>;
+  login: (
+    password: string,
+    passwordConfirm?: string,
+  ) => Promise<{ success: boolean; error?: ParsedApiError }>;
   changePassword: (
     currentPassword: string,
     newPassword: string,
-    newPasswordConfirm: string
+    newPasswordConfirm: string,
   ) => Promise<{ success: boolean; error?: ParsedApiError }>;
   logout: () => Promise<void>;
   refreshStatus: () => Promise<void>;
@@ -28,8 +41,8 @@ function extractLoginError(err: unknown): ParsedApiError {
   const parsed = getParsedApiError(err);
   if (parsed.status === 429) {
     return createParsedApiError({
-      title: '登录尝试过于频繁',
-      message: '尝试次数过多，请稍后再试。',
+      title: "登录尝试过于频繁",
+      message: "尝试次数过多，请稍后再试。",
       rawMessage: parsed.rawMessage,
       status: parsed.status,
       category: parsed.category,
@@ -43,7 +56,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [passwordSet, setPasswordSet] = useState(false);
   const [passwordChangeable, setPasswordChangeable] = useState(false);
-  const [setupState, setSetupState] = useState<'enabled' | 'password_retained' | 'no_password'>('no_password');
+  const [setupState, setSetupState] = useState<
+    "enabled" | "password_retained" | "no_password"
+  >("no_password");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<ParsedApiError | null>(null);
 
@@ -66,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoggedIn(false);
       setPasswordSet(false);
       setPasswordChangeable(false);
-      setSetupState('no_password');
+      setSetupState("no_password");
       useStockPoolStore.getState().resetDashboardState();
     } finally {
       setIsLoading(false);
@@ -80,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(
     async (
       password: string,
-      passwordConfirm?: string
+      passwordConfirm?: string,
     ): Promise<{ success: boolean; error?: ParsedApiError }> => {
       try {
         await authApi.login(password, passwordConfirm);
@@ -90,23 +105,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: extractLoginError(err) };
       }
     },
-    [fetchStatus]
+    [fetchStatus],
   );
 
   const changePassword = useCallback(
     async (
       currentPassword: string,
       newPassword: string,
-      newPasswordConfirm: string
+      newPasswordConfirm: string,
     ): Promise<{ success: boolean; error?: ParsedApiError }> => {
       try {
-        await authApi.changePassword(currentPassword, newPassword, newPasswordConfirm);
+        await authApi.changePassword(
+          currentPassword,
+          newPassword,
+          newPasswordConfirm,
+        );
         return { success: true };
       } catch (err: unknown) {
         return { success: false, error: getParsedApiError(err) };
       }
     },
-    []
+    [],
   );
 
   const logout = useCallback(async () => {
@@ -149,7 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return ctx;
 }

@@ -55,94 +55,94 @@ Go to your forked repo → `Settings` → `Secrets and variables` → `Actions` 
 
 #### AI Model Configuration (Configure at Least One)
 
-| Secret Name | Description | Required |
-|------------|------|:----:|
-| `ANSPIRE_API_KEYS` | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC) API key, one key for popular LLMs and Chinese-optimized web search with free quota for this project | Recommended |
-| `AIHUBMIX_KEY` | [AIHubMix](https://aihubmix.com/?aff=CfMq) API key, one key for multiple model families and a 10% top-up discount for this project | Recommended |
-| `GEMINI_API_KEY` | Get free key from [Google AI Studio](https://aistudio.google.com/) | Optional |
-| `ANTHROPIC_API_KEY` | Anthropic Claude API Key | Optional |
-| `OPENAI_API_KEY` | OpenAI-compatible API Key (supports DeepSeek, Qwen, etc.) | Optional |
-| `OPENAI_BASE_URL` | OpenAI-compatible API endpoint (e.g., `https://api.deepseek.com`) | Optional |
-| `OPENAI_MODEL` | Model name (e.g., `deepseek-v4-flash`) | Optional |
+| Secret Name         | Description                                                                                                                                                 |  Required   |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------: |
+| `ANSPIRE_API_KEYS`  | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC) API key, one key for popular LLMs and Chinese-optimized web search with free quota for this project | Recommended |
+| `AIHUBMIX_KEY`      | [AIHubMix](https://aihubmix.com/?aff=CfMq) API key, one key for multiple model families and a 10% top-up discount for this project                          | Recommended |
+| `GEMINI_API_KEY`    | Get free key from [Google AI Studio](https://aistudio.google.com/)                                                                                          |  Optional   |
+| `ANTHROPIC_API_KEY` | Anthropic Claude API Key                                                                                                                                    |  Optional   |
+| `OPENAI_API_KEY`    | OpenAI-compatible API Key (supports DeepSeek, Qwen, etc.)                                                                                                   |  Optional   |
+| `OPENAI_BASE_URL`   | OpenAI-compatible API endpoint (e.g., `https://api.deepseek.com`)                                                                                           |  Optional   |
+| `OPENAI_MODEL`      | Model name (e.g., `deepseek-v4-flash`)                                                                                                                      |  Optional   |
 
-> *Note: Configure at least one model key or channel. Anspire or AIHubMix is the simplest starting point for one-key multi-model access.
+> \*Note: Configure at least one model key or channel. Anspire or AIHubMix is the simplest starting point for one-key multi-model access.
 
 #### Notification Channels (Multiple can be configured, all will receive notifications)
 
 > The notification baseline, minimal/advanced key split, Actions mapping, `--check-notify` CLI behavior, and Web one-click notification test are tracked in [Notification Baseline](notifications.md). A complete English notification topic remains a later follow-up.
 
-| Secret Name | Description | Required |
-|------------|------|:----:|
-| `WECHAT_WEBHOOK_URL` | WeChat Work Webhook URL | Optional |
-| `FEISHU_WEBHOOK_URL` | Feishu Webhook URL | Optional |
-| `FEISHU_WEBHOOK_SECRET` | Feishu Webhook signing secret (required when “Signature” security is enabled) | Optional |
-| `FEISHU_WEBHOOK_KEYWORD` | Feishu Webhook keyword (required when “Keyword” security is enabled) | Optional |
-| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token (get from @BotFather) | Optional |
-| `TELEGRAM_CHAT_ID` | Telegram Chat ID | Optional |
-| `TELEGRAM_MESSAGE_THREAD_ID` | Telegram Topic ID (for sending to topics) | Optional |
-| `DISCORD_WEBHOOK_URL` | Discord Webhook URL ([How to create](https://support.discord.com/hc/en-us/articles/228383668)) | Optional |
-| `DISCORD_BOT_TOKEN` | Discord Bot Token (choose one with Webhook) | Optional |
-| `DISCORD_MAIN_CHANNEL_ID` | Discord Channel ID (required when using Bot) | Optional |
-| `DISCORD_INTERACTIONS_PUBLIC_KEY` | Discord Public Key (required only for inbound Interaction/Webhook signature verification) | Optional |
-| `SLACK_BOT_TOKEN` | Slack Bot Token (recommended, supports image upload; takes priority over Webhook when both set) | Optional |
-| `SLACK_CHANNEL_ID` | Slack Channel ID (required when using Bot) | Optional |
-| `SLACK_WEBHOOK_URL` | Slack Incoming Webhook URL (text only, no image support) | Optional |
-| `EMAIL_SENDER` | Sender email (e.g., `xxx@qq.com`) | Optional |
-| `EMAIL_PASSWORD` | Email authorization code (not login password) | Optional |
-| `EMAIL_RECEIVERS` | Receiver emails (comma-separated, leave empty to send to self) | Optional |
-| `EMAIL_SENDER_NAME` | Sender display name | Optional |
-| `STOCK_GROUP_N` / `EMAIL_GROUP_N` | Email routing groups (Issue #268): `STOCK_GROUP_N` should be a subset of `STOCK_LIST`; affects email recipients only, not analysis scope or other channels | Optional |
-| `PUSHPLUS_TOKEN` | PushPlus Token ([Get here](https://www.pushplus.plus), Chinese push service) | Optional |
-| `SERVERCHAN3_SENDKEY` | ServerChan v3 Sendkey ([Get here](https://sc3.ft07.com/), mobile app push service) | Optional |
-| `ASTRBOT_URL` | AstrBot Webhook URL | Optional |
-| `ASTRBOT_TOKEN` | Optional AstrBot Bearer Token | Optional |
-| `CUSTOM_WEBHOOK_URLS` | Custom Webhook (supports DingTalk, etc., comma-separated) | Optional |
-| `CUSTOM_WEBHOOK_BEARER_TOKEN` | Bearer Token for custom webhooks (for authenticated webhooks) | Optional |
-| `CUSTOM_WEBHOOK_BODY_TEMPLATE` | Custom Webhook JSON body template for AstrBot, NapCat, or self-hosted services with special payloads | Optional |
-| `WEBHOOK_VERIFY_SSL` | Verify Webhook HTTPS certificates (default true). Set to false for self-signed certs. WARNING: Disabling has serious security risk (MITM), use only on trusted internal networks | Optional |
+| Secret Name                       | Description                                                                                                                                                                      | Required |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------: |
+| `WECHAT_WEBHOOK_URL`              | WeChat Work Webhook URL                                                                                                                                                          | Optional |
+| `FEISHU_WEBHOOK_URL`              | Feishu Webhook URL                                                                                                                                                               | Optional |
+| `FEISHU_WEBHOOK_SECRET`           | Feishu Webhook signing secret (required when “Signature” security is enabled)                                                                                                    | Optional |
+| `FEISHU_WEBHOOK_KEYWORD`          | Feishu Webhook keyword (required when “Keyword” security is enabled)                                                                                                             | Optional |
+| `TELEGRAM_BOT_TOKEN`              | Telegram Bot Token (get from @BotFather)                                                                                                                                         | Optional |
+| `TELEGRAM_CHAT_ID`                | Telegram Chat ID                                                                                                                                                                 | Optional |
+| `TELEGRAM_MESSAGE_THREAD_ID`      | Telegram Topic ID (for sending to topics)                                                                                                                                        | Optional |
+| `DISCORD_WEBHOOK_URL`             | Discord Webhook URL ([How to create](https://support.discord.com/hc/en-us/articles/228383668))                                                                                   | Optional |
+| `DISCORD_BOT_TOKEN`               | Discord Bot Token (choose one with Webhook)                                                                                                                                      | Optional |
+| `DISCORD_MAIN_CHANNEL_ID`         | Discord Channel ID (required when using Bot)                                                                                                                                     | Optional |
+| `DISCORD_INTERACTIONS_PUBLIC_KEY` | Discord Public Key (required only for inbound Interaction/Webhook signature verification)                                                                                        | Optional |
+| `SLACK_BOT_TOKEN`                 | Slack Bot Token (recommended, supports image upload; takes priority over Webhook when both set)                                                                                  | Optional |
+| `SLACK_CHANNEL_ID`                | Slack Channel ID (required when using Bot)                                                                                                                                       | Optional |
+| `SLACK_WEBHOOK_URL`               | Slack Incoming Webhook URL (text only, no image support)                                                                                                                         | Optional |
+| `EMAIL_SENDER`                    | Sender email (e.g., `xxx@qq.com`)                                                                                                                                                | Optional |
+| `EMAIL_PASSWORD`                  | Email authorization code (not login password)                                                                                                                                    | Optional |
+| `EMAIL_RECEIVERS`                 | Receiver emails (comma-separated, leave empty to send to self)                                                                                                                   | Optional |
+| `EMAIL_SENDER_NAME`               | Sender display name                                                                                                                                                              | Optional |
+| `STOCK_GROUP_N` / `EMAIL_GROUP_N` | Email routing groups (Issue #268): `STOCK_GROUP_N` should be a subset of `STOCK_LIST`; affects email recipients only, not analysis scope or other channels                       | Optional |
+| `PUSHPLUS_TOKEN`                  | PushPlus Token ([Get here](https://www.pushplus.plus), Chinese push service)                                                                                                     | Optional |
+| `SERVERCHAN3_SENDKEY`             | ServerChan v3 Sendkey ([Get here](https://sc3.ft07.com/), mobile app push service)                                                                                               | Optional |
+| `ASTRBOT_URL`                     | AstrBot Webhook URL                                                                                                                                                              | Optional |
+| `ASTRBOT_TOKEN`                   | Optional AstrBot Bearer Token                                                                                                                                                    | Optional |
+| `CUSTOM_WEBHOOK_URLS`             | Custom Webhook (supports DingTalk, etc., comma-separated)                                                                                                                        | Optional |
+| `CUSTOM_WEBHOOK_BEARER_TOKEN`     | Bearer Token for custom webhooks (for authenticated webhooks)                                                                                                                    | Optional |
+| `CUSTOM_WEBHOOK_BODY_TEMPLATE`    | Custom Webhook JSON body template for AstrBot, NapCat, or self-hosted services with special payloads                                                                             | Optional |
+| `WEBHOOK_VERIFY_SSL`              | Verify Webhook HTTPS certificates (default true). Set to false for self-signed certs. WARNING: Disabling has serious security risk (MITM), use only on trusted internal networks | Optional |
 
-> *Note: Configure at least one channel; multiple channels will all receive notifications
+> \*Note: Configure at least one channel; multiple channels will all receive notifications
 >
 > The default `daily_analysis.yml` in this repository only exports fixed Secret / Variable names. Arbitrary numbered env vars such as `STOCK_GROUP_1` and `EMAIL_GROUP_1` are not auto-injected into the job, so grouped email routing is not available in the stock workflow unless you explicitly extend the workflow's `env:` mapping in your own fork. Actions now maps `CUSTOM_WEBHOOK_BODY_TEMPLATE`, `WEBHOOK_VERIFY_SSL`, `FEISHU_WEBHOOK_SECRET`, `FEISHU_WEBHOOK_KEYWORD`, `PUSHPLUS_TOPIC`, the P3 notification route keys, and the P4 notification noise-control keys; `MARKDOWN_TO_IMAGE_CHANNELS` and `MERGE_EMAIL_NOTIFICATION` remain behavior toggles outside the default workflow mapping.
 
 #### Push Behavior Configuration
 
-| Secret Name | Description | Required |
-|------------|------|:----:|
-| `SINGLE_STOCK_NOTIFY` | Single stock push mode: set to `true` to push immediately after each stock analysis | Optional |
-| `REPORT_TYPE` | Report type: `simple` (concise), `full` (complete), `brief` (3-5 sentences), Docker recommended: `full` | Optional |
-| `REPORT_LANGUAGE` | Report output language: `zh` (default Chinese) / `en` (English); also updates prompt instructions, templates, notification fallbacks, and fixed copy in the Web report view. The bundled `daily_analysis.yml` already maps this variable, so setting it in Actions Secrets/Variables works out of the box | Optional |
-| `REPORT_TEMPLATES_DIR` | Jinja2 template directory (relative to project root, default `templates`) | Optional |
-| `REPORT_RENDERER_ENABLED` | Enable Jinja2 template rendering (default `false`, zero regression) | Optional |
-| `REPORT_INTEGRITY_ENABLED` | Enable report integrity checks, retry or placeholder on missing fields (default `true`) | Optional |
-| `REPORT_INTEGRITY_RETRY` | Integrity retry count (default `1`, `0` = placeholder only) | Optional |
-| `REPORT_HISTORY_COMPARE_N` | History signal comparison count, `0` off (default), `>0` enable | Optional |
-| `ANALYSIS_DELAY` | Delay between stock analysis and market review (seconds) to avoid API rate limits, e.g., `10` | Optional |
-| `NOTIFICATION_REPORT_CHANNELS` | Report route channels for single-stock, aggregate daily, market review, merged push, and Feishu document success notifications. Empty means all configured channels | Optional |
-| `NOTIFICATION_ALERT_CHANNELS` | Alert route channels for EventMonitor notifications. Empty means all configured channels | Optional |
-| `NOTIFICATION_SYSTEM_ERROR_CHANNELS` | Reserved system_error route channels. No automatic system error producer is added in P3; empty means all configured channels | Optional |
-| `NOTIFICATION_DEDUP_TTL_SECONDS` | Dedup TTL in seconds. `0` disables dedup; the same stable dedup key sends only once within the TTL | Optional |
-| `NOTIFICATION_COOLDOWN_SECONDS` | Cooldown window in seconds. `0` disables cooldown; the same cooldown key is rate-limited within the window | Optional |
-| `NOTIFICATION_QUIET_HOURS` | Quiet-hours window in `HH:MM-HH:MM` format, supports overnight ranges. Empty disables quiet hours | Optional |
-| `NOTIFICATION_TIMEZONE` | IANA timezone for quiet hours, e.g. `Asia/Shanghai`. Empty follows `TZ` or the local system timezone | Optional |
-| `NOTIFICATION_MIN_SEVERITY` | Minimum severity: `info`, `warning`, `error`, `critical`. Empty keeps current behavior | Optional |
-| `NOTIFICATION_DAILY_DIGEST_ENABLED` | Reserved daily digest flag. The current implementation does not send or persist digests | Optional |
+| Secret Name                          | Description                                                                                                                                                                                                                                                                                               | Required |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------: |
+| `SINGLE_STOCK_NOTIFY`                | Single stock push mode: set to `true` to push immediately after each stock analysis                                                                                                                                                                                                                       | Optional |
+| `REPORT_TYPE`                        | Report type: `simple` (concise), `full` (complete), `brief` (3-5 sentences), Docker recommended: `full`                                                                                                                                                                                                   | Optional |
+| `REPORT_LANGUAGE`                    | Report output language: `zh` (default Chinese) / `en` (English); also updates prompt instructions, templates, notification fallbacks, and fixed copy in the Web report view. The bundled `daily_analysis.yml` already maps this variable, so setting it in Actions Secrets/Variables works out of the box | Optional |
+| `REPORT_TEMPLATES_DIR`               | Jinja2 template directory (relative to project root, default `templates`)                                                                                                                                                                                                                                 | Optional |
+| `REPORT_RENDERER_ENABLED`            | Enable Jinja2 template rendering (default `false`, zero regression)                                                                                                                                                                                                                                       | Optional |
+| `REPORT_INTEGRITY_ENABLED`           | Enable report integrity checks, retry or placeholder on missing fields (default `true`)                                                                                                                                                                                                                   | Optional |
+| `REPORT_INTEGRITY_RETRY`             | Integrity retry count (default `1`, `0` = placeholder only)                                                                                                                                                                                                                                               | Optional |
+| `REPORT_HISTORY_COMPARE_N`           | History signal comparison count, `0` off (default), `>0` enable                                                                                                                                                                                                                                           | Optional |
+| `ANALYSIS_DELAY`                     | Delay between stock analysis and market review (seconds) to avoid API rate limits, e.g., `10`                                                                                                                                                                                                             | Optional |
+| `NOTIFICATION_REPORT_CHANNELS`       | Report route channels for single-stock, aggregate daily, market review, merged push, and Feishu document success notifications. Empty means all configured channels                                                                                                                                       | Optional |
+| `NOTIFICATION_ALERT_CHANNELS`        | Alert route channels for EventMonitor notifications. Empty means all configured channels                                                                                                                                                                                                                  | Optional |
+| `NOTIFICATION_SYSTEM_ERROR_CHANNELS` | Reserved system_error route channels. No automatic system error producer is added in P3; empty means all configured channels                                                                                                                                                                              | Optional |
+| `NOTIFICATION_DEDUP_TTL_SECONDS`     | Dedup TTL in seconds. `0` disables dedup; the same stable dedup key sends only once within the TTL                                                                                                                                                                                                        | Optional |
+| `NOTIFICATION_COOLDOWN_SECONDS`      | Cooldown window in seconds. `0` disables cooldown; the same cooldown key is rate-limited within the window                                                                                                                                                                                                | Optional |
+| `NOTIFICATION_QUIET_HOURS`           | Quiet-hours window in `HH:MM-HH:MM` format, supports overnight ranges. Empty disables quiet hours                                                                                                                                                                                                         | Optional |
+| `NOTIFICATION_TIMEZONE`              | IANA timezone for quiet hours, e.g. `Asia/Shanghai`. Empty follows `TZ` or the local system timezone                                                                                                                                                                                                      | Optional |
+| `NOTIFICATION_MIN_SEVERITY`          | Minimum severity: `info`, `warning`, `error`, `critical`. Empty keeps current behavior                                                                                                                                                                                                                    | Optional |
+| `NOTIFICATION_DAILY_DIGEST_ENABLED`  | Reserved daily digest flag. The current implementation does not send or persist digests                                                                                                                                                                                                                   | Optional |
 
 #### Other Configuration
 
-| Secret Name | Description | Required |
-|------------|------|:----:|
-| `STOCK_LIST` | Watchlist codes, e.g., `600519,300750,002594` | ✅ |
-| `ANSPIRE_API_KEYS` | [Anspire AI Search](https://aisearch.anspire.cn/) optimized for Chinese content; the same key can also be used for Anspire LLM fallback scenarios (example model: `Doubao-Seed-2.0-lite`) | Recommended |
-| `SERPAPI_API_KEYS` | [SerpAPI](https://serpapi.com/baidu-search-api?utm_source=github_daily_stock_analysis) search-engine results for realtime financial news | Recommended |
-| `TAVILY_API_KEYS` | [Tavily](https://tavily.com/) Search API (for news search) | Optional |
-| `BOCHA_API_KEYS` | [Bocha Search](https://open.bocha.cn/) Web Search API (Chinese search optimized, supports AI summaries, multiple keys comma-separated) | Optional |
-| `BRAVE_API_KEYS` | [Brave Search](https://brave.com/search/api/) API (privacy-first, US-stock news enrichment, comma-separated for multiple keys) | Optional |
-| `MINIMAX_API_KEYS` | [MiniMax](https://platform.minimax.io/) Coding Plan Web Search (structured search results) | Optional |
-| `SEARXNG_BASE_URLS` | SearXNG self-hosted instances (quota-free fallback, enable format: json in settings.yml); when empty the app auto-discovers public instances | Optional |
-| `SEARXNG_PUBLIC_INSTANCES_ENABLED` | Auto-discover public SearXNG instances from `searx.space` when `SEARXNG_BASE_URLS` is empty (default `true`) | Optional |
-| `TUSHARE_TOKEN` | [Tushare Pro](https://tushare.pro/weborder/#/login?reg=834638) Token | Optional |
-| `TICKFLOW_API_KEY` | [TickFlow](https://tickflow.org) API key for CN market review index enhancement; market breadth also uses TickFlow when the plan supports universe queries | Optional |
+| Secret Name                        | Description                                                                                                                                                                               |  Required   |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------: |
+| `STOCK_LIST`                       | Watchlist codes, e.g., `600519,300750,002594`                                                                                                                                             |     ✅      |
+| `ANSPIRE_API_KEYS`                 | [Anspire AI Search](https://aisearch.anspire.cn/) optimized for Chinese content; the same key can also be used for Anspire LLM fallback scenarios (example model: `Doubao-Seed-2.0-lite`) | Recommended |
+| `SERPAPI_API_KEYS`                 | [SerpAPI](https://serpapi.com/baidu-search-api?utm_source=github_daily_stock_analysis) search-engine results for realtime financial news                                                  | Recommended |
+| `TAVILY_API_KEYS`                  | [Tavily](https://tavily.com/) Search API (for news search)                                                                                                                                |  Optional   |
+| `BOCHA_API_KEYS`                   | [Bocha Search](https://open.bocha.cn/) Web Search API (Chinese search optimized, supports AI summaries, multiple keys comma-separated)                                                    |  Optional   |
+| `BRAVE_API_KEYS`                   | [Brave Search](https://brave.com/search/api/) API (privacy-first, US-stock news enrichment, comma-separated for multiple keys)                                                            |  Optional   |
+| `MINIMAX_API_KEYS`                 | [MiniMax](https://platform.minimax.io/) Coding Plan Web Search (structured search results)                                                                                                |  Optional   |
+| `SEARXNG_BASE_URLS`                | SearXNG self-hosted instances (quota-free fallback, enable format: json in settings.yml); when empty the app auto-discovers public instances                                              |  Optional   |
+| `SEARXNG_PUBLIC_INSTANCES_ENABLED` | Auto-discover public SearXNG instances from `searx.space` when `SEARXNG_BASE_URLS` is empty (default `true`)                                                                              |  Optional   |
+| `TUSHARE_TOKEN`                    | [Tushare Pro](https://tushare.pro/weborder/#/login?reg=834638) Token                                                                                                                      |  Optional   |
+| `TICKFLOW_API_KEY`                 | [TickFlow](https://tickflow.org) API key for CN market review index enhancement; market breadth also uses TickFlow when the plan supports universe queries                                |  Optional   |
 
 #### ✅ Minimum Configuration Example
 
@@ -181,82 +181,83 @@ Default schedule: Every weekday at **18:00 (Beijing Time)** automatic execution.
 
 > Full details: [LLM Config Guide](LLM_CONFIG_GUIDE_EN.md) (three-tier config, channels, Vision, Agent, troubleshooting).
 
-| Variable | Description | Default | Required |
-|--------|------|--------|:----:|
-| `LITELLM_MODEL` | Primary model, format `provider/model` (e.g. `gemini/gemini-3.1-pro-preview`), recommended | - | No |
-| `AGENT_LITELLM_MODEL` | Optional Agent-only primary model; when empty it inherits the primary model, and bare names are normalized to `openai/<model>` | - | No |
-| `LITELLM_FALLBACK_MODELS` | Fallback models, comma-separated | - | No |
-| `LLM_CHANNELS` | Channel names (comma-separated), use with `LLM_{NAME}_*`, see [LLM Config Guide](LLM_CONFIG_GUIDE_EN.md) | - | No |
-| `LITELLM_CONFIG` | Advanced model routing YAML path (expert use) | - | No |
-| `ANSPIRE_API_KEYS` | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC) API key, one key for the LLM gateway and search | - | Optional |
-| `AIHUBMIX_KEY` | [AIHubMix](https://aihubmix.com/?aff=CfMq) API key, one key for multiple model families | - | Optional |
-| `GEMINI_API_KEY` | Google Gemini API Key | - | Optional |
-| `GEMINI_MODEL` | Primary model name (legacy, `LITELLM_MODEL` preferred) | `gemini-3.1-pro-preview` | No |
-| `GEMINI_MODEL_FALLBACK` | Fallback model (legacy) | `gemini-3-flash-preview` | No |
-| `ANTHROPIC_API_KEY` | Anthropic Claude API Key | - | Optional |
-| `OPENAI_API_KEY` | OpenAI-compatible API Key | - | Optional |
-| `OPENAI_BASE_URL` | OpenAI-compatible API endpoint | - | Optional |
-| `OLLAMA_API_BASE` | Ollama local service address (e.g. `http://localhost:11434`), see [LLM Config Guide](LLM_CONFIG_GUIDE_EN.md) | - | Optional |
-| `OPENAI_MODEL` | OpenAI model name (legacy) | `gpt-5.5` | Optional |
+| Variable                  | Description                                                                                                                    | Default                  | Required |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------ | :------: |
+| `LITELLM_MODEL`           | Primary model, format `provider/model` (e.g. `gemini/gemini-3.1-pro-preview`), recommended                                     | -                        |    No    |
+| `AGENT_LITELLM_MODEL`     | Optional Agent-only primary model; when empty it inherits the primary model, and bare names are normalized to `openai/<model>` | -                        |    No    |
+| `LITELLM_FALLBACK_MODELS` | Fallback models, comma-separated                                                                                               | -                        |    No    |
+| `LLM_CHANNELS`            | Channel names (comma-separated), use with `LLM_{NAME}_*`, see [LLM Config Guide](LLM_CONFIG_GUIDE_EN.md)                       | -                        |    No    |
+| `LITELLM_CONFIG`          | Advanced model routing YAML path (expert use)                                                                                  | -                        |    No    |
+| `ANSPIRE_API_KEYS`        | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC) API key, one key for the LLM gateway and search                        | -                        | Optional |
+| `AIHUBMIX_KEY`            | [AIHubMix](https://aihubmix.com/?aff=CfMq) API key, one key for multiple model families                                        | -                        | Optional |
+| `GEMINI_API_KEY`          | Google Gemini API Key                                                                                                          | -                        | Optional |
+| `GEMINI_MODEL`            | Primary model name (legacy, `LITELLM_MODEL` preferred)                                                                         | `gemini-3.1-pro-preview` |    No    |
+| `GEMINI_MODEL_FALLBACK`   | Fallback model (legacy)                                                                                                        | `gemini-3-flash-preview` |    No    |
+| `ANTHROPIC_API_KEY`       | Anthropic Claude API Key                                                                                                       | -                        | Optional |
+| `OPENAI_API_KEY`          | OpenAI-compatible API Key                                                                                                      | -                        | Optional |
+| `OPENAI_BASE_URL`         | OpenAI-compatible API endpoint                                                                                                 | -                        | Optional |
+| `OLLAMA_API_BASE`         | Ollama local service address (e.g. `http://localhost:11434`), see [LLM Config Guide](LLM_CONFIG_GUIDE_EN.md)                   | -                        | Optional |
+| `OPENAI_MODEL`            | OpenAI model name (legacy)                                                                                                     | `gpt-5.5`                | Optional |
 
-> *Note: Configure at least one of `ANSPIRE_API_KEYS`, `AIHUBMIX_KEY`, `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OLLAMA_API_BASE`, or `LLM_CHANNELS` / `LITELLM_CONFIG`. `ANSPIRE_API_KEYS` and `AIHUBMIX_KEY` are auto-adapted without an `OPENAI_BASE_URL`.
+> \*Note: Configure at least one of `ANSPIRE_API_KEYS`, `AIHUBMIX_KEY`, `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OLLAMA_API_BASE`, or `LLM_CHANNELS` / `LITELLM_CONFIG`. `ANSPIRE_API_KEYS` and `AIHUBMIX_KEY` are auto-adapted without an `OPENAI_BASE_URL`.
 
 ### Notification Channel Configuration
 
 For the P0 notification baseline and diagnostics, see [Notification Baseline](notifications.md).
 
-| Variable | Description | Required |
-|--------|------|:----:|
-| `WECHAT_WEBHOOK_URL` | WeChat Work Bot Webhook URL | Optional |
-| `FEISHU_WEBHOOK_URL` | Feishu Bot Webhook URL | Optional |
-| `FEISHU_WEBHOOK_SECRET` | Feishu bot signing secret (only for webhook bots with Signature security enabled) | Optional |
-| `FEISHU_WEBHOOK_KEYWORD` | Feishu bot keyword (only for webhook bots with Keyword security enabled) | Optional |
-| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token | Optional |
-| `TELEGRAM_CHAT_ID` | Telegram Chat ID | Optional |
-| `TELEGRAM_MESSAGE_THREAD_ID` | Telegram Topic ID | Optional |
-| `DISCORD_WEBHOOK_URL` | Discord Webhook URL | Optional |
-| `DISCORD_BOT_TOKEN` | Discord Bot Token (choose one with Webhook) | Optional |
-| `DISCORD_MAIN_CHANNEL_ID` | Discord Channel ID (required when using Bot) | Optional |
-| `DISCORD_INTERACTIONS_PUBLIC_KEY` | Discord Public Key (required only for inbound Interaction/Webhook signature verification) | Optional |
-| `DISCORD_MAX_WORDS` | Discord Word Limit (default 2000 for un-upgraded servers) | Optional |
-| `SLACK_BOT_TOKEN` | Slack Bot Token (recommended, supports image upload; takes priority over Webhook when both set) | Optional |
-| `SLACK_CHANNEL_ID` | Slack Channel ID (required when using Bot) | Optional |
-| `SLACK_WEBHOOK_URL` | Slack Incoming Webhook URL (text only, no image support) | Optional |
-| `EMAIL_SENDER` | Sender email | Optional |
-| `EMAIL_PASSWORD` | Email authorization code (not login password) | Optional |
-| `EMAIL_RECEIVERS` | Receiver emails (comma-separated, leave empty to send to self) | Optional |
-| `EMAIL_SENDER_NAME` | Sender display name | Optional |
-| `STOCK_GROUP_N` / `EMAIL_GROUP_N` | Email routing groups (Issue #268): `STOCK_GROUP_N` should stay within `STOCK_LIST` and only changes email recipients | Optional |
-| `CUSTOM_WEBHOOK_URLS` | Custom Webhook (comma-separated) | Optional |
-| `CUSTOM_WEBHOOK_BEARER_TOKEN` | Custom Webhook Bearer Token | Optional |
-| `WEBHOOK_VERIFY_SSL` | Webhook HTTPS certificate verification (default true). Set to false for self-signed certs. WARNING: Disabling has serious security risk | Optional |
-| `PUSHOVER_USER_KEY` | Pushover User Key | Optional |
-| `PUSHOVER_API_TOKEN` | Pushover API Token | Optional |
-| `PUSHPLUS_TOKEN` | PushPlus Token (Chinese push service) | Optional |
-| `SERVERCHAN3_SENDKEY` | ServerChan v3 Sendkey | Optional |
-| `ASTRBOT_URL` | AstrBot Webhook URL | Optional |
-| `ASTRBOT_TOKEN` | Optional AstrBot Bearer Token | Optional |
-| `NOTIFICATION_REPORT_CHANNELS` | Report route channels, comma-separated. Allowed values: wechat,feishu,telegram,email,pushover,pushplus,serverchan3,custom,discord,slack,astrbot | Optional |
-| `NOTIFICATION_ALERT_CHANNELS` | Alert route channels, comma-separated. Empty keeps all configured channels | Optional |
-| `NOTIFICATION_SYSTEM_ERROR_CHANNELS` | Reserved system_error route channels, comma-separated. Empty keeps all configured channels | Optional |
-| `NOTIFICATION_DEDUP_TTL_SECONDS` | Dedup TTL in seconds. `0` disables dedup | Optional |
-| `NOTIFICATION_COOLDOWN_SECONDS` | Cooldown window in seconds. `0` disables cooldown | Optional |
-| `NOTIFICATION_QUIET_HOURS` | Quiet-hours window in `HH:MM-HH:MM` format, supports overnight ranges | Optional |
-| `NOTIFICATION_TIMEZONE` | Quiet-hours timezone, e.g. `Asia/Shanghai`; empty follows `TZ` or local system timezone | Optional |
-| `NOTIFICATION_MIN_SEVERITY` | Minimum severity: info, warning, error, critical. Empty keeps current behavior | Optional |
-| `NOTIFICATION_DAILY_DIGEST_ENABLED` | Reserved daily digest flag. It does not send digests yet | Optional |
+| Variable                             | Description                                                                                                                                     | Required |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | :------: |
+| `WECHAT_WEBHOOK_URL`                 | WeChat Work Bot Webhook URL                                                                                                                     | Optional |
+| `FEISHU_WEBHOOK_URL`                 | Feishu Bot Webhook URL                                                                                                                          | Optional |
+| `FEISHU_WEBHOOK_SECRET`              | Feishu bot signing secret (only for webhook bots with Signature security enabled)                                                               | Optional |
+| `FEISHU_WEBHOOK_KEYWORD`             | Feishu bot keyword (only for webhook bots with Keyword security enabled)                                                                        | Optional |
+| `TELEGRAM_BOT_TOKEN`                 | Telegram Bot Token                                                                                                                              | Optional |
+| `TELEGRAM_CHAT_ID`                   | Telegram Chat ID                                                                                                                                | Optional |
+| `TELEGRAM_MESSAGE_THREAD_ID`         | Telegram Topic ID                                                                                                                               | Optional |
+| `DISCORD_WEBHOOK_URL`                | Discord Webhook URL                                                                                                                             | Optional |
+| `DISCORD_BOT_TOKEN`                  | Discord Bot Token (choose one with Webhook)                                                                                                     | Optional |
+| `DISCORD_MAIN_CHANNEL_ID`            | Discord Channel ID (required when using Bot)                                                                                                    | Optional |
+| `DISCORD_INTERACTIONS_PUBLIC_KEY`    | Discord Public Key (required only for inbound Interaction/Webhook signature verification)                                                       | Optional |
+| `DISCORD_MAX_WORDS`                  | Discord Word Limit (default 2000 for un-upgraded servers)                                                                                       | Optional |
+| `SLACK_BOT_TOKEN`                    | Slack Bot Token (recommended, supports image upload; takes priority over Webhook when both set)                                                 | Optional |
+| `SLACK_CHANNEL_ID`                   | Slack Channel ID (required when using Bot)                                                                                                      | Optional |
+| `SLACK_WEBHOOK_URL`                  | Slack Incoming Webhook URL (text only, no image support)                                                                                        | Optional |
+| `EMAIL_SENDER`                       | Sender email                                                                                                                                    | Optional |
+| `EMAIL_PASSWORD`                     | Email authorization code (not login password)                                                                                                   | Optional |
+| `EMAIL_RECEIVERS`                    | Receiver emails (comma-separated, leave empty to send to self)                                                                                  | Optional |
+| `EMAIL_SENDER_NAME`                  | Sender display name                                                                                                                             | Optional |
+| `STOCK_GROUP_N` / `EMAIL_GROUP_N`    | Email routing groups (Issue #268): `STOCK_GROUP_N` should stay within `STOCK_LIST` and only changes email recipients                            | Optional |
+| `CUSTOM_WEBHOOK_URLS`                | Custom Webhook (comma-separated)                                                                                                                | Optional |
+| `CUSTOM_WEBHOOK_BEARER_TOKEN`        | Custom Webhook Bearer Token                                                                                                                     | Optional |
+| `WEBHOOK_VERIFY_SSL`                 | Webhook HTTPS certificate verification (default true). Set to false for self-signed certs. WARNING: Disabling has serious security risk         | Optional |
+| `PUSHOVER_USER_KEY`                  | Pushover User Key                                                                                                                               | Optional |
+| `PUSHOVER_API_TOKEN`                 | Pushover API Token                                                                                                                              | Optional |
+| `PUSHPLUS_TOKEN`                     | PushPlus Token (Chinese push service)                                                                                                           | Optional |
+| `SERVERCHAN3_SENDKEY`                | ServerChan v3 Sendkey                                                                                                                           | Optional |
+| `ASTRBOT_URL`                        | AstrBot Webhook URL                                                                                                                             | Optional |
+| `ASTRBOT_TOKEN`                      | Optional AstrBot Bearer Token                                                                                                                   | Optional |
+| `NOTIFICATION_REPORT_CHANNELS`       | Report route channels, comma-separated. Allowed values: wechat,feishu,telegram,email,pushover,pushplus,serverchan3,custom,discord,slack,astrbot | Optional |
+| `NOTIFICATION_ALERT_CHANNELS`        | Alert route channels, comma-separated. Empty keeps all configured channels                                                                      | Optional |
+| `NOTIFICATION_SYSTEM_ERROR_CHANNELS` | Reserved system_error route channels, comma-separated. Empty keeps all configured channels                                                      | Optional |
+| `NOTIFICATION_DEDUP_TTL_SECONDS`     | Dedup TTL in seconds. `0` disables dedup                                                                                                        | Optional |
+| `NOTIFICATION_COOLDOWN_SECONDS`      | Cooldown window in seconds. `0` disables cooldown                                                                                               | Optional |
+| `NOTIFICATION_QUIET_HOURS`           | Quiet-hours window in `HH:MM-HH:MM` format, supports overnight ranges                                                                           | Optional |
+| `NOTIFICATION_TIMEZONE`              | Quiet-hours timezone, e.g. `Asia/Shanghai`; empty follows `TZ` or local system timezone                                                         | Optional |
+| `NOTIFICATION_MIN_SEVERITY`          | Minimum severity: info, warning, error, critical. Empty keeps current behavior                                                                  | Optional |
+| `NOTIFICATION_DAILY_DIGEST_ENABLED`  | Reserved daily digest flag. It does not send digests yet                                                                                        | Optional |
 
 > Note: the default `daily_analysis` GitHub Actions workflow only maps fixed variable names. It does not automatically import arbitrary numbered variables such as `STOCK_GROUP_N` / `EMAIL_GROUP_N`. This feature therefore works in local `.env`, Docker, or any runtime where you explicitly inject those variables.
 
 #### Feishu Cloud Document Configuration (Optional, solves message truncation issues)
 
-| Variable | Description | Required |
-|--------|------|:----:|
-| `FEISHU_APP_ID` | Feishu App ID | Optional |
-| `FEISHU_APP_SECRET` | Feishu App Secret | Optional |
+| Variable              | Description                     | Required |
+| --------------------- | ------------------------------- | :------: |
+| `FEISHU_APP_ID`       | Feishu App ID                   | Optional |
+| `FEISHU_APP_SECRET`   | Feishu App Secret               | Optional |
 | `FEISHU_FOLDER_TOKEN` | Feishu Cloud Drive Folder Token | Optional |
 
 > Feishu Cloud Document setup steps:
+>
 > 1. Create an app in [Feishu Developer Console](https://open.feishu.cn/app)
 > 2. Configure GitHub Secrets
 > 3. Create a group and add the app bot
@@ -266,40 +267,41 @@ For the P0 notification baseline and diagnostics, see [Notification Baseline](no
 
 ### Search Service Configuration
 
-| Variable | Description | Required |
-|--------|------|:----:|
-| `ANSPIRE_API_KEYS` | Anspire Open API Key (shared with search and LLM fallback examples; availability depends on account/model entitlement, and can effectively enhance A-share analysis) | Recommended |
-| `SERPAPI_API_KEYS` | SerpAPI search-engine results for realtime financial news | Recommended |
-| `TAVILY_API_KEYS` | Tavily Search API Key | Optional |
-| `BOCHA_API_KEYS` | Bocha Search API Key (Chinese optimized) | Optional |
-| `BRAVE_API_KEYS` | Brave Search API Key (US stocks optimized) | Optional |
-| `MINIMAX_API_KEYS` | MiniMax Coding Plan Web Search (structured results) | Optional |
-| `SOCIAL_SENTIMENT_API_KEY` | Stock Sentiment API Key (Reddit / X / Polymarket, US stocks optional) | Optional |
-| `SOCIAL_SENTIMENT_API_URL` | Stock Sentiment API endpoint (default `https://api.adanos.org`) | Optional |
-| `SEARXNG_BASE_URLS` | SearXNG self-hosted instances (quota-free fallback, enable format: json in settings.yml); when empty the app auto-discovers public instances | Optional |
-| `SEARXNG_PUBLIC_INSTANCES_ENABLED` | Auto-discover public SearXNG instances from `searx.space` when `SEARXNG_BASE_URLS` is empty (default `true`) | Optional |
+| Variable                           | Description                                                                                                                                                          |  Required   |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------: |
+| `ANSPIRE_API_KEYS`                 | Anspire Open API Key (shared with search and LLM fallback examples; availability depends on account/model entitlement, and can effectively enhance A-share analysis) | Recommended |
+| `SERPAPI_API_KEYS`                 | SerpAPI search-engine results for realtime financial news                                                                                                            | Recommended |
+| `TAVILY_API_KEYS`                  | Tavily Search API Key                                                                                                                                                |  Optional   |
+| `BOCHA_API_KEYS`                   | Bocha Search API Key (Chinese optimized)                                                                                                                             |  Optional   |
+| `BRAVE_API_KEYS`                   | Brave Search API Key (US stocks optimized)                                                                                                                           |  Optional   |
+| `MINIMAX_API_KEYS`                 | MiniMax Coding Plan Web Search (structured results)                                                                                                                  |  Optional   |
+| `SOCIAL_SENTIMENT_API_KEY`         | Stock Sentiment API Key (Reddit / X / Polymarket, US stocks optional)                                                                                                |  Optional   |
+| `SOCIAL_SENTIMENT_API_URL`         | Stock Sentiment API endpoint (default `https://api.adanos.org`)                                                                                                      |  Optional   |
+| `SEARXNG_BASE_URLS`                | SearXNG self-hosted instances (quota-free fallback, enable format: json in settings.yml); when empty the app auto-discovers public instances                         |  Optional   |
+| `SEARXNG_PUBLIC_INSTANCES_ENABLED` | Auto-discover public SearXNG instances from `searx.space` when `SEARXNG_BASE_URLS` is empty (default `true`)                                                         |  Optional   |
 
 > Behavior note: Search and social sentiment are optional enhancement services. If either service fails to initialize, the system logs a warning and degrades gracefully by skipping that stage without blocking the core analysis flow.
 
 ### Data Source Configuration
 
-| Variable | Description | Default | Required |
-|--------|------|--------|:----:|
-| `TUSHARE_TOKEN` | Tushare Pro Token | - | Optional |
-| `TICKFLOW_API_KEY` | TickFlow API key; CN market review indices prefer TickFlow when configured, and market breadth does so only when the plan supports universe queries | - | Optional |
-| `ENABLE_REALTIME_QUOTE` | Enable real-time quotes (if disabled, uses historical closing prices for analysis) | `true` | Optional |
-| `ENABLE_REALTIME_TECHNICAL_INDICATORS` | Intraday real-time technicals: Calculate MA5/MA10/MA20 and bull trends using real-time prices when enabled (Issue #234); uses yesterday's close if disabled. | `true` | Optional |
-| `ENABLE_CHIP_DISTRIBUTION` | Enable chip distribution analysis (this API is unstable, recommended to disable for cloud deployment). GitHub Actions users must set `ENABLE_CHIP_DISTRIBUTION=true` in Repository Variables to enable; disabled by default in workflows. | `true` | Optional |
-| `ENABLE_EASTMONEY_PATCH` | Eastmoney API patch: Recommended to set to `true` when Eastmoney APIs fail frequently (e.g., RemoteDisconnected, connection closed). Injects NID tokens and random User-Agents to reduce rate limiting probability. | `false` | Optional |
-| `REALTIME_SOURCE_PRIORITY` | Real-time quote source priority (comma-separated), e.g., `tencent,akshare_sina,efinance,akshare_em` | See .env.example | Optional |
-| `ENABLE_FUNDAMENTAL_PIPELINE` | Master switch for fundamental aggregation; when disabled, returns `not_supported` block only, without altering the original analysis pipeline. | `true` | Optional |
-| `FUNDAMENTAL_STAGE_TIMEOUT_SECONDS` | Total latency budget for the fundamental stage (seconds) | `1.5` | Optional |
-| `FUNDAMENTAL_FETCH_TIMEOUT_SECONDS` | Timeout for a single capability source call (seconds) | `0.8` | Optional |
-| `FUNDAMENTAL_RETRY_MAX` | Retry count for fundamental capabilities (including the first attempt) | `1` | Optional |
-| `FUNDAMENTAL_CACHE_TTL_SECONDS` | Fundamental aggregation cache TTL (seconds), short cache to reduce repeated API pulling. | `120` | Optional |
-| `FUNDAMENTAL_CACHE_MAX_ENTRIES` | Maximum entries for fundamental cache (evicted by time within TTL) | `256` | Optional |
+| Variable                               | Description                                                                                                                                                                                                                               | Default          | Required |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | :------: |
+| `TUSHARE_TOKEN`                        | Tushare Pro Token                                                                                                                                                                                                                         | -                | Optional |
+| `TICKFLOW_API_KEY`                     | TickFlow API key; CN market review indices prefer TickFlow when configured, and market breadth does so only when the plan supports universe queries                                                                                       | -                | Optional |
+| `ENABLE_REALTIME_QUOTE`                | Enable real-time quotes (if disabled, uses historical closing prices for analysis)                                                                                                                                                        | `true`           | Optional |
+| `ENABLE_REALTIME_TECHNICAL_INDICATORS` | Intraday real-time technicals: Calculate MA5/MA10/MA20 and bull trends using real-time prices when enabled (Issue #234); uses yesterday's close if disabled.                                                                              | `true`           | Optional |
+| `ENABLE_CHIP_DISTRIBUTION`             | Enable chip distribution analysis (this API is unstable, recommended to disable for cloud deployment). GitHub Actions users must set `ENABLE_CHIP_DISTRIBUTION=true` in Repository Variables to enable; disabled by default in workflows. | `true`           | Optional |
+| `ENABLE_EASTMONEY_PATCH`               | Eastmoney API patch: Recommended to set to `true` when Eastmoney APIs fail frequently (e.g., RemoteDisconnected, connection closed). Injects NID tokens and random User-Agents to reduce rate limiting probability.                       | `false`          | Optional |
+| `REALTIME_SOURCE_PRIORITY`             | Real-time quote source priority (comma-separated), e.g., `tencent,akshare_sina,efinance,akshare_em`                                                                                                                                       | See .env.example | Optional |
+| `ENABLE_FUNDAMENTAL_PIPELINE`          | Master switch for fundamental aggregation; when disabled, returns `not_supported` block only, without altering the original analysis pipeline.                                                                                            | `true`           | Optional |
+| `FUNDAMENTAL_STAGE_TIMEOUT_SECONDS`    | Total latency budget for the fundamental stage (seconds)                                                                                                                                                                                  | `1.5`            | Optional |
+| `FUNDAMENTAL_FETCH_TIMEOUT_SECONDS`    | Timeout for a single capability source call (seconds)                                                                                                                                                                                     | `0.8`            | Optional |
+| `FUNDAMENTAL_RETRY_MAX`                | Retry count for fundamental capabilities (including the first attempt)                                                                                                                                                                    | `1`              | Optional |
+| `FUNDAMENTAL_CACHE_TTL_SECONDS`        | Fundamental aggregation cache TTL (seconds), short cache to reduce repeated API pulling.                                                                                                                                                  | `120`            | Optional |
+| `FUNDAMENTAL_CACHE_MAX_ENTRIES`        | Maximum entries for fundamental cache (evicted by time within TTL)                                                                                                                                                                        | `256`            | Optional |
 
 > **Behavior Notes:**
+>
 > - **A-shares**: Returns aggregated capabilities by `valuation/growth/earnings/institution/capital_flow/dragon_tiger/boards`.
 > - **ETFs**: Returns available items, marks missing capabilities as `not_supported`, and does not affect the original flow overall.
 > - **US/HK stocks**: Returns `not_supported` fallback block.
@@ -319,19 +321,20 @@ For the P0 notification baseline and diagnostics, see [Notification Baseline](no
 
 ### Other Configuration
 
-| Variable | Description | Default |
-|--------|------|--------|
-| `STOCK_LIST` | Watchlist codes (comma-separated) | - |
-| `MAX_WORKERS` | Concurrent threads | `3` |
-| `MARKET_REVIEW_ENABLED` | Enable market review | `true` |
-| `MARKET_REVIEW_REGION` | Market review region: cn (A-shares), hk (HK stocks), us (US stocks), both (all three markets) | `cn` |
-| `SCHEDULE_ENABLED` | Enable scheduled tasks | `false` |
-| `SCHEDULE_TIME` | Scheduled execution time | `18:00` |
-| `SCHEDULE_RUN_IMMEDIATELY` | Run once immediately when scheduler mode starts; when unset it keeps following the legacy `RUN_IMMEDIATELY` runtime override | `true` |
-| `RUN_IMMEDIATELY` | Run once immediately for non-scheduler startup; also acts as the legacy fallback when `SCHEDULE_RUN_IMMEDIATELY` is unset | `true` |
-| `LOG_DIR` | Log directory | `./logs` |
+| Variable                   | Description                                                                                                                  | Default  |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `STOCK_LIST`               | Watchlist codes (comma-separated)                                                                                            | -        |
+| `MAX_WORKERS`              | Concurrent threads                                                                                                           | `3`      |
+| `MARKET_REVIEW_ENABLED`    | Enable market review                                                                                                         | `true`   |
+| `MARKET_REVIEW_REGION`     | Market review region: cn (A-shares), hk (HK stocks), us (US stocks), both (all three markets)                                | `cn`     |
+| `SCHEDULE_ENABLED`         | Enable scheduled tasks                                                                                                       | `false`  |
+| `SCHEDULE_TIME`            | Scheduled execution time                                                                                                     | `18:00`  |
+| `SCHEDULE_RUN_IMMEDIATELY` | Run once immediately when scheduler mode starts; when unset it keeps following the legacy `RUN_IMMEDIATELY` runtime override | `true`   |
+| `RUN_IMMEDIATELY`          | Run once immediately for non-scheduler startup; also acts as the legacy fallback when `SCHEDULE_RUN_IMMEDIATELY` is unset    | `true`   |
+| `LOG_DIR`                  | Log directory                                                                                                                | `./logs` |
 
 > Behavior notes:
+>
 > - When `TICKFLOW_API_KEY` is configured, CN market review first tries TickFlow for main indices. Market breadth also tries TickFlow only when the current TickFlow plan supports universe queries.
 > - TickFlow behavior is capability-based rather than just key-based: limited plans can still enhance main CN indices, while plans with `CN_Equity_A` universe query support also enhance market breadth.
 > - The official quickstart documents `quotes.get(universes=["CN_Equity_A"])`, but online smoke tests confirmed two additional real-world constraints: universe access depends on plan permissions, and `quotes.get(symbols=[...])` has a per-request symbol limit.
@@ -407,18 +410,18 @@ For pinned deployments or easier rollback, replace `latest` with a concrete vers
 
 ### Run Mode Description
 
-| Command | Description | Port |
-|------|------|------|
-| `docker-compose -f ./docker/docker-compose.yml up -d server` | Web service mode, provides API & WebUI | 8000 |
-| `docker-compose -f ./docker/docker-compose.yml up -d analyzer` | Scheduled task mode, daily auto execution | - |
-| `docker-compose -f ./docker/docker-compose.yml up -d` | Start both modes simultaneously | 8000 |
+| Command                                                        | Description                               | Port |
+| -------------------------------------------------------------- | ----------------------------------------- | ---- |
+| `docker-compose -f ./docker/docker-compose.yml up -d server`   | Web service mode, provides API & WebUI    | 8000 |
+| `docker-compose -f ./docker/docker-compose.yml up -d analyzer` | Scheduled task mode, daily auto execution | -    |
+| `docker-compose -f ./docker/docker-compose.yml up -d`          | Start both modes simultaneously           | 8000 |
 
 ### Docker Compose Configuration
 
 `docker-compose.yml` uses YAML anchors to reuse configuration:
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 x-common: &common
   build:
@@ -446,7 +449,16 @@ services:
   server:
     <<: *common
     container_name: stock-server
-    command: ["python", "main.py", "--serve-only", "--host", "0.0.0.0", "--port", "${API_PORT:-8000}"]
+    command:
+      [
+        "python",
+        "main.py",
+        "--serve-only",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "${API_PORT:-8000}",
+      ]
     ports:
       - "${API_PORT:-8000}:${API_PORT:-8000}"
 ```
@@ -545,18 +557,18 @@ Edit `.github/workflows/daily_analysis.yml`:
 ```yaml
 schedule:
   # UTC time, Beijing time = UTC + 8
-  - cron: '0 10 * * 1-5'   # Monday to Friday 18:00 (Beijing Time)
+  - cron: "0 10 * * 1-5" # Monday to Friday 18:00 (Beijing Time)
 ```
 
 Common time reference:
 
 | Beijing Time | UTC cron expression |
-|---------|----------------|
-| 09:30 | `'30 1 * * 1-5'` |
-| 12:00 | `'0 4 * * 1-5'` |
-| 15:00 | `'0 7 * * 1-5'` |
-| 18:00 | `'0 10 * * 1-5'` |
-| 21:00 | `'0 13 * * 1-5'` |
+| ------------ | ------------------- |
+| 09:30        | `'30 1 * * 1-5'`    |
+| 12:00        | `'0 4 * * 1-5'`     |
+| 15:00        | `'0 7 * * 1-5'`     |
+| 18:00        | `'0 10 * * 1-5'`    |
+| 21:00        | `'0 13 * * 1-5'`    |
 
 ### Local Scheduled Tasks
 
@@ -609,6 +621,7 @@ FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your_hook_token
 4. `FEISHU_APP_ID` / `FEISHU_APP_SECRET` are for Feishu app / Stream Bot / cloud document flows only — they do **not** trigger group webhook notifications and must not be used instead of `FEISHU_WEBHOOK_URL`.
 
 **Common failure causes:**
+
 - Only `FEISHU_APP_ID` / `FEISHU_APP_SECRET` were set, but `FEISHU_WEBHOOK_URL` was not configured
 - The bot has Signature security enabled, but `FEISHU_WEBHOOK_SECRET` was not set locally (or was mistakenly set to `FEISHU_APP_SECRET`)
 - The bot has Keyword security enabled, but `FEISHU_WEBHOOK_KEYWORD` was not set locally
@@ -633,6 +646,7 @@ For a full illustrated troubleshooting guide, see [docs/bot/feishu-bot-config.md
 3. Set `EMAIL_SENDER`, `EMAIL_PASSWORD`, `EMAIL_RECEIVERS`
 
 Supported email providers:
+
 - QQ Mail: smtp.qq.com:465
 - 163 Mail: smtp.163.com:465
 - Gmail: smtp.gmail.com:587
@@ -653,6 +667,7 @@ EMAIL_GROUP_2=user2@example.com
 ### Custom Webhook
 
 Supports any POST JSON Webhook, including:
+
 - DingTalk Bot
 - Discord Webhook
 - Slack Webhook
@@ -765,6 +780,7 @@ PUSHOVER_API_TOKEN=your_api_token
 ```
 
 Features:
+
 - Supports iOS/Android
 - Supports notification priority and sound settings
 - Free quota sufficient for personal use (10,000 messages/month)
@@ -777,24 +793,29 @@ Features:
 System defaults to AkShare (free), also supports other data sources:
 
 ### AkShare (Default)
+
 - Free, no configuration needed
 - Data source: Eastmoney scraper
 
 ### Tushare Pro
+
 - Requires registration to get Token
 - More stable, more comprehensive data
 - Set `TUSHARE_TOKEN`
 
 ### Baostock
+
 - Free, no configuration needed
 - Used as backup data source
 
 ### YFinance
+
 - Free, no configuration needed
 - Supports US/HK stock data
 - US stock historical and real-time data both use YFinance exclusively to avoid technical indicator errors from akshare's US stock adjustment issues
 
 ### Longbridge
+
 - Optional fallback for US/HK stocks, mainly used to supplement fields that YFinance may miss
 - Configure `LONGBRIDGE_APP_KEY`, `LONGBRIDGE_APP_SECRET`, and `LONGBRIDGE_ACCESS_TOKEN`
 - Optional knobs: `LONGBRIDGE_STATIC_INFO_TTL_SECONDS` (default `86400`) and `LONGBRIDGE_CONNECTION_COOLDOWN_SECONDS` (default `15`)
@@ -860,6 +881,7 @@ python main.py --debug
 ```
 
 Log file locations:
+
 - Regular logs: `logs/stock_analysis_YYYYMMDD.log`
 - Debug logs: `logs/stock_analysis_debug_YYYYMMDD.log`
 
@@ -871,12 +893,12 @@ For file-based SQLite databases, the app now enables `WAL` and sets `busy_timeou
 
 You can tune the behavior in `.env`:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SQLITE_WAL_ENABLED` | `true` | Enable `journal_mode=WAL` for file-based SQLite |
-| `SQLITE_BUSY_TIMEOUT_MS` | `5000` | SQLite lock wait timeout in milliseconds |
-| `SQLITE_WRITE_RETRY_MAX` | `3` | Max retries for `database is locked` / `database table is locked` errors |
-| `SQLITE_WRITE_RETRY_BASE_DELAY` | `0.1` | Base backoff delay in seconds for exponential write retries |
+| Variable                        | Default | Description                                                              |
+| ------------------------------- | ------- | ------------------------------------------------------------------------ |
+| `SQLITE_WAL_ENABLED`            | `true`  | Enable `journal_mode=WAL` for file-based SQLite                          |
+| `SQLITE_BUSY_TIMEOUT_MS`        | `5000`  | SQLite lock wait timeout in milliseconds                                 |
+| `SQLITE_WRITE_RETRY_MAX`        | `3`     | Max retries for `database is locked` / `database table is locked` errors |
+| `SQLITE_WRITE_RETRY_BASE_DELAY` | `0.1`   | Base backoff delay in seconds for exponential write retries              |
 
 ---
 
@@ -901,24 +923,24 @@ The backtesting module automatically validates historical AI analysis records ag
 
 ### Operation Advice Mapping
 
-| Operation Advice | Position | Expected Direction | Win Condition |
-|-----------------|----------|-------------------|---------------|
-| Buy / Add / Strong Buy | long | up | Return >= neutral band |
-| Sell / Reduce / Strong Sell | cash | down | Decline >= neutral band |
-| Hold / Hold and Watch / Range-bound Watch / Shakeout Watch / Hold and watch | long | not_down | No significant decline |
-| Wait / Observe | cash | flat | Price within neutral band |
+| Operation Advice                                                            | Position | Expected Direction | Win Condition             |
+| --------------------------------------------------------------------------- | -------- | ------------------ | ------------------------- |
+| Buy / Add / Strong Buy                                                      | long     | up                 | Return >= neutral band    |
+| Sell / Reduce / Strong Sell                                                 | cash     | down               | Decline >= neutral band   |
+| Hold / Hold and Watch / Range-bound Watch / Shakeout Watch / Hold and watch | long     | not_down           | No significant decline    |
+| Wait / Observe                                                              | cash     | flat               | Price within neutral band |
 
 ### Configuration
 
 Set the following variables in `.env` (all optional, have defaults):
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `BACKTEST_ENABLED` | `true` | Whether to auto-run backtest after daily analysis |
-| `BACKTEST_EVAL_WINDOW_DAYS` | `10` | Evaluation window (trading days) |
-| `BACKTEST_MIN_AGE_DAYS` | `14` | Only backtest records older than N days to avoid incomplete data |
-| `BACKTEST_ENGINE_VERSION` | `v1` | Engine version, used to distinguish results when logic is updated |
-| `BACKTEST_NEUTRAL_BAND_PCT` | `2.0` | Neutral band threshold (%), ±2% treated as range-bound |
+| Variable                    | Default | Description                                                       |
+| --------------------------- | ------- | ----------------------------------------------------------------- |
+| `BACKTEST_ENABLED`          | `true`  | Whether to auto-run backtest after daily analysis                 |
+| `BACKTEST_EVAL_WINDOW_DAYS` | `10`    | Evaluation window (trading days)                                  |
+| `BACKTEST_MIN_AGE_DAYS`     | `14`    | Only backtest records older than N days to avoid incomplete data  |
+| `BACKTEST_ENGINE_VERSION`   | `v1`    | Engine version, used to distinguish results when logic is updated |
+| `BACKTEST_NEUTRAL_BAND_PCT` | `2.0`   | Neutral band threshold (%), ±2% treated as range-bound            |
 
 ### Auto-run
 
@@ -926,13 +948,13 @@ Backtesting triggers automatically after the daily analysis flow completes (non-
 
 ### Evaluation Metrics
 
-| Metric | Description |
-|--------|-------------|
-| `direction_accuracy_pct` | Direction prediction accuracy (expected direction matches actual) |
-| `win_rate_pct` | Win rate (wins / (wins + losses), excludes neutral) |
-| `avg_stock_return_pct` | Average stock return percentage |
-| `avg_simulated_return_pct` | Average simulated execution return (including SL/TP exits) |
-| `stop_loss_trigger_rate` | Stop-loss trigger rate (only counts records with SL configured) |
+| Metric                     | Description                                                       |
+| -------------------------- | ----------------------------------------------------------------- |
+| `direction_accuracy_pct`   | Direction prediction accuracy (expected direction matches actual) |
+| `win_rate_pct`             | Win rate (wins / (wins + losses), excludes neutral)               |
+| `avg_stock_return_pct`     | Average stock return percentage                                   |
+| `avg_simulated_return_pct` | Average simulated execution return (including SL/TP exits)        |
+| `stop_loss_trigger_rate`   | Stop-loss trigger rate (only counts records with SL configured)   |
 | `take_profit_trigger_rate` | Take-profit trigger rate (only counts records with TP configured) |
 
 ---
@@ -947,9 +969,9 @@ FastAPI provides RESTful API service for configuration management and triggering
 
 ### Startup Methods
 
-| Command | Description |
-|------|------|
-| `python main.py --serve` | Start API service + run full analysis once |
+| Command                       | Description                                       |
+| ----------------------------- | ------------------------------------------------- |
+| `python main.py --serve`      | Start API service + run full analysis once        |
 | `python main.py --serve-only` | Start API service only, manually trigger analysis |
 
 ### Features
@@ -964,21 +986,21 @@ FastAPI provides RESTful API service for configuration management and triggering
 
 ### API Endpoints
 
-| Endpoint | Method | Description |
-|------|------|------|
-| `/api/v1/analysis/analyze` | POST | Trigger stock analysis |
-| `/api/v1/analysis/market-review` | POST | Trigger a background market review; request body may pass `{"send_notification": true}`; shares the same `GeminiAnalyzer/SearchService/NotificationService` construction semantics as `main.py --market-review` and Bot commands |
-| `/api/v1/analysis/tasks` | GET | Query task list |
-| `/api/v1/analysis/tasks/stream` | GET (SSE) | Subscribe to realtime task updates |
-| `/api/v1/analysis/status/{task_id}` | GET | Query task status |
-| `/api/v1/history` | GET | Query analysis history |
-| `/api/v1/usage/summary?period=today|month|all` | GET | Query LLM call counts and token usage grouped by call type and model |
-| `/api/v1/backtest/run` | POST | Trigger backtest |
-| `/api/v1/backtest/results` | GET | Query backtest results (paginated) |
-| `/api/v1/backtest/performance` | GET | Get overall backtest performance |
-| `/api/v1/backtest/performance/{code}` | GET | Get per-stock backtest performance |
-| `/api/health` | GET | Health check |
-| `/docs` | GET | API Swagger documentation |
+| Endpoint                              | Method    | Description                                                                                                                                                                                                                      |
+| ------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | -------------------------------------------------------------------- |
+| `/api/v1/analysis/analyze`            | POST      | Trigger stock analysis                                                                                                                                                                                                           |
+| `/api/v1/analysis/market-review`      | POST      | Trigger a background market review; request body may pass `{"send_notification": true}`; shares the same `GeminiAnalyzer/SearchService/NotificationService` construction semantics as `main.py --market-review` and Bot commands |
+| `/api/v1/analysis/tasks`              | GET       | Query task list                                                                                                                                                                                                                  |
+| `/api/v1/analysis/tasks/stream`       | GET (SSE) | Subscribe to realtime task updates                                                                                                                                                                                               |
+| `/api/v1/analysis/status/{task_id}`   | GET       | Query task status                                                                                                                                                                                                                |
+| `/api/v1/history`                     | GET       | Query analysis history                                                                                                                                                                                                           |
+| `/api/v1/usage/summary?period=today   | month     | all`                                                                                                                                                                                                                             | GET | Query LLM call counts and token usage grouped by call type and model |
+| `/api/v1/backtest/run`                | POST      | Trigger backtest                                                                                                                                                                                                                 |
+| `/api/v1/backtest/results`            | GET       | Query backtest results (paginated)                                                                                                                                                                                               |
+| `/api/v1/backtest/performance`        | GET       | Get overall backtest performance                                                                                                                                                                                                 |
+| `/api/v1/backtest/performance/{code}` | GET       | Get per-stock backtest performance                                                                                                                                                                                               |
+| `/api/health`                         | GET       | Health check                                                                                                                                                                                                                     |
+| `/docs`                               | GET       | API Swagger documentation                                                                                                                                                                                                        |
 
 > Note: `POST /api/v1/analysis/analyze` supports only one stock when `async_mode=false`; batch `stock_codes` requires `async_mode=true`. The async `202` response returns a single `task_id` for one stock, or an `accepted` / `duplicates` summary for batch requests.
 > Note: `POST /api/v1/analysis/market-review` follows the same runtime configuration path as CLI/Bot market review (`GeminiAnalyzer(config=...)`, search setup, and prompt/rendering pipeline). The provider compatibility path prioritizes `litellm_model` and `llm_model_list`, then falls back to existing legacy keys (`GEMINI_*`, `OPENAI_*`, `ANTHROPIC_*`, `DEEPSEEK_*`) when those are not set; provider names, Base URL, and LiteLLM routing semantics are otherwise unchanged.
@@ -986,6 +1008,7 @@ FastAPI provides RESTful API service for configuration management and triggering
 > Note: when `/api/v1/analysis/market-review` returns a `task_id`, the WebUI polls `GET /api/v1/analysis/status/{task_id}`. The UI renders clear `pending/processing` progress, shows completion feedback when status becomes `completed`, and surfaces `error` content on `failed`.
 
 > Compatibility audit evidence:
+>
 > - Official references: LiteLLM OpenAI-compatible provider documentation <https://docs.litellm.ai/docs/providers/openai_compatible>, OpenAI Chat API <https://platform.openai.com/docs/api-reference/chat/create>, and DeepSeek API docs <https://api-docs.deepseek.com/>.
 > - Dependency boundary: this repo currently pins `litellm>=1.80.10,!=1.82.7,!=1.82.8,<2.0.0` (see `requirements.txt`); the compatibility regressions for this path were verified under that dependency window.
 > - Verifiable tests:
@@ -1000,6 +1023,7 @@ FastAPI provides RESTful API service for configuration management and triggering
 > Note: This behavior is documented in the full guide (`full-guide*.md`) because it is detailed runtime SSE/fallback behavior and is therefore kept out of the README.
 
 **Usage examples**:
+
 ```bash
 # Health check
 curl http://127.0.0.1:8000/api/health
@@ -1045,11 +1069,11 @@ python main.py --serve-only --host 0.0.0.0 --port 8888
 
 ### Supported Stock Code Formats
 
-| Type | Format | Examples |
-|------|------|------|
-| A-shares | 6-digit number | `600519`, `000001`, `300750` |
+| Type          | Format                                                       | Examples                          |
+| ------------- | ------------------------------------------------------------ | --------------------------------- |
+| A-shares      | 6-digit number                                               | `600519`, `000001`, `300750`      |
 | BSE (Beijing) | 8/4/92 prefix, 6-digit; supports `BJ` prefix or `.BJ` suffix | `920748`, `BJ920493`, `920493.BJ` |
-| HK stocks | hk + 5-digit number | `hk00700`, `hk09988` |
+| HK stocks     | hk + 5-digit number                                          | `hk00700`, `hk09988`              |
 
 ### Notes
 
@@ -1062,15 +1086,19 @@ python main.py --serve-only --host 0.0.0.0 --port 8888
 ## FAQ
 
 ### Q: Push messages getting truncated?
+
 A: WeChat Work/Feishu have message length limits, system already auto-segments messages. For complete content, configure Feishu Cloud Document feature.
 
 ### Q: Data fetch failed?
+
 A: AkShare uses scraping mechanism, may be temporarily rate-limited. System has retry mechanism configured, usually just wait a few minutes and retry.
 
 ### Q: How to add watchlist stocks?
+
 A: Modify `STOCK_LIST` environment variable, separate multiple codes with commas.
 
 ### Q: GitHub Actions not executing?
+
 A: Check if Actions is enabled, and if cron expression is correct (note it's UTC time).
 
 ---
@@ -1100,11 +1128,11 @@ When `AGENT_EVENT_MONITOR_ENABLED=true`, schedule mode polls the rules in `AGENT
 > Compatibility and rollback note: this section documents current Event Monitor rule behavior (including `price_change_percent`) and does not change external model/provider API semantics such as model names, providers, Base URL, LiteLLM, `OPENAI_*`, `DEEPSEEK_*`, or `GEMINI_*` configuration.
 > Rollback is explicit: clear or disable `AGENT_EVENT_MONITOR_ENABLED`/related rule config to restore previous behavior.
 
-| `alert_type` | Direction | Threshold | Description |
-| --- | --- | --- | --- |
-| `price_cross` | `above` / `below` | `price` | Current price crosses a fixed threshold |
-| `price_change_percent` | `up` / `down` | `change_pct` | Intraday change percentage reaches a threshold |
-| `volume_spike` | - | `multiplier` | Latest volume exceeds the recent 20-day average by this multiplier |
+| `alert_type`           | Direction         | Threshold    | Description                                                        |
+| ---------------------- | ----------------- | ------------ | ------------------------------------------------------------------ |
+| `price_cross`          | `above` / `below` | `price`      | Current price crosses a fixed threshold                            |
+| `price_change_percent` | `up` / `down`     | `change_pct` | Intraday change percentage reaches a threshold                     |
+| `volume_spike`         | -                 | `multiplier` | Latest volume exceeds the recent 20-day average by this multiplier |
 
 Example:
 

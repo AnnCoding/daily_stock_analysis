@@ -124,9 +124,10 @@ class AnalyzeCommand(BotCommand):
                     failed.append(code)
 
             if success_codes:
+                code_list = "、".join(f"`{c}`" for c in success_codes)
                 logger.info(f"[AnalyzeCommand] 分析任务已提交: {success_codes}")
                 return BotResponse(
-                    text="",
+                    text=f"分析任务已提交（{code_list}），完成后将自动推送结果。",
                     markdown=True,
                     reaction_only=True,
                     at_user=False,

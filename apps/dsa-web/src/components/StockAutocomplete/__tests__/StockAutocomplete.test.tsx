@@ -2,10 +2,10 @@
  * StockAutocomplete component tests.
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { StockAutocomplete } from '../StockAutocomplete';
-import type { StockIndexItem } from '../../../types/stockIndex';
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { StockAutocomplete } from "../StockAutocomplete";
+import type { StockIndexItem } from "../../../types/stockIndex";
 
 let stockIndexHookImpl: () => {
   index: StockIndexItem[];
@@ -34,11 +34,11 @@ let autocompleteHookImpl: () => {
 };
 
 // Mock the hooks
-vi.mock('../../../hooks/useStockIndex', () => ({
+vi.mock("../../../hooks/useStockIndex", () => ({
   useStockIndex: () => stockIndexHookImpl(),
 }));
 
-vi.mock('../../../hooks/useAutocomplete', () => ({
+vi.mock("../../../hooks/useAutocomplete", () => ({
   useAutocomplete: () => autocompleteHookImpl(),
 }));
 
@@ -89,7 +89,7 @@ const bseSuggestion = {
   score: 100,
 };
 
-describe('StockAutocomplete', () => {
+describe("StockAutocomplete", () => {
   const mockOnChange = vi.fn();
   const mockOnSubmit = vi.fn();
 
@@ -103,7 +103,7 @@ describe('StockAutocomplete', () => {
       loaded: true,
     });
     autocompleteHookImpl = () => ({
-      query: '',
+      query: "",
       setQuery: vi.fn(),
       suggestions: mockSuggestions,
       isOpen: false,
@@ -121,110 +121,110 @@ describe('StockAutocomplete', () => {
     });
   });
 
-  it('renders the input element', () => {
+  it("renders the input element", () => {
     render(
       <StockAutocomplete
         value=""
         onChange={mockOnChange}
         onSubmit={mockOnSubmit}
-      />
+      />,
     );
 
     const input = screen.getByPlaceholderText(/输入股票代码或名称/);
     expect(input).toBeInTheDocument();
   });
 
-  it('renders a custom placeholder', () => {
+  it("renders a custom placeholder", () => {
     render(
       <StockAutocomplete
         value=""
         onChange={mockOnChange}
         onSubmit={mockOnSubmit}
         placeholder="请输入代码"
-      />
+      />,
     );
 
     const input = screen.getByPlaceholderText(/请输入代码/);
     expect(input).toBeInTheDocument();
   });
 
-  it('renders the current value', () => {
+  it("renders the current value", () => {
     render(
       <StockAutocomplete
         value="600519"
         onChange={mockOnChange}
         onSubmit={mockOnSubmit}
-      />
+      />,
     );
 
-    const input = screen.getByDisplayValue('600519');
+    const input = screen.getByDisplayValue("600519");
     expect(input).toBeInTheDocument();
   });
 
-  it('supports the disabled state', () => {
+  it("supports the disabled state", () => {
     render(
       <StockAutocomplete
         value=""
         onChange={mockOnChange}
         onSubmit={mockOnSubmit}
         disabled={true}
-      />
+      />,
     );
 
-    const input = screen.getByRole('combobox');
+    const input = screen.getByRole("combobox");
     expect(input).toBeDisabled();
   });
 
-  it('calls onChange when the input changes', () => {
+  it("calls onChange when the input changes", () => {
     render(
       <StockAutocomplete
         value=""
         onChange={mockOnChange}
         onSubmit={mockOnSubmit}
-      />
+      />,
     );
 
-    const input = screen.getByRole('combobox');
-    fireEvent.change(input, { target: { value: '600519' } });
+    const input = screen.getByRole("combobox");
+    fireEvent.change(input, { target: { value: "600519" } });
 
-    expect(mockOnChange).toHaveBeenCalledWith('600519');
+    expect(mockOnChange).toHaveBeenCalledWith("600519");
   });
 
-  it('applies a custom class name', () => {
+  it("applies a custom class name", () => {
     const { container } = render(
       <StockAutocomplete
         value=""
         onChange={mockOnChange}
         onSubmit={mockOnSubmit}
         className="custom-class"
-      />
+      />,
     );
 
-    const input = container.querySelector('.custom-class');
+    const input = container.querySelector(".custom-class");
     expect(input).toBeInTheDocument();
   });
 
-  it('exposes the expected accessibility attributes', () => {
+  it("exposes the expected accessibility attributes", () => {
     render(
       <StockAutocomplete
         value=""
         onChange={mockOnChange}
         onSubmit={mockOnSubmit}
-      />
+      />,
     );
 
-    const input = screen.getByRole('combobox');
-    expect(input).toHaveAttribute('aria-autocomplete', 'none');
-    expect(input).toHaveAttribute('role', 'combobox');
+    const input = screen.getByRole("combobox");
+    expect(input).toHaveAttribute("aria-autocomplete", "none");
+    expect(input).toHaveAttribute("role", "combobox");
   });
 
-  describe('fallback mode', () => {
-    it('renders a plain input when index loading fallback is active', () => {
+  describe("fallback mode", () => {
+    it("renders a plain input when index loading fallback is active", () => {
       stockIndexHookImpl = () => ({
         index: [],
         loading: false,
         fallback: true,
-        error: new Error('Index load failed'),
+        error: new Error("Index load failed"),
         loaded: false,
       });
 
@@ -233,16 +233,16 @@ describe('StockAutocomplete', () => {
           value=""
           onChange={mockOnChange}
           onSubmit={mockOnSubmit}
-        />
+        />,
       );
 
       const input = screen.getByPlaceholderText(/输入股票代码或名称/);
-      expect(input).toHaveAttribute('data-autocomplete-mode', 'fallback');
+      expect(input).toHaveAttribute("data-autocomplete-mode", "fallback");
     });
 
-    it('renders a plain input when autocomplete runtime fallback is active', () => {
+    it("renders a plain input when autocomplete runtime fallback is active", () => {
       autocompleteHookImpl = () => ({
-        query: '',
+        query: "",
         setQuery: vi.fn(),
         suggestions: [],
         isOpen: false,
@@ -256,7 +256,7 @@ describe('StockAutocomplete', () => {
         isComposing: false,
         setIsComposing: vi.fn(),
         runtimeFallback: true,
-        error: new Error('Search crashed'),
+        error: new Error("Search crashed"),
       });
 
       render(
@@ -264,16 +264,16 @@ describe('StockAutocomplete', () => {
           value=""
           onChange={mockOnChange}
           onSubmit={mockOnSubmit}
-        />
+        />,
       );
 
       const input = screen.getByPlaceholderText(/输入股票代码或名称/);
-      expect(input).toHaveAttribute('data-autocomplete-mode', 'fallback');
+      expect(input).toHaveAttribute("data-autocomplete-mode", "fallback");
     });
 
-    it('submits manually when fallback input receives Enter', () => {
+    it("submits manually when fallback input receives Enter", () => {
       autocompleteHookImpl = () => ({
-        query: '',
+        query: "",
         setQuery: vi.fn(),
         suggestions: [],
         isOpen: false,
@@ -287,7 +287,7 @@ describe('StockAutocomplete', () => {
         isComposing: false,
         setIsComposing: vi.fn(),
         runtimeFallback: true,
-        error: new Error('Search crashed'),
+        error: new Error("Search crashed"),
       });
 
       render(
@@ -295,27 +295,27 @@ describe('StockAutocomplete', () => {
           value="600519"
           onChange={mockOnChange}
           onSubmit={mockOnSubmit}
-        />
+        />,
       );
 
-      const input = screen.getByDisplayValue('600519');
-      fireEvent.keyDown(input, { key: 'Enter' });
+      const input = screen.getByDisplayValue("600519");
+      fireEvent.keyDown(input, { key: "Enter" });
 
-      expect(mockOnSubmit).toHaveBeenCalledWith('600519');
+      expect(mockOnSubmit).toHaveBeenCalledWith("600519");
     });
   });
 
-  describe('IME support', () => {
-    it('handles composition start and end events', () => {
+  describe("IME support", () => {
+    it("handles composition start and end events", () => {
       render(
         <StockAutocomplete
           value=""
           onChange={mockOnChange}
           onSubmit={mockOnSubmit}
-        />
+        />,
       );
 
-      const input = screen.getByRole('combobox');
+      const input = screen.getByRole("combobox");
 
       fireEvent.compositionStart(input);
       fireEvent.compositionEnd(input);
@@ -325,10 +325,10 @@ describe('StockAutocomplete', () => {
     });
   });
 
-  describe('keyboard submission', () => {
-    it('submits the raw input when suggestions are open but nothing is highlighted', () => {
+  describe("keyboard submission", () => {
+    it("submits the raw input when suggestions are open but nothing is highlighted", () => {
       autocompleteHookImpl = () => ({
-        query: '',
+        query: "",
         setQuery: vi.fn(),
         suggestions: mockSuggestions,
         isOpen: true,
@@ -350,18 +350,18 @@ describe('StockAutocomplete', () => {
           value="6005"
           onChange={mockOnChange}
           onSubmit={mockOnSubmit}
-        />
+        />,
       );
 
-      const input = screen.getByDisplayValue('6005');
-      fireEvent.keyDown(input, { key: 'Enter' });
+      const input = screen.getByDisplayValue("6005");
+      fireEvent.keyDown(input, { key: "Enter" });
 
-      expect(mockOnSubmit).toHaveBeenCalledWith('6005');
+      expect(mockOnSubmit).toHaveBeenCalledWith("6005");
     });
 
-    it('submits the highlighted suggestion when one is explicitly selected', () => {
+    it("submits the highlighted suggestion when one is explicitly selected", () => {
       autocompleteHookImpl = () => ({
-        query: '',
+        query: "",
         setQuery: vi.fn(),
         suggestions: mockSuggestions,
         isOpen: true,
@@ -383,19 +383,23 @@ describe('StockAutocomplete', () => {
           value="6005"
           onChange={mockOnChange}
           onSubmit={mockOnSubmit}
-        />
+        />,
       );
 
-      const input = screen.getByDisplayValue('6005');
-      fireEvent.keyDown(input, { key: 'Enter' });
+      const input = screen.getByDisplayValue("6005");
+      fireEvent.keyDown(input, { key: "Enter" });
 
-      expect(mockOnChange).toHaveBeenCalledWith('600519');
-      expect(mockOnSubmit).toHaveBeenCalledWith('600519.SH', '贵州茅台', 'autocomplete');
+      expect(mockOnChange).toHaveBeenCalledWith("600519");
+      expect(mockOnSubmit).toHaveBeenCalledWith(
+        "600519.SH",
+        "贵州茅台",
+        "autocomplete",
+      );
     });
 
-    it('submits the highlighted HK suggestion using the canonical .HK code', () => {
+    it("submits the highlighted HK suggestion using the canonical .HK code", () => {
       autocompleteHookImpl = () => ({
-        query: '',
+        query: "",
         setQuery: vi.fn(),
         suggestions: [hkSuggestion],
         isOpen: true,
@@ -417,19 +421,23 @@ describe('StockAutocomplete', () => {
           value="00700"
           onChange={mockOnChange}
           onSubmit={mockOnSubmit}
-        />
+        />,
       );
 
-      const input = screen.getByDisplayValue('00700');
-      fireEvent.keyDown(input, { key: 'Enter' });
+      const input = screen.getByDisplayValue("00700");
+      fireEvent.keyDown(input, { key: "Enter" });
 
-      expect(mockOnChange).toHaveBeenCalledWith('00700');
-      expect(mockOnSubmit).toHaveBeenCalledWith('00700.HK', '腾讯控股', 'autocomplete');
+      expect(mockOnChange).toHaveBeenCalledWith("00700");
+      expect(mockOnSubmit).toHaveBeenCalledWith(
+        "00700.HK",
+        "腾讯控股",
+        "autocomplete",
+      );
     });
 
-    it('submits the highlighted BSE suggestion using the canonical .BJ code', () => {
+    it("submits the highlighted BSE suggestion using the canonical .BJ code", () => {
       autocompleteHookImpl = () => ({
-        query: '',
+        query: "",
         setQuery: vi.fn(),
         suggestions: [bseSuggestion],
         isOpen: true,
@@ -451,21 +459,25 @@ describe('StockAutocomplete', () => {
           value="920493"
           onChange={mockOnChange}
           onSubmit={mockOnSubmit}
-        />
+        />,
       );
 
-      const input = screen.getByDisplayValue('920493');
-      fireEvent.keyDown(input, { key: 'Enter' });
+      const input = screen.getByDisplayValue("920493");
+      fireEvent.keyDown(input, { key: "Enter" });
 
-      expect(mockOnChange).toHaveBeenCalledWith('920493');
-      expect(mockOnSubmit).toHaveBeenCalledWith('920493.BJ', '示例北交所股票', 'autocomplete');
+      expect(mockOnChange).toHaveBeenCalledWith("920493");
+      expect(mockOnSubmit).toHaveBeenCalledWith(
+        "920493.BJ",
+        "示例北交所股票",
+        "autocomplete",
+      );
     });
   });
 
-  describe('runtime boundary', () => {
-    it('falls back to the plain input when the autocomplete tree throws during render', () => {
+  describe("runtime boundary", () => {
+    it("falls back to the plain input when the autocomplete tree throws during render", () => {
       autocompleteHookImpl = () => {
-        throw new Error('Autocomplete render failed');
+        throw new Error("Autocomplete render failed");
       };
 
       render(
@@ -473,26 +485,28 @@ describe('StockAutocomplete', () => {
           value="META"
           onChange={mockOnChange}
           onSubmit={mockOnSubmit}
-        />
+        />,
       );
 
-      const input = screen.getByDisplayValue('META');
-      expect(input).toHaveAttribute('data-autocomplete-mode', 'fallback');
+      const input = screen.getByDisplayValue("META");
+      expect(input).toHaveAttribute("data-autocomplete-mode", "fallback");
     });
 
-    it('falls back to the plain input when a suggestion contains an unsupported market', () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    it("falls back to the plain input when a suggestion contains an unsupported market", () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
       autocompleteHookImpl = () => ({
-        query: '',
+        query: "",
         setQuery: vi.fn(),
         suggestions: [
           {
-            canonicalCode: 'TEST.OTC',
-            displayCode: 'TEST',
-            nameZh: '测试市场',
-            market: 'OTC' as never,
-            matchType: 'exact' as const,
-            matchField: 'code' as const,
+            canonicalCode: "TEST.OTC",
+            displayCode: "TEST",
+            nameZh: "测试市场",
+            market: "OTC" as never,
+            matchType: "exact" as const,
+            matchField: "code" as const,
             score: 100,
           },
         ],
@@ -515,14 +529,17 @@ describe('StockAutocomplete', () => {
           value="TEST"
           onChange={mockOnChange}
           onSubmit={mockOnSubmit}
-        />
+        />,
       );
 
-      const input = screen.getByDisplayValue('TEST');
+      const input = screen.getByDisplayValue("TEST");
       fireEvent.focus(input);
 
-      const fallbackInput = screen.getByDisplayValue('TEST');
-      expect(fallbackInput).toHaveAttribute('data-autocomplete-mode', 'fallback');
+      const fallbackInput = screen.getByDisplayValue("TEST");
+      expect(fallbackInput).toHaveAttribute(
+        "data-autocomplete-mode",
+        "fallback",
+      );
       expect(consoleErrorSpy).toHaveBeenCalled();
       consoleErrorSpy.mockRestore();
     });

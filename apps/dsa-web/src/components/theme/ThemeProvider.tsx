@@ -1,5 +1,5 @@
-import type React from 'react';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import type React from "react";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 type ThemeProviderProps = {
   children: React.ReactNode;

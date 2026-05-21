@@ -1,8 +1,8 @@
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
 
 class IntersectionObserverMock implements IntersectionObserver {
   readonly root = null;
-  readonly rootMargin = '';
+  readonly rootMargin = "";
   readonly thresholds = [0];
 
   disconnect() {}
@@ -16,7 +16,7 @@ class IntersectionObserverMock implements IntersectionObserver {
   unobserve() {}
 }
 
-Object.defineProperty(globalThis, 'IntersectionObserver', {
+Object.defineProperty(globalThis, "IntersectionObserver", {
   writable: true,
   value: IntersectionObserverMock,
 });

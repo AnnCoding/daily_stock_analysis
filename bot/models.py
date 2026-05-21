@@ -63,18 +63,24 @@ class BotMessage:
     timestamp: datetime = field(default_factory=datetime.now)
     raw_data: Dict[str, Any] = field(default_factory=dict)
     
+    @staticmethod
+    def _strip_feishu_links(text: str) -> str:
+        """Strip Feishu auto-generated markdown links like [02513.HK](http://02513.hk/)."""
+        import re
+        return re.sub(r'\[([^\]]+)\]\(https?://[^)]+\)', r'\1', text)
+
     def get_command_and_args(self, prefix: str = "/") -> tuple:
         """
         解析命令和参数
-        
+
         Args:
             prefix: 命令前缀，默认 "/"
-            
+
         Returns:
             (command, args) 元组，如 ("analyze", ["600519"])
             如果不是命令，返回 (None, [])
         """
-        text = self.content.strip()
+        text = self._strip_feishu_links(self.content.strip())
         
         # 检查是否以命令前缀开头
         if not text.startswith(prefix):
@@ -86,6 +92,9 @@ class BotMessage:
                 ('批量', 'batch'),
                 ('帮助', 'help'),
                 ('状态', 'status'),
+                ('订阅', 'subscribe'),
+                ('取消订阅', 'unsubscribe'),
+                ('我的订阅', 'subs'),
             ]
             for cn_cmd, en_cmd in chinese_commands:
                 if text.startswith(cn_cmd):

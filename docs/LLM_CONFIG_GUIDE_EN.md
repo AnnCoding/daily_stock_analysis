@@ -27,6 +27,7 @@ If you only plan to use one single model, this is the fastest way. Open the `.en
 ### Anspire Open Example:
 
 > 💡 **[Anspire Open](https://open.anspire.cn/?share_code=QFBC0FYC)**: supports Chinese-optimized search and OpenAI-compatible model access using a shared key.
+>
 > - The following values are configuration examples only; model availability depends on your account and Anspire console.
 > - Documentation examples do not replace connectivity validation; please validate with the Web "Test connection" flow before relying on production traffic.
 
@@ -51,24 +52,28 @@ OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxx
 # Fill in the platform's API Base URL (Very Important: Usually must end with /v1)
 OPENAI_BASE_URL=https://api.siliconflow.cn/v1
 # Fill in the specific model name (Very Important: You must add the "openai/" prefix so the system recognizes it)
-LITELLM_MODEL=openai/deepseek-ai/DeepSeek-V3 
+LITELLM_MODEL=openai/deepseek-ai/DeepSeek-V3
 ```
 
 ### Example 2: Using the Official DeepSeek API
+
 ```env
 # Fill in the API Key requested from the official DeepSeek platform
 DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
 ```
-*Compatibility note: with only this line, the system still defaults to `deepseek/deepseek-chat` and logs a migration warning.*
+
+_Compatibility note: with only this line, the system still defaults to `deepseek/deepseek-chat` and logs a migration warning._
 `deepseek-chat` / `deepseek-reasoner` still work for compatibility with old configs, but DeepSeek marks them deprecated after 2026/07/24. New configs should migrate through the Web quick channel or explicitly set `LITELLM_MODEL=deepseek/deepseek-v4-flash` for `deepseek-v4-flash` / `deepseek-v4-pro`.
 
 ### Example 3: Using the Free Gemini API
+
 ```env
 # Fill in your Google Gemini Key
 GEMINI_API_KEY=AIzac...
 ```
 
 ### Example 4: Using Ollama Local Models
+
 ```env
 # Ollama requires no API Key; works after running ollama serve locally
 OLLAMA_API_BASE=http://localhost:11434
@@ -142,6 +147,7 @@ If you prefer modifying files, configuring this in the `.env` file is also very 
 2. **Provide configurations for each channel** (Note the uppercase): `LLM_{CHANNEL_NAME}_XXX`
 
 ### Example: Configuring DeepSeek and a Third-party Relay with Fallbacks
+
 ```env
 # 1. Enable channel mode, declare two channels here: deepseek and aihubmix
 LLM_CHANNELS=deepseek,aihubmix
@@ -166,6 +172,7 @@ LITELLM_FALLBACK_MODELS=openai/gpt-5.4-mini,anthropic/claude-sonnet-4-6
 ```
 
 ### Example: Ollama Channel Mode (Local Models, No API Key)
+
 ```env
 # 1. Enable channel mode, declare ollama channel
 LLM_CHANNELS=ollama
@@ -222,13 +229,14 @@ This layer maps directly to the underlying LiteLLM routing capabilities, includi
 2. Create a `litellm_config.yaml` in the project root directory (you can refer to `docs/examples/litellm_config.example.yaml`).
 
 Example `litellm_config.yaml`:
+
 ```yaml
 model_list:
   - model_name: my-smart-model
     litellm_params:
       model: deepseek/deepseek-v4-flash
       api_base: https://api.deepseek.com
-      api_key: "os.environ/MY_CUSTOM_SECRET_KEY"  # Fetch from environment vars for security
+      api_key: "os.environ/MY_CUSTOM_SECRET_KEY" # Fetch from environment vars for security
 
   # Ollama local model (no api_key needed)
   - model_name: ollama/qwen3:8b
@@ -263,6 +271,7 @@ VISION_MODEL=openai/gpt-5.5
 ```
 
 **Vision Fallback Mechanism:** To prevent unexpected failures, the system has a built-in fallback strategy. If the primary vision model fails, it will attempt to use alternative vision-capable provider keys in the following order:
+
 ```env
 # Default fallback sequence:
 VISION_PROVIDER_PRIORITY=gemini,anthropic,openai
@@ -279,13 +288,13 @@ Afraid you got the config wrong? Type the following commands in your terminal to
 
 ### Common Pitfalls
 
-| Weird Error You Got? | Likely Culprit | How to Fix It? |
-|----------------------|----------------|----------------|
-| **The UI says the primary model is not configured** | The system doesn't know which provider/model you want to use. | Add a clear instruction in `.env`: `LITELLM_MODEL=provider/your_model_name`. Example: `openai/gpt-5.5`. |
-| **I added multiple provider Keys, why is only one working?** | You mixed the **Simple Mode** and **Channels Mode**! | Choose one path. For simple setups, delete anything starting with `LLM_CHANNELS`. To use multi-model fallbacks, migrate all your Keys into the `LLM_CHANNELS` setup. |
-| **Returns 400, 401, or Invalid API Key** | The API Key is wrong, copied incompletely, account lacks credits, or you mistyped the model name (extremely common). | 1. Ensure there are no spaces at the start/end of your Key.<br> 2. Ensure your Base URL ends with `/v1`.<br> 3. Check if you forgot the `openai/` prefix on the model name! |
-| **Kimi K2.6 returns `invalid temperature` (it may say only `1.0` or `0.6` is allowed)** | The model requires different fixed temperatures for thinking vs non-thinking mode, while older config or call paths may still pass `0.7`. | After this fix, default / thinking `kimi-k2.6` requests automatically use `temperature=1.0`; if you explicitly disable thinking in a LiteLLM YAML route, the request automatically uses `0.6` instead. Prefer `openai/kimi-k2.6` with your Moonshot or relay OpenAI-compatible Base URL and API key. Non-Kimi fallbacks still keep your configured `LLM_TEMPERATURE`. |
-| **Spins endlessly, eventually hits Timeout/ConnectionRefused** | You are using restricted APIs (like Google/OpenAI) in a blocked region without a proxy, or your cloud server lacks external internet access. | Highly recommend using **official regional APIs** (like DeepSeek) or **OpenAI-compatible relay platforms**. Third-party platforms bypass these network constraints. |
-| **Ollama returns 404, `Could not get model info`, or `api/generate/api/show`** | Using `OPENAI_BASE_URL` for Ollama makes the system concatenate URLs incorrectly | Use `OLLAMA_API_BASE=http://localhost:11434` or channel mode (`LLM_CHANNELS=ollama` + `LLM_OLLAMA_BASE_URL`) instead |
+| Weird Error You Got?                                                                    | Likely Culprit                                                                                                                               | How to Fix It?                                                                                                                                                                                                                                                                                                                                                        |
+| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **The UI says the primary model is not configured**                                     | The system doesn't know which provider/model you want to use.                                                                                | Add a clear instruction in `.env`: `LITELLM_MODEL=provider/your_model_name`. Example: `openai/gpt-5.5`.                                                                                                                                                                                                                                                               |
+| **I added multiple provider Keys, why is only one working?**                            | You mixed the **Simple Mode** and **Channels Mode**!                                                                                         | Choose one path. For simple setups, delete anything starting with `LLM_CHANNELS`. To use multi-model fallbacks, migrate all your Keys into the `LLM_CHANNELS` setup.                                                                                                                                                                                                  |
+| **Returns 400, 401, or Invalid API Key**                                                | The API Key is wrong, copied incompletely, account lacks credits, or you mistyped the model name (extremely common).                         | 1. Ensure there are no spaces at the start/end of your Key.<br> 2. Ensure your Base URL ends with `/v1`.<br> 3. Check if you forgot the `openai/` prefix on the model name!                                                                                                                                                                                           |
+| **Kimi K2.6 returns `invalid temperature` (it may say only `1.0` or `0.6` is allowed)** | The model requires different fixed temperatures for thinking vs non-thinking mode, while older config or call paths may still pass `0.7`.    | After this fix, default / thinking `kimi-k2.6` requests automatically use `temperature=1.0`; if you explicitly disable thinking in a LiteLLM YAML route, the request automatically uses `0.6` instead. Prefer `openai/kimi-k2.6` with your Moonshot or relay OpenAI-compatible Base URL and API key. Non-Kimi fallbacks still keep your configured `LLM_TEMPERATURE`. |
+| **Spins endlessly, eventually hits Timeout/ConnectionRefused**                          | You are using restricted APIs (like Google/OpenAI) in a blocked region without a proxy, or your cloud server lacks external internet access. | Highly recommend using **official regional APIs** (like DeepSeek) or **OpenAI-compatible relay platforms**. Third-party platforms bypass these network constraints.                                                                                                                                                                                                   |
+| **Ollama returns 404, `Could not get model info`, or `api/generate/api/show`**          | Using `OPENAI_BASE_URL` for Ollama makes the system concatenate URLs incorrectly                                                             | Use `OLLAMA_API_BASE=http://localhost:11434` or channel mode (`LLM_CHANNELS=ollama` + `LLM_OLLAMA_BASE_URL`) instead                                                                                                                                                                                                                                                  |
 
-*Veteran's Tip: If you enable **Agent Mode (Deep-thinking & web-search)**, experience shows you should use a stronger model like `deepseek-v4-pro`. Trying to save money by using weak mini-models for agents will likely result in infinite loops or missed objectives.*
+_Veteran's Tip: If you enable **Agent Mode (Deep-thinking & web-search)**, experience shows you should use a stronger model like `deepseek-v4-pro`. Trying to save money by using weak mini-models for agents will likely result in infinite loops or missed objectives._

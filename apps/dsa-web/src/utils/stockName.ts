@@ -34,7 +34,7 @@ export function truncateStockName(name: string): string {
   if (!name) return name;
   const maxLen = getMaxLength(name);
   if (name.length <= maxLen) return name;
-  return name.slice(0, maxLen) + '.';
+  return name.slice(0, maxLen) + ".";
 }
 
 /**

@@ -21,12 +21,13 @@ pip install lark-oapi
 https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/server-side-sdk/python--sdk/handle-events
 """
 
+import asyncio
 import json
 import logging
 import threading
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Callable
 import time
 
@@ -57,6 +58,13 @@ from bot.models import BotMessage, BotResponse, ChatType
 from src.formatters import format_feishu_markdown, chunk_content_by_max_bytes
 from src.config import get_config
 from src.feishu_card_builder import build_template_card
+
+# Watchdog constants
+_WATCHDOG_CHECK_INTERVAL = 120       # seconds between health checks
+_WATCHDOG_TRADING_MAX_SILENCE = 1800  # 30 min during trading hours
+_WATCHDOG_OFF_HOURS_MAX_SILENCE = 7200  # 2 hours during off-hours
+_WATCHDOG_GRACE_PERIOD = 300         # 5 min after startup before first check
+_BEIJING_TZ = timezone(timedelta(hours=8))
 
 
 class FeishuReplyClient:
@@ -126,6 +134,8 @@ class FeishuReplyClient:
         """
         发送交互卡片消息（支持 Markdown 渲染）
 
+        发送策略：模板卡片 → 内联卡片 → 纯文本，逐级回退。
+
         Args:
             content: Markdown 格式的内容
             message_id: 原消息 ID（回复时使用）
@@ -137,56 +147,72 @@ class FeishuReplyClient:
         Returns:
             是否发送成功
         """
-        try:
-            # 如果需要 @用户，在内容前添加 @ 标记
-            final_content = content
-            if at_user and user_id:
-                final_content = f"<at user_id=\"{user_id}\"></at> {content}"
+        # 如果需要 @用户，在内容前添加 @ 标记
+        final_content = content
+        if at_user and user_id:
+            final_content = f"<at user_id=\"{user_id}\"></at> {content}"
 
-            # 构建交互卡片 payload（使用飞书卡片模板）
-            card_data = build_template_card(final_content)
+        def _send(msg_type: str, content_json: str) -> bool:
+            try:
+                if message_id:
+                    request = ReplyMessageRequest.builder() \
+                        .message_id(message_id) \
+                        .request_body(
+                        ReplyMessageRequestBody.builder()
+                        .content(content_json)
+                        .msg_type(msg_type)
+                        .build()
+                    ) \
+                        .build()
+                    response = self._client.im.v1.message.reply(request)
+                else:
+                    request = CreateMessageRequest.builder() \
+                        .receive_id_type(receive_id_type) \
+                        .request_body(
+                        CreateMessageRequestBody.builder()
+                        .receive_id(chat_id)
+                        .content(content_json)
+                        .msg_type(msg_type)
+                        .build()
+                    ) \
+                        .build()
+                    response = self._client.im.v1.message.create(request)
 
-            content_json = json.dumps(card_data)
-
-            if message_id:
-                # 回复消息
-                request = ReplyMessageRequest.builder() \
-                    .message_id(message_id) \
-                    .request_body(
-                    ReplyMessageRequestBody.builder()
-                    .content(content_json)
-                    .msg_type("interactive")
-                    .build()
-                ) \
-                    .build()
-                response = self._client.im.v1.message.reply(request)
-            else:
-                # 主动发送消息
-                request = CreateMessageRequest.builder() \
-                    .receive_id_type(receive_id_type) \
-                    .request_body(
-                    CreateMessageRequestBody.builder()
-                    .receive_id(chat_id)
-                    .content(content_json)
-                    .msg_type("interactive")
-                    .build()
-                ) \
-                    .build()
-                response = self._client.im.v1.message.create(request)
-
-            if not response.success():
-                logger.error(
-                    f"[Feishu Stream] 发送交互卡片失败: code={response.code}, "
-                    f"msg={response.msg}, log_id={response.get_log_id()}"
+                if response.success():
+                    logger.debug("[Feishu Stream] 发送消息成功 (msg_type=%s)", msg_type)
+                    return True
+                logger.warning(
+                    "[Feishu Stream] 发送失败 (msg_type=%s): code=%s, msg=%s",
+                    msg_type, response.code, response.msg,
                 )
                 return False
+            except Exception as e:
+                logger.warning("[Feishu Stream] 发送异常 (msg_type=%s): %s", msg_type, e)
+                return False
 
-            logger.debug("[Feishu Stream] 发送交互卡片成功")
+        # 1) 模板卡片
+        template_card = build_template_card(final_content)
+        if _send("interactive", json.dumps(template_card)):
             return True
+        logger.info("[Feishu Stream] 模板卡片失败，回退到内联卡片")
 
-        except Exception as e:
-            logger.error(f"[Feishu Stream] 发送交互卡片异常: {e}")
-            return False
+        # 2) 内联卡片（不依赖模板）
+        inline_card = {
+            "config": {"wide_screen_mode": True},
+            "header": {
+                "title": {"tag": "plain_text", "content": "股票智能分析报告"}
+            },
+            "elements": [
+                {"tag": "div", "text": {"tag": "lark_md", "content": final_content}}
+            ],
+        }
+        if _send("interactive", json.dumps(inline_card)):
+            return True
+        logger.info("[Feishu Stream] 内联卡片失败，回退到纯文本")
+
+        # 3) 纯文本
+        text_payload = json.dumps({"text": final_content})
+        return _send("text", text_payload)
 
     def reply_text(self, message_id: str, text: str, at_user: bool = False,
                    user_id: Optional[str] = None) -> bool:
@@ -311,6 +337,7 @@ class FeishuStreamHandler:
         self._active_conversations: set[str] = set()
         self._queue_lock = threading.Lock()
         self._shutdown = False
+        self._last_activity_time: float = time.monotonic()
 
     def _conversation_key(self, bot_message: BotMessage) -> str:
         """Return the ordering key used for per-conversation FIFO processing."""
@@ -367,7 +394,15 @@ class FeishuStreamHandler:
                 return
 
             if response.reaction_only:
-                self._reply_client.add_reaction(bot_message.message_id)
+                ok = self._reply_client.add_reaction(bot_message.message_id)
+                if not ok:
+                    # 表情添加失败时回退到文字确认，避免用户完全无反馈
+                    fallback = response.text or "分析任务已提交，完成后将自动推送结果。"
+                    self._reply_client.reply_text(
+                        message_id=bot_message.message_id,
+                        text=fallback,
+                        at_user=False,
+                    )
                 return
 
             if response.text:
@@ -403,6 +438,11 @@ class FeishuStreamHandler:
             summary,
         )
 
+    @property
+    def last_activity_time(self) -> float:
+        """Timestamp (monotonic) of the last event delivered by the SDK."""
+        return self._last_activity_time
+
     def handle_message(self, event: 'P2ImMessageReceiveV1') -> None:
         """
         处理接收到的消息事件
@@ -410,6 +450,7 @@ class FeishuStreamHandler:
         Args:
             event: 飞书消息接收事件
         """
+        self._last_activity_time = time.monotonic()
         try:
             # 解析消息
             bot_message = self._parse_event_message(event)
@@ -601,6 +642,9 @@ class FeishuStreamClient:
         self._message_handler: Optional[FeishuStreamHandler] = None
         self._background_thread: Optional[threading.Thread] = None
         self._running = False
+        self._stop_event = threading.Event()
+        self._watchdog_thread: Optional[threading.Thread] = None
+        self._consecutive_failures = 0
 
     def _create_message_handler(self) -> Callable[[BotMessage], BotResponse]:
         """创建消息处理函数"""
@@ -688,6 +732,16 @@ class FeishuStreamClient:
         self._background_thread.start()
         logger.info("[Feishu Stream] 后台客户端已启动")
 
+        # Start watchdog
+        self._stop_event.clear()
+        self._watchdog_thread = threading.Thread(
+            target=self._watchdog_loop,
+            daemon=True,
+            name="FeishuStreamWatchdog",
+        )
+        self._watchdog_thread.start()
+        logger.info("[Feishu Stream] Watchdog started (interval=%ds)", _WATCHDOG_CHECK_INTERVAL)
+
     def _run_in_background(self) -> None:
         """后台运行（处理异常和重连）"""
         import time
@@ -704,6 +758,7 @@ class FeishuStreamClient:
     def stop(self) -> None:
         """停止客户端"""
         self._running = False
+        self._stop_event.set()
         if self._message_handler is not None:
             self._message_handler.shutdown(wait=False)
         logger.info("[Feishu Stream] 客户端已停止")
@@ -712,6 +767,80 @@ class FeishuStreamClient:
     def is_running(self) -> bool:
         """是否正在运行"""
         return self._running
+
+    # ===== Watchdog =====
+
+    def _watchdog_loop(self) -> None:
+        """Periodically check if the stream connection is alive."""
+        self._stop_event.wait(_WATCHDOG_GRACE_PERIOD)
+
+        while not self._stop_event.is_set():
+            try:
+                self._check_health()
+            except Exception as e:
+                logger.error("[Feishu Stream] Watchdog health check failed: %s", e)
+            self._stop_event.wait(_WATCHDOG_CHECK_INTERVAL)
+
+    def _check_health(self) -> None:
+        if self._message_handler is None:
+            return
+
+        now = time.monotonic()
+        elapsed = now - self._message_handler.last_activity_time
+        max_silence = self._get_max_silence()
+
+        if elapsed > max_silence:
+            self._consecutive_failures += 1
+            if self._consecutive_failures >= 3:
+                logger.critical(
+                    "[Feishu Stream] Watchdog: connection appears dead for "
+                    "%.0fs (threshold=%ds), %d consecutive failures. "
+                    "Manual restart may be required.",
+                    elapsed, max_silence, self._consecutive_failures,
+                )
+            else:
+                logger.warning(
+                    "[Feishu Stream] Watchdog: no message received for "
+                    "%.0fs (threshold=%ds), forcing reconnect (attempt %d)",
+                    elapsed, max_silence, self._consecutive_failures,
+                )
+            self._force_reconnect()
+        else:
+            if self._consecutive_failures > 0:
+                logger.info(
+                    "[Feishu Stream] Watchdog: connection recovered after %d forced reconnect(s)",
+                    self._consecutive_failures,
+                )
+            self._consecutive_failures = 0
+
+    @staticmethod
+    def _get_max_silence() -> int:
+        now_bj = datetime.now(_BEIJING_TZ)
+        is_weekday = now_bj.weekday() < 5
+        is_trading_hours = 9 <= now_bj.hour < 16
+        if is_weekday and is_trading_hours:
+            return _WATCHDOG_TRADING_MAX_SILENCE
+        return _WATCHDOG_OFF_HOURS_MAX_SILENCE
+
+    def _force_reconnect(self) -> None:
+        if self._ws_client is None:
+            return
+        try:
+            conn = getattr(self._ws_client, '_conn', None)
+            if conn is not None:
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        loop.call_soon_threadsafe(
+                            lambda: asyncio.ensure_future(conn.close(), loop=loop)
+                        )
+                except RuntimeError:
+                    pass
+            if self._message_handler is not None:
+                self._message_handler._last_activity_time = time.monotonic()
+            logger.info("[Feishu Stream] Watchdog: forced connection close, waiting for reconnect")
+        except Exception as e:
+            logger.error("[Feishu Stream] Watchdog: force reconnect failed: %s", e)
 
 
 # 全局客户端实例

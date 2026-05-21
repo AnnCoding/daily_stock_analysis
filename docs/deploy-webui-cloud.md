@@ -196,6 +196,7 @@ npm run build
 这是最常见的原因。云服务器默认只开放 22（SSH）端口，需要手动放行 8000（或你改的端口）。
 
 **操作方法**（以阿里云为例）：
+
 1. 登录阿里云控制台 → 云服务器 ECS → 找到你的实例
 2. 点击「安全组」→「配置规则」→「添加安全组规则」
 3. 方向选「入方向」，端口范围填 `8000/8000`，授权对象填 `0.0.0.0/0`，点击「确定」
@@ -308,6 +309,7 @@ sudo systemctl reload nginx
 配置成功后，直接用 `http://your-domain.com` 访问即可，不需要带端口号。
 
 > **使用 Nginx 后的注意事项**：
+>
 > - 如果你开启了 Web 登录认证（`ADMIN_AUTH_ENABLED=true`），建议在 `.env` 中把 `TRUST_X_FORWARDED_FOR=true` 一并打开，否则系统可能无法正确识别真实 IP。该选项适用于**单层可信反向代理**（Nginx → App）部署；如果使用多级代理或 CDN（CDN → Nginx → App），登录限流的 key 可能退化为边缘代理 IP 而非真实客户端 IP，需根据实际拓扑评估。
 > - 如需 HTTPS，可以用 [Certbot](https://certbot.eff.org/) 自动申请免费的 Let's Encrypt 证书。
 

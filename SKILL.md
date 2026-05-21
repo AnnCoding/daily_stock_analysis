@@ -12,6 +12,7 @@ description: "分析股票和市场。当用户想要分析单个或多个股票
 分析函数返回一个 `AnalysisResult` 对象（或其列表），该对象具有丰富的结构。以下是其关键组件的简要概述，并附有真实的输出示例：
 
 `dashboard` 属性包含核心分析，分为四个主要部分：
+
 1.  **`core_conclusion`**: 一句话总结、信号类型和仓位建议。
 2.  **`data_perspective`**: 技术数据，包括趋势状态、价格位置、量能分析和筹码结构。
 3.  **`intelligence`**: 定性信息，如新闻、风险警报和积极催化剂。
@@ -34,6 +35,7 @@ description: "分析股票和市场。当用户想要分析单个或多个股票
 **何时使用:** 当用户要求分析特定股票时。
 
 **输入:**
+
 - `stock_code` (str): 要分析的股票代码。
 - `config` (Config, 可选): 配置对象。默认为 `None`。
 - `full_report` (bool, 可选): 是否生成完整报告。默认为 `False`。
@@ -64,6 +66,7 @@ if result:
 **何时使用:** 当用户想要一次分析多只股票时。
 
 **输入:**
+
 - `stock_codes` (List[str]): 要分析的股票代码列表。
 - `config` (Config, 可选): 配置对象。默认为 `None`。
 - `full_report` (bool, 可选): 是否为每只股票生成完整报告。默认为 `False`。
@@ -85,7 +88,6 @@ for result in results:
 
 **参考:** [`analyze_stocks`](src/services/analyzer_service.py)
 
-
 ### 3. 执行大盘复盘
 
 **描述:** 对整体市场进行复盘并返回一份报告。
@@ -93,6 +95,7 @@ for result in results:
 **何时使用:** 当用户要求市场概览、摘要或复盘时。
 
 **输入:**
+
 - `config` (Config, 可选): 配置对象。默认为 `None`。
 - `notifier` (NotificationService, 可选): 通知服务对象。默认为 `None`。
 

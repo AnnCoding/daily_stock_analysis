@@ -7,23 +7,23 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened]
     paths:
-      - '**.py'
-      - '**.md'
-      - '**.ts'
-      - '**.tsx'
-      - 'docs/**'
-      - 'README.md'
-      - 'AGENTS.md'
-      - 'apps/dsa-web/**'
-      - 'requirements.txt'
-      - '.github/requirements-ci.txt'
-      - 'pyproject.toml'
-      - 'setup.cfg'
-      - '.github/PULL_REQUEST_TEMPLATE.md'
-      - '.github/workflows/**'
-      - '.github/scripts/**'
-      - 'docker/Dockerfile'
-      - 'docker-compose.yml'
+      - "**.py"
+      - "**.md"
+      - "**.ts"
+      - "**.tsx"
+      - "docs/**"
+      - "README.md"
+      - "AGENTS.md"
+      - "apps/dsa-web/**"
+      - "requirements.txt"
+      - ".github/requirements-ci.txt"
+      - "pyproject.toml"
+      - "setup.cfg"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - ".github/workflows/**"
+      - ".github/scripts/**"
+      - "docker/Dockerfile"
+      - "docker-compose.yml"
   # 支持手动触发（用于重新审查）
   workflow_dispatch:
 
@@ -45,23 +45,23 @@ jobs:
     outputs:
       safe_to_run: ${{ steps.check_sensitive.outputs.safe_to_run }}
       sensitive_files_changed: ${{ steps.check_sensitive.outputs.sensitive_files_changed }}
-    
+
     steps:
       - name: 📥 检出代码
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
-      
+
       - name: 🔄 获取 base 分支
         run: git fetch origin ${{ github.base_ref || 'main' }}:refs/remotes/origin/${{ github.base_ref || 'main' }}
-      
+
       - name: 🔒 检查敏感文件修改
         id: check_sensitive
         run: |
           BASE_REF="${{ github.base_ref || 'main' }}"
           SENSITIVE_FILES=$(git diff --name-only origin/$BASE_REF...HEAD | grep -E '^(\.github/workflows/.*\.yml|\.github/scripts/.*\.py)$' || echo "")
-          
+
           if [ -n "$SENSITIVE_FILES" ]; then
             echo "⚠️ **检测到敏感文件修改，需要人工审核！**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
@@ -89,28 +89,28 @@ jobs:
       syntax_ok: ${{ steps.syntax.outputs.syntax_ok }}
       has_py_changes: ${{ steps.check_files.outputs.has_py_changes }}
       has_reviewable_changes: ${{ steps.check_files.outputs.has_reviewable_changes }}
-    
+
     steps:
       - name: 📥 检出代码
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
-      
+
       - name: 🔄 获取 base 分支
         run: git fetch origin ${{ github.base_ref || 'main' }}:refs/remotes/origin/${{ github.base_ref || 'main' }}
-      
+
       - name: 🐍 设置 Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
-          cache: 'pip'
-      
+          python-version: "3.11"
+          cache: "pip"
+
       - name: 📦 安装依赖
         run: |
           pip install --upgrade pip
           pip install flake8
-      
+
       - name: 📋 检查变更文件
         id: check_files
         run: |
@@ -133,14 +133,14 @@ jobs:
             echo "$CHANGED_FILES" >> $GITHUB_ENV
             echo "EOF" >> $GITHUB_ENV
           fi
-      
+
       - name: 🐍 Python 语法检查
         id: syntax
         if: steps.check_files.outputs.has_py_changes == 'true'
         run: |
           echo "## 🐍 语法检查" >> $GITHUB_STEP_SUMMARY
           echo "检查文件: $CHANGED_FILES"
-          
+
           ERRORS=""
           SYNTAX_OK="true"
           for file in $CHANGED_FILES; do
@@ -151,16 +151,16 @@ jobs:
               fi
             fi
           done
-          
+
           echo "syntax_ok=$SYNTAX_OK" >> $GITHUB_OUTPUT
-          
+
           if [ "$SYNTAX_OK" = "false" ]; then
             echo -e "$ERRORS" >> $GITHUB_STEP_SUMMARY
             exit 1
           else
             echo "✅ 所有文件语法正确" >> $GITHUB_STEP_SUMMARY
           fi
-      
+
       - name: 🔎 Flake8 检查（严重错误）
         if: steps.check_files.outputs.has_py_changes == 'true'
         run: |
@@ -175,7 +175,7 @@ jobs:
           else
             echo "✅ 未发现严重代码问题" >> $GITHUB_STEP_SUMMARY
           fi
-      
+
       - name: 📊 变更统计
         run: |
           BASE_REF="${{ github.base_ref || 'main' }}"
@@ -194,7 +194,7 @@ jobs:
       needs.auto-check.result == 'success' &&
       needs.auto-check.outputs.has_reviewable_changes == 'true' &&
       vars.ENABLE_AI_REVIEW != 'false'
-    
+
     steps:
       # 先检出主分支（获取最新的 .github/scripts）
       - name: 📥 检出主分支脚本
@@ -205,7 +205,7 @@ jobs:
             .github/scripts
           sparse-checkout-cone-mode: false
           path: main-scripts
-      
+
       # 再检出 PR 代码（用于 diff 分析）
       - name: 📥 检出 PR 代码
         uses: actions/checkout@v5
@@ -213,19 +213,19 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           path: pr-code
-      
+
       - name: 🔄 获取 base 分支
         working-directory: pr-code
         run: git fetch origin ${{ github.base_ref || 'main' }}:refs/remotes/origin/${{ github.base_ref || 'main' }}
-      
+
       - name: 🐍 设置 Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
-      
+          python-version: "3.11"
+
       - name: 📦 安装依赖
         run: pip install google-genai openai httpx
-      
+
       - name: 🤖 AI 审查代码变更
         working-directory: pr-code
         env:
@@ -242,7 +242,7 @@ jobs:
           CI_HAS_PY_CHANGES: ${{ needs.auto-check.outputs.has_py_changes || 'false' }}
           CI_AUTO_CHECK_RESULT: ${{ needs.auto-check.result || '' }}
         run: python ../main-scripts/.github/scripts/ai_review.py
-      
+
       - name: 📤 上传审查结果
         uses: actions/upload-artifact@v6
         if: always()
@@ -255,11 +255,11 @@ jobs:
   labeler:
     name: 🏷️ 自动标签
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 检出代码
         uses: actions/checkout@v5
-      
+
       - name: 🏷️ 添加标签
         if: github.event_name == 'pull_request_target'
         uses: actions/github-script@v8
@@ -270,9 +270,9 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.issue.number
             });
-            
+
             const labels = new Set();
-            
+
             for (const file of files) {
               const filename = file.filename.toLowerCase();
               
@@ -301,11 +301,11 @@ jobs:
                 labels.add('testing');
               }
             }
-            
+
             const additions = files.reduce((sum, f) => sum + f.additions, 0);
             const deletions = files.reduce((sum, f) => sum + f.deletions, 0);
             const totalChanges = additions + deletions;
-            
+
             if (totalChanges < 50) {
               labels.add('size/S');
             } else if (totalChanges < 200) {
@@ -315,7 +315,7 @@ jobs:
             } else {
               labels.add('size/XL');
             }
-            
+
             if (labels.size > 0) {
               try {
                 await github.rest.issues.addLabels({
@@ -336,13 +336,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: [security-check, auto-check, ai-review]
     if: always() && github.event_name == 'pull_request_target' && needs.security-check.outputs.safe_to_run == 'true'
-    
+
     steps:
       - name: 📥 检出代码
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      
+
       - name: 📥 下载 AI 审查结果
         uses: actions/download-artifact@v7
         if: needs.ai-review.result == 'success'
@@ -350,7 +350,7 @@ jobs:
         with:
           name: ai-review-result
           path: .
-      
+
       - name: 💬 生成审查报告
         env:
           AUTO_CHECK_RESULT: ${{ needs.auto-check.result }}
@@ -359,39 +359,39 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            
+
             const { data: files } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.issue.number
             });
-            
+
             const additions = files.reduce((sum, f) => sum + f.additions, 0);
             const deletions = files.reduce((sum, f) => sum + f.deletions, 0);
             const changedFiles = files.length;
-            
+
             let aiReview = '';
             try {
               aiReview = fs.readFileSync('ai_review_result.txt', 'utf8');
             } catch (e) {
               console.log('No AI review result found');
             }
-            
+
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number
             });
-            
+
             const botComment = comments.find(c => 
               c.user.type === 'Bot' && 
               c.body.includes('## 🤖 自动审查报告')
             );
-            
+
             const checkStatus = process.env.AUTO_CHECK_RESULT === 'success' ? '✅ 通过' : '⚠️ 有问题';
             const aiStatus = process.env.AI_REVIEW_RESULT === 'success' ? '✅ 已完成' : 
                             process.env.AI_REVIEW_RESULT === 'skipped' ? '⏭️ 跳过' : '⚠️ 失败';
-            
+
             let report = `## 🤖 自动审查报告
 
             | 项目 | 结果 |
@@ -405,17 +405,17 @@ jobs:
             ### 📁 修改的文件
 
             `;
-            
+
             for (const file of files.slice(0, 20)) {
               const status = file.status === 'added' ? '🆕' : 
                             file.status === 'removed' ? '🗑️' : '📝';
               report += `- ${status} \`${file.filename}\` (+${file.additions}/-${file.deletions})\n`;
             }
-            
+
             if (files.length > 20) {
               report += `\n... 还有 ${files.length - 20} 个文件\n`;
             }
-            
+
             if (aiReview) {
               report += `
             ---
@@ -425,13 +425,13 @@ jobs:
             ${aiReview}
             `;
             }
-            
+
             report += `
             ---
 
             > 💡 **提示**: 请确保代码已通过本地测试，并遵循项目代码规范。
             `;
-            
+
             if (botComment) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,

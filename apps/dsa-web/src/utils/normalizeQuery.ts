@@ -11,11 +11,7 @@
  * - Remove internal extra spaces
  */
 export function normalizeQuery(query: string): string {
-  return query
-    .normalize('NFKC')
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '');
+  return query.normalize("NFKC").trim().toLowerCase().replace(/\s+/g, "");
 }
 
 /**
@@ -46,7 +42,7 @@ export function extractMarketSuffix(code: string): string | null {
  * Example: 600519.SH -> 600519, 00700.HK -> 00700
  */
 export function removeMarketSuffix(code: string): string {
-  return code.replace(/\.[A-Z]+$/, '');
+  return code.replace(/\.[A-Z]+$/, "");
 }
 
 /**
@@ -56,7 +52,7 @@ export function removeMarketSuffix(code: string): string {
  * - Keep market suffix
  */
 export function normalizeStockCode(code: string): string {
-  return code.trim().toUpperCase().replace(/\s+/g, '');
+  return code.trim().toUpperCase().replace(/\s+/g, "");
 }
 
 /**

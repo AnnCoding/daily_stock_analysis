@@ -1,6 +1,6 @@
-import apiClient from './index';
-import { API_BASE_URL } from '../utils/constants';
-import { createApiError, isApiRequestError, parseApiError } from './error';
+import apiClient from "./index";
+import { API_BASE_URL } from "../utils/constants";
+import { createApiError, isApiRequestError, parseApiError } from "./error";
 
 export interface ChatStreamOptions {
   signal?: AbortSignal;
@@ -44,28 +44,41 @@ export interface ChatSessionItem {
 
 export interface ChatSessionMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   created_at: string | null;
 }
 
 export const agentApi = {
   async chat(payload: ChatRequest): Promise<ChatResponse> {
-    const response = await apiClient.post<ChatResponse>('/api/v1/agent/chat', payload, {
-      timeout: 120000,
-    });
+    const response = await apiClient.post<ChatResponse>(
+      "/api/v1/agent/chat",
+      payload,
+      {
+        timeout: 120000,
+      },
+    );
     return response.data;
   },
   async getSkills(): Promise<SkillsResponse> {
-    const response = await apiClient.get<SkillsResponse>('/api/v1/agent/skills');
+    const response = await apiClient.get<SkillsResponse>(
+      "/api/v1/agent/skills",
+    );
     return response.data;
   },
   async getChatSessions(limit = 50): Promise<ChatSessionItem[]> {
-    const response = await apiClient.get<{ sessions: ChatSessionItem[] }>('/api/v1/agent/chat/sessions', { params: { limit } });
+    const response = await apiClient.get<{ sessions: ChatSessionItem[] }>(
+      "/api/v1/agent/chat/sessions",
+      { params: { limit } },
+    );
     return response.data.sessions;
   },
-  async getChatSessionMessages(sessionId: string): Promise<ChatSessionMessage[]> {
-    const response = await apiClient.get<{ messages: ChatSessionMessage[] }>(`/api/v1/agent/chat/sessions/${sessionId}`);
+  async getChatSessionMessages(
+    sessionId: string,
+  ): Promise<ChatSessionMessage[]> {
+    const response = await apiClient.get<{ messages: ChatSessionMessage[] }>(
+      `/api/v1/agent/chat/sessions/${sessionId}`,
+    );
     return response.data.messages;
   },
   async deleteChatSession(sessionId: string): Promise<void> {
@@ -76,10 +89,10 @@ export const agentApi = {
       success: boolean;
       error?: string;
       message?: string;
-    }>('/api/v1/agent/chat/send', { content });
+    }>("/api/v1/agent/chat/send", { content });
     const data = response.data;
     if (data.success === false) {
-      throw new Error(data.message || '发送失败');
+      throw new Error(data.message || "发送失败");
     }
     return { success: true };
   },
@@ -87,14 +100,14 @@ export const agentApi = {
     payload: ChatStreamRequest,
     options?: ChatStreamOptions,
   ): Promise<Response> {
-    const base = API_BASE_URL || '';
+    const base = API_BASE_URL || "";
     const url = `${base}/api/v1/agent/chat/stream`;
     try {
       const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        credentials: 'include',
+        credentials: "include",
         signal: options?.signal,
       });
 
@@ -102,9 +115,9 @@ export const agentApi = {
         return response;
       }
 
-      const contentType = response.headers.get('content-type') || '';
+      const contentType = response.headers.get("content-type") || "";
       let responseData: unknown = null;
-      if (contentType.includes('application/json')) {
+      if (contentType.includes("application/json")) {
         responseData = await response.json().catch(() => null);
       } else {
         responseData = await response.text().catch(() => null);
@@ -128,7 +141,7 @@ export const agentApi = {
       if (isApiRequestError(error)) {
         throw error;
       }
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         throw error;
       }
 

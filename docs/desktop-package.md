@@ -18,7 +18,7 @@ powershell -ExecutionPolicy Bypass -File scripts\run-desktop.ps1
 
 或手动执行：
 
-1) 构建 React UI（输出到 `static/`）
+1. 构建 React UI（输出到 `static/`）
 
 ```bash
 cd apps/dsa-web
@@ -26,7 +26,7 @@ npm install
 npm run build
 ```
 
-2) 启动 Electron 应用（自动拉起后端）
+2. 启动 Electron 应用（自动拉起后端）
 
 ```bash
 cd apps/dsa-desktop
@@ -52,6 +52,7 @@ powershell -ExecutionPolicy Bypass -File scripts\build-all.ps1
 ```
 
 该脚本会依次执行：
+
 1. 构建 React UI
 2. 安装 Python 依赖
 3. PyInstaller 打包后端
@@ -167,7 +168,6 @@ Windows 发布链路复核清单（在 PR 后由发布团队/维护者执行）�
 - 如缺少上述文件或 `release-tag` 不匹配，需标注阻断并补齐 `desktop-release` 打包流程。
 
 5. Windows/NSIS 产物与发布附件一致性请在 Windows 环境手动验证（可人工触发发布流程），并在升级后核对运行时文件留存：
-
    1. 安装前后分别记录安装目录中的 `.env`、`data/stock_analysis.db`、`data/stock_analysis.db-wal`、`data/stock_analysis.db-shm`、`logs/desktop.log` 的 SHA256；
    2. 确认桌面端下一次启动后，上述文件仍存在且与安装前记录一致；
    3. 如不一致，可在应用退出后检查用户数据目录中的 `.dsa-desktop-update-backup` 是否清理完整，并结合最新日志串联排查。
@@ -182,7 +182,7 @@ Get-FileHash .env,data\\stock_analysis.db,data\\stock_analysis.db-wal,data\\stoc
 
 ### 分步打包
 
-1) 构建 React UI
+1. 构建 React UI
 
 ```bash
 cd apps/dsa-web
@@ -190,7 +190,7 @@ npm install
 npm run build
 ```
 
-2) 打包 Python 后端
+2. 打包 Python 后端
 
 ```bash
 pip install pyinstaller
@@ -205,7 +205,7 @@ mkdir dist\backend
 copy dist\stock_analysis.exe dist\backend\stock_analysis.exe
 ```
 
-3) 打包 Electron 桌面应用
+3. 打包 Electron 桌面应用
 
 ```bash
 cd apps/dsa-desktop

@@ -1,5 +1,3 @@
-
-
 ## 一、整体设计
 
 ```mermaid
@@ -37,8 +35,6 @@ flowchart TB
     Commands --> MA
     Commands --> NS
 ```
-
-
 
 ## 二、目录结构
 
@@ -97,23 +93,23 @@ class BotResponse:
 ```python
 class BotPlatform(ABC):
     """平台适配器抽象基类"""
-    
+
     @property
     @abstractmethod
     def platform_name(self) -> str:
         """平台标识名称"""
         pass
-    
+
     @abstractmethod
     def verify_request(self, headers: Dict, body: bytes) -> bool:
         """验证请求签名（安全校验）"""
         pass
-    
+
     @abstractmethod
     def parse_message(self, data: Dict) -> Optional[BotMessage]:
         """解析平台消息为统一格式"""
         pass
-    
+
     @abstractmethod
     def format_response(self, response: BotResponse) -> Dict:
         """将统一响应转换为平台格式"""
@@ -125,31 +121,31 @@ class BotPlatform(ABC):
 ```python
 class BotCommand(ABC):
     """命令处理器抽象基类"""
-    
+
     @property
     @abstractmethod
     def name(self) -> str:
         """命令名称 (如 'analyze')"""
         pass
-    
+
     @property
     @abstractmethod
     def aliases(self) -> List[str]:
         """命令别名 (如 ['a', '分析'])"""
         pass
-    
+
     @property
     @abstractmethod
     def description(self) -> str:
         """命令描述"""
         pass
-    
+
     @property
     @abstractmethod
     def usage(self) -> str:
         """使用说明"""
         pass
-    
+
     @abstractmethod
     async def execute(self, message: BotMessage, args: List[str]) -> BotResponse:
         """执行命令"""
@@ -161,17 +157,17 @@ class BotCommand(ABC):
 ```python
 class CommandDispatcher:
     """命令分发器 - 单例模式"""
-    
+
     def __init__(self):
         self._commands: Dict[str, BotCommand] = {}
         self._aliases: Dict[str, str] = {}
-    
+
     def register(self, command: BotCommand) -> None:
         """注册命令"""
         self._commands[command.name] = command
         for alias in command.aliases:
             self._aliases[alias] = command.name
-    
+
     def dispatch(self, message: BotMessage) -> BotResponse:
         """分发消息到对应命令"""
         # 1. 解析命令和参数
@@ -263,6 +259,7 @@ telegram_webhook_secret: str           # 新增：Webhook 密钥
 ```
 
 ## 扩展说明
+
 ### 怎样新增一个通知平台
 
 1. 在 `bot/platforms/` 创建新文件

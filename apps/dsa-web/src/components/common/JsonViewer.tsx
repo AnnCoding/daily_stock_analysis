@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface JsonViewerProps {
   data: Record<string, unknown> | unknown[] | null | undefined;
@@ -12,8 +12,8 @@ interface JsonViewerProps {
  */
 export const JsonViewer: React.FC<JsonViewerProps> = ({
   data,
-  maxHeight = '400px',
-  className = '',
+  maxHeight = "400px",
+  className = "",
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -33,26 +33,26 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
 
   // 简单的语法高亮
   const highlightJson = (json: string): React.ReactNode => {
-    return json.split('\n').map((line, index) => {
+    return json.split("\n").map((line, index) => {
       // 高亮 key
       let highlighted = line.replace(
         /"([^"]+)":/g,
-        '<span class="text-cyan-400">"$1"</span>:'
+        '<span class="text-cyan-400">"$1"</span>:',
       );
       // 高亮字符串值
       highlighted = highlighted.replace(
         /: "([^"]*)"/g,
-        ': <span class="text-emerald-400">"$1"</span>'
+        ': <span class="text-emerald-400">"$1"</span>',
       );
       // 高亮数字
       highlighted = highlighted.replace(
         /: (-?\d+\.?\d*)/g,
-        ': <span class="text-amber-400">$1</span>'
+        ': <span class="text-amber-400">$1</span>',
       );
       // 高亮布尔值和 null
       highlighted = highlighted.replace(
         /: (true|false|null)/g,
-        ': <span class="text-purple-400">$1</span>'
+        ': <span class="text-purple-400">$1</span>',
       );
 
       return (
@@ -74,7 +74,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
           bg-slate-700 hover:bg-slate-600 text-gray-300
           transition-colors z-10"
       >
-        {copied ? '已复制!' : '复制'}
+        {copied ? "已复制!" : "复制"}
       </button>
 
       {/* JSON 内容 */}

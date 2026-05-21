@@ -1,34 +1,43 @@
 # Discord机器人配置
 
 ## Discord机器人
+
 Discord机器人接收消息需要使用Discord Developer Portal创建机器人应用
 https://discord.com/developers/applications
 
 Discord机器人支持两种消息发送方式：
+
 1. **Webhook模式**：配置简单，权限低，适合只需要发送消息的场景
 2. **Bot API模式**：权限高，支持接收命令，需要配置Bot Token和频道ID
 
 ## 创建Discord机器人
 
 ### 1. 登录Discord Developer Portal
+
 访问 https://discord.com/developers/applications 并使用你的Discord账号登录
 
 ### 2. 创建应用
+
 点击"New Application"按钮，输入应用名称（例如：A股智能分析机器人），然后点击"Create"
 
 ### 3. 配置机器人
+
 在左侧导航栏中点击"Bot"，然后点击"Add Bot"按钮，确认添加
 
 ### 4. 获取Bot Token
+
 在Bot页面，点击"Reset Token"按钮，然后复制生成的Token（这是你的`DISCORD_BOT_TOKEN`）
 
 ### 5. 配置权限
+
 在Bot页面的"Privileged Gateway Intents"部分，开启以下选项：
+
 - Presence Intent
 - Server Members Intent
 - Message Content Intent
 
 ### 6. 添加到服务器
+
 1. 在左侧导航栏中点击"OAuth2" > "URL Generator"
 2. 在"Scopes"中选择：
    - `bot`
@@ -42,6 +51,7 @@ Discord机器人支持两种消息发送方式：
 4. 复制生成的URL，在浏览器中打开，选择要添加机器人的服务器
 
 ### 7. 获取频道ID
+
 1. 在Discord客户端中，开启开发者模式：设置 > 高级 > 开发者模式
 2. 右键点击你想要机器人发送消息的频道，选择"Copy ID"（这是你的`DISCORD_MAIN_CHANNEL_ID`）
 

@@ -1,18 +1,18 @@
-import type React from 'react';
-import { useState } from 'react';
-import type { ParsedApiError } from '../../api/error';
-import { isParsedApiError } from '../../api/error';
-import { useAuth } from '../../hooks';
-import { Button, Input } from '../common';
-import { SettingsAlert } from './SettingsAlert';
-import { SettingsSectionCard } from './SettingsSectionCard';
+import type React from "react";
+import { useState } from "react";
+import type { ParsedApiError } from "../../api/error";
+import { isParsedApiError } from "../../api/error";
+import { useAuth } from "../../hooks";
+import { Button, Input } from "../common";
+import { SettingsAlert } from "./SettingsAlert";
+import { SettingsSectionCard } from "./SettingsSectionCard";
 
 export const ChangePasswordCard: React.FC = () => {
   const { changePassword } = useAuth();
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
-  
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | ParsedApiError | null>(null);
   const [success, setSuccess] = useState(false);
@@ -23,33 +23,37 @@ export const ChangePasswordCard: React.FC = () => {
     setSuccess(false);
 
     if (!currentPassword.trim()) {
-      setError('请输入当前密码');
+      setError("请输入当前密码");
       return;
     }
     if (!newPassword.trim()) {
-      setError('请输入新密码');
+      setError("请输入新密码");
       return;
     }
     if (newPassword.length < 6) {
-      setError('新密码至少 6 位');
+      setError("新密码至少 6 位");
       return;
     }
     if (newPassword !== newPasswordConfirm) {
-      setError('两次输入的新密码不一致');
+      setError("两次输入的新密码不一致");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const result = await changePassword(currentPassword, newPassword, newPasswordConfirm);
+      const result = await changePassword(
+        currentPassword,
+        newPassword,
+        newPasswordConfirm,
+      );
       if (result.success) {
         setSuccess(true);
-        setCurrentPassword('');
-        setNewPassword('');
-        setNewPasswordConfirm('');
+        setCurrentPassword("");
+        setNewPassword("");
+        setNewPasswordConfirm("");
         setTimeout(() => setSuccess(false), 4000);
       } else {
-        setError(result.error ?? '修改失败');
+        setError(result.error ?? "修改失败");
       }
     } finally {
       setIsSubmitting(false);
@@ -110,13 +114,29 @@ export const ChangePasswordCard: React.FC = () => {
           />
         </div>
 
-        {error
-          ? isParsedApiError(error)
-            ? <SettingsAlert title="修改失败" message={error.message} variant="error" className="!mt-3" />
-            : <SettingsAlert title="修改失败" message={error} variant="error" className="!mt-3" />
-          : null}
+        {error ? (
+          isParsedApiError(error) ? (
+            <SettingsAlert
+              title="修改失败"
+              message={error.message}
+              variant="error"
+              className="!mt-3"
+            />
+          ) : (
+            <SettingsAlert
+              title="修改失败"
+              message={error}
+              variant="error"
+              className="!mt-3"
+            />
+          )
+        ) : null}
         {success ? (
-          <SettingsAlert title="修改成功" message="管理员密码已更新。" variant="success" />
+          <SettingsAlert
+            title="修改成功"
+            message="管理员密码已更新。"
+            variant="success"
+          />
         ) : null}
 
         <Button type="submit" variant="primary" isLoading={isSubmitting}>

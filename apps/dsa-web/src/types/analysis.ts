@@ -8,12 +8,12 @@
 export interface AnalysisRequest {
   stockCode?: string;
   stockCodes?: string[];
-  reportType?: 'simple' | 'detailed' | 'full' | 'brief';
+  reportType?: "simple" | "detailed" | "full" | "brief";
   forceRefresh?: boolean;
   asyncMode?: boolean;
   stockName?: string;
   originalQuery?: string;
-  selectionSource?: 'manual' | 'autocomplete' | 'import' | 'image';
+  selectionSource?: "manual" | "autocomplete" | "import" | "image";
   notify?: boolean;
 }
 
@@ -22,7 +22,7 @@ export interface MarketReviewRequest {
 }
 
 export interface MarketReviewAccepted {
-  status: 'accepted';
+  status: "accepted";
   message: string;
   sendNotification: boolean;
   taskId?: string;
@@ -30,34 +30,34 @@ export interface MarketReviewAccepted {
 
 // ============ Report Types ============
 
-export type ReportLanguage = 'zh' | 'en';
+export type ReportLanguage = "zh" | "en";
 
 /** Report metadata */
 export interface ReportMeta {
-  id?: number;  // Analysis history record ID, present for persisted reports
+  id?: number; // Analysis history record ID, present for persisted reports
   queryId: string;
   stockCode: string;
   stockName: string;
-  reportType: 'simple' | 'detailed' | 'full' | 'brief';
+  reportType: "simple" | "detailed" | "full" | "brief";
   reportLanguage?: ReportLanguage;
   createdAt: string;
   currentPrice?: number;
   changePct?: number;
-  modelUsed?: string;  // LLM model used for analysis
+  modelUsed?: string; // LLM model used for analysis
 }
 
 /** Sentiment label */
 export type SentimentLabel =
-  | '极度悲观'
-  | '悲观'
-  | '中性'
-  | '乐观'
-  | '极度乐观'
-  | 'Very Bearish'
-  | 'Bearish'
-  | 'Neutral'
-  | 'Bullish'
-  | 'Very Bullish';
+  | "极度悲观"
+  | "悲观"
+  | "中性"
+  | "乐观"
+  | "极度乐观"
+  | "Very Bearish"
+  | "Bearish"
+  | "Neutral"
+  | "Bullish"
+  | "Very Bullish";
 
 /** Report summary section */
 export interface ReportSummary {
@@ -125,14 +125,14 @@ export interface AnalysisResult {
 /** Async task accepted response */
 export interface TaskAccepted {
   taskId: string;
-  status: 'pending' | 'processing';
+  status: "pending" | "processing";
   message?: string;
 }
 
 export interface BatchTaskAcceptedItem {
   taskId: string;
   stockCode: string;
-  status: 'pending' | 'processing';
+  status: "pending" | "processing";
   message?: string;
 }
 
@@ -155,7 +155,7 @@ export type AnalyzeResponse = AnalysisResult | AnalyzeAsyncResponse;
 /** Task status */
 export interface TaskStatus {
   taskId: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: "pending" | "processing" | "completed" | "failed";
   progress?: number;
   result?: AnalysisResult;
   marketReviewReport?: string;
@@ -170,7 +170,7 @@ export interface TaskInfo {
   taskId: string;
   stockCode: string;
   stockName?: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: "pending" | "processing" | "completed" | "failed";
   progress: number;
   message?: string;
   reportType: string;
@@ -192,7 +192,7 @@ export interface TaskListResponse {
 
 /** Duplicate task error response */
 export interface DuplicateTaskError {
-  error: 'duplicate_task';
+  error: "duplicate_task";
   message: string;
   stockCode: string;
   existingTaskId: string;
@@ -202,8 +202,8 @@ export interface DuplicateTaskError {
 
 /** History item summary */
 export interface HistoryItem {
-  id: number;  // Record primary key ID, always present for persisted history items
-  queryId: string;  // Linked analysis query ID
+  id: number; // Record primary key ID, always present for persisted history items
+  queryId: string; // Linked analysis query ID
   stockCode: string;
   stockName?: string;
   reportType?: string;
@@ -257,26 +257,29 @@ export interface ApiError {
 // ============ Helper Functions ============
 
 /** Get sentiment label by score */
-export const getSentimentLabel = (score: number, language: ReportLanguage = 'zh'): SentimentLabel => {
-  if (language === 'en') {
-    if (score <= 20) return 'Very Bearish';
-    if (score <= 40) return 'Bearish';
-    if (score <= 60) return 'Neutral';
-    if (score <= 80) return 'Bullish';
-    return 'Very Bullish';
+export const getSentimentLabel = (
+  score: number,
+  language: ReportLanguage = "zh",
+): SentimentLabel => {
+  if (language === "en") {
+    if (score <= 20) return "Very Bearish";
+    if (score <= 40) return "Bearish";
+    if (score <= 60) return "Neutral";
+    if (score <= 80) return "Bullish";
+    return "Very Bullish";
   }
-  if (score <= 20) return '极度悲观';
-  if (score <= 40) return '悲观';
-  if (score <= 60) return '中性';
-  if (score <= 80) return '乐观';
-  return '极度乐观';
+  if (score <= 20) return "极度悲观";
+  if (score <= 40) return "悲观";
+  if (score <= 60) return "中性";
+  if (score <= 80) return "乐观";
+  return "极度乐观";
 };
 
 /** Get sentiment color by score */
 export const getSentimentColor = (score: number): string => {
-  if (score <= 20) return '#ef4444'; // red-500
-  if (score <= 40) return '#f97316'; // orange-500
-  if (score <= 60) return '#eab308'; // yellow-500
-  if (score <= 80) return '#22c55e'; // green-500
-  return '#10b981'; // emerald-500
+  if (score <= 20) return "#ef4444"; // red-500
+  if (score <= 40) return "#f97316"; // orange-500
+  if (score <= 60) return "#eab308"; // yellow-500
+  if (score <= 80) return "#22c55e"; // green-500
+  return "#10b981"; // emerald-500
 };

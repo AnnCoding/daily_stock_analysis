@@ -1,23 +1,23 @@
-import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useDashboardLifecycle } from '../useDashboardLifecycle';
-import { useTaskStream } from '../useTaskStream';
+import { act, renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useDashboardLifecycle } from "../useDashboardLifecycle";
+import { useTaskStream } from "../useTaskStream";
 
-vi.mock('../useTaskStream', () => ({
+vi.mock("../useTaskStream", () => ({
   useTaskStream: vi.fn(),
 }));
 
 const createTask = () => ({
-  taskId: 'task-1',
-  stockCode: '600519',
-  stockName: '贵州茅台',
-  status: 'completed' as const,
+  taskId: "task-1",
+  stockCode: "600519",
+  stockName: "贵州茅台",
+  status: "completed" as const,
   progress: 100,
-  reportType: 'detailed',
-  createdAt: '2026-03-18T08:00:00Z',
+  reportType: "detailed",
+  createdAt: "2026-03-18T08:00:00Z",
 });
 
-describe('useDashboardLifecycle', () => {
+describe("useDashboardLifecycle", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
@@ -27,7 +27,7 @@ describe('useDashboardLifecycle', () => {
     vi.useRealTimers();
   });
 
-  it('loads history, refreshes on interval, and reacts to visibility changes', () => {
+  it("loads history, refreshes on interval, and reacts to visibility changes", () => {
     const loadInitialHistory = vi.fn().mockResolvedValue(undefined);
     const refreshHistory = vi.fn().mockResolvedValue(undefined);
 
@@ -50,17 +50,17 @@ describe('useDashboardLifecycle', () => {
     expect(refreshHistory).toHaveBeenCalledWith(true);
 
     act(() => {
-      Object.defineProperty(document, 'visibilityState', {
+      Object.defineProperty(document, "visibilityState", {
         configurable: true,
-        value: 'visible',
+        value: "visible",
       });
-      document.dispatchEvent(new Event('visibilitychange'));
+      document.dispatchEvent(new Event("visibilitychange"));
     });
 
     expect(refreshHistory).toHaveBeenCalledTimes(2);
   });
 
-  it('cleans pending task removal timers on unmount', () => {
+  it("cleans pending task removal timers on unmount", () => {
     const removeTask = vi.fn();
 
     const { unmount } = renderHook(() =>
@@ -90,7 +90,7 @@ describe('useDashboardLifecycle', () => {
     expect(removeTask).not.toHaveBeenCalled();
   });
 
-  it('refreshes history and removes completed tasks after the grace window', () => {
+  it("refreshes history and removes completed tasks after the grace window", () => {
     const refreshHistory = vi.fn().mockResolvedValue(undefined);
     const syncTaskUpdated = vi.fn();
     const removeTask = vi.fn();
@@ -123,7 +123,7 @@ describe('useDashboardLifecycle', () => {
     expect(removeTask).toHaveBeenCalledWith(completedTask.taskId);
   });
 
-  it('forwards task progress updates to the task sync handler', () => {
+  it("forwards task progress updates to the task sync handler", () => {
     const syncTaskUpdated = vi.fn();
 
     renderHook(() =>
@@ -140,9 +140,9 @@ describe('useDashboardLifecycle', () => {
     const taskStreamOptions = vi.mocked(useTaskStream).mock.calls[0]?.[0];
     const progressTask = {
       ...createTask(),
-      status: 'processing' as const,
+      status: "processing" as const,
       progress: 72,
-      message: 'LLM 正在生成分析结果',
+      message: "LLM 正在生成分析结果",
     };
 
     act(() => {
@@ -152,7 +152,7 @@ describe('useDashboardLifecycle', () => {
     expect(syncTaskUpdated).toHaveBeenCalledWith(progressTask);
   });
 
-  it('reports failed tasks and removes them after the failure grace window', () => {
+  it("reports failed tasks and removes them after the failure grace window", () => {
     const syncTaskFailed = vi.fn();
     const removeTask = vi.fn();
 
@@ -170,8 +170,8 @@ describe('useDashboardLifecycle', () => {
     const taskStreamOptions = vi.mocked(useTaskStream).mock.calls[0]?.[0];
     const failedTask = {
       ...createTask(),
-      status: 'failed' as const,
-      error: '分析失败',
+      status: "failed" as const,
+      error: "分析失败",
     };
 
     act(() => {

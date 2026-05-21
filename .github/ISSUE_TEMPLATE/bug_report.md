@@ -1,9 +1,9 @@
 ---
 name: Bug 报告 / Bug Report
 about: 报告一个问题帮助我们改进 / Report a problem to help us improve
-title: '[Bug] '
+title: "[Bug] "
 labels: bug
-assignees: ''
+assignees: ""
 ---
 
 <!--
@@ -17,10 +17,11 @@ English users: fill in the English fields below (marked with 🌐).
 Please confirm you are on the latest version before filing, to avoid duplicate reports of already-fixed issues.
 
 ## 版本确认 / Version Check（必填 / Required）
+
 - [ ] 我已同步最新代码 / I am on the latest commit (Fork users: Sync fork first, then re-run Actions)
 - 代码版本 / Commit hash:
-  - 本地 / Local: `git rev-parse --short HEAD` → ______
-  - GitHub Actions: commit hash shown at the top of the workflow log → ______
+  - 本地 / Local: `git rev-parse --short HEAD` → **\_\_**
+  - GitHub Actions: commit hash shown at the top of the workflow log → **\_\_**
 
 ## 问题描述 / Problem Description
 
@@ -56,8 +57,8 @@ Paste relevant error logs here
 - Python 版本 / Python version: [e.g. 3.11]
 - 运行方式 / Run mode: [Local / Docker / GitHub Actions]
 - 相关配置 / Relevant config:
-  - GEMINI_MODEL / AI model: 
-  - 数据源 / Data source: 
+  - GEMINI_MODEL / AI model:
+  - 数据源 / Data source:
 
 ## 其他信息 / Additional Context
 

@@ -55,117 +55,118 @@ daily_stock_analysis/
 
 #### AI 模型配置（至少配置一个）
 
-| Secret 名称 | 说明 | 必填 |
-|------------|------|:----:|
-| `ANSPIRE_API_KEYS` | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC) API Key，一 Key 同时启用大模型和中文优化联网搜索，含本项目免费额度 | 推荐 |
-| `AIHUBMIX_KEY` | [AIHubMix](https://aihubmix.com/?aff=CfMq) API Key，一 Key 切换使用全系模型，本项目可享 10% 优惠 | 推荐 |
-| `GEMINI_API_KEY` | [Google AI Studio](https://aistudio.google.com/) 获取免费 Key | 可选 |
-| `ANTHROPIC_API_KEY` | Anthropic Claude API Key | 可选 |
-| `OPENAI_API_KEY` | OpenAI 兼容 API Key（支持 DeepSeek、通义千问等） | 可选 |
-| `OPENAI_BASE_URL` | OpenAI 兼容 API 地址（如 `https://api.deepseek.com`） | 可选 |
-| `OPENAI_MODEL` | 模型名称（如 `gemini-3.1-pro-preview`、`deepseek-v4-flash`、`gpt-5.5`） | 可选 |
+| Secret 名称         | 说明                                                                                                                       | 必填 |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------- | :--: |
+| `ANSPIRE_API_KEYS`  | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC) API Key，一 Key 同时启用大模型和中文优化联网搜索，含本项目免费额度 | 推荐 |
+| `AIHUBMIX_KEY`      | [AIHubMix](https://aihubmix.com/?aff=CfMq) API Key，一 Key 切换使用全系模型，本项目可享 10% 优惠                           | 推荐 |
+| `GEMINI_API_KEY`    | [Google AI Studio](https://aistudio.google.com/) 获取免费 Key                                                              | 可选 |
+| `ANTHROPIC_API_KEY` | Anthropic Claude API Key                                                                                                   | 可选 |
+| `OPENAI_API_KEY`    | OpenAI 兼容 API Key（支持 DeepSeek、通义千问等）                                                                           | 可选 |
+| `OPENAI_BASE_URL`   | OpenAI 兼容 API 地址（如 `https://api.deepseek.com`）                                                                      | 可选 |
+| `OPENAI_MODEL`      | 模型名称（如 `gemini-3.1-pro-preview`、`deepseek-v4-flash`、`gpt-5.5`）                                                    | 可选 |
 
-> *注：以上模型 Key / 渠道至少配置一个；推荐优先从 Anspire 或 AIHubMix 这类一 Key 多模型服务开始。
+> \*注：以上模型 Key / 渠道至少配置一个；推荐优先从 Anspire 或 AIHubMix 这类一 Key 多模型服务开始。
 
 #### 通知渠道配置（可同时配置多个，全部推送）
 
 > 通知渠道、minimal/advanced key 分层、Actions 映射、`--check-notify` 诊断和 Web 一键测试说明详见 [通知能力基线](notifications.md)。
 
-| Secret 名称 | 说明 | 必填 |
-|------------|------|:----:|
-| `WECHAT_WEBHOOK_URL` | 企业微信 Webhook URL | 可选 |
-| `FEISHU_WEBHOOK_URL` | 飞书 Webhook URL | 可选 |
-| `FEISHU_WEBHOOK_SECRET` | 飞书 Webhook 签名密钥（开启“签名校验”时必填） | 可选 |
-| `FEISHU_WEBHOOK_KEYWORD` | 飞书 Webhook 关键词（开启“关键词”时必填） | 可选 |
-| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token（@BotFather 获取） | 可选 |
-| `TELEGRAM_CHAT_ID` | Telegram Chat ID | 可选 |
-| `TELEGRAM_MESSAGE_THREAD_ID` | Telegram Topic ID (用于发送到子话题) | 可选 |
-| `DISCORD_WEBHOOK_URL` | Discord Webhook URL（[创建方法](https://support.discord.com/hc/en-us/articles/228383668)） | 可选 |
-| `DISCORD_BOT_TOKEN` | Discord Bot Token（与 Webhook 二选一） | 可选 |
-| `DISCORD_MAIN_CHANNEL_ID` | Discord Channel ID（使用 Bot 时需要） | 可选 |
-| `DISCORD_INTERACTIONS_PUBLIC_KEY` | Discord Public Key（仅入站 Interaction/Webhook 回调验签时需要） | 可选 |
-| `SLACK_BOT_TOKEN` | Slack Bot Token（推荐，支持图片上传；同时配置时优先于 Webhook） | 可选 |
-| `SLACK_CHANNEL_ID` | Slack Channel ID（使用 Bot 时需要） | 可选 |
-| `SLACK_WEBHOOK_URL` | Slack Incoming Webhook URL（仅文本，不支持图片） | 可选 |
-| `EMAIL_SENDER` | 发件人邮箱（如 `xxx@qq.com`） | 可选 |
-| `EMAIL_PASSWORD` | 邮箱授权码（非登录密码） | 可选 |
-| `EMAIL_RECEIVERS` | 收件人邮箱（多个用逗号分隔，留空则发给自己） | 可选 |
-| `EMAIL_SENDER_NAME` | 发件人显示名称（默认：daily_stock_analysis股票分析助手） | 可选 |
-| `PUSHPLUS_TOKEN` | PushPlus Token（[获取地址](https://www.pushplus.plus)，国内推送服务） | 可选 |
-| `SERVERCHAN3_SENDKEY` | Server酱³ Sendkey（[获取地址](https://sc3.ft07.com/)，手机APP推送服务） | 可选 |
-| `ASTRBOT_URL` | AstrBot Webhook URL | 可选 |
-| `ASTRBOT_TOKEN` | AstrBot Bearer Token（可选） | 可选 |
-| `CUSTOM_WEBHOOK_URLS` | 自定义 Webhook（支持钉钉等，多个用逗号分隔） | 可选 |
-| `CUSTOM_WEBHOOK_BEARER_TOKEN` | 自定义 Webhook 的 Bearer Token（用于需要认证的 Webhook） | 可选 |
-| `CUSTOM_WEBHOOK_BODY_TEMPLATE` | 自定义 Webhook JSON body 模板，适配 AstrBot、NapCat、自建服务等特殊 payload | 可选 |
-| `WEBHOOK_VERIFY_SSL` | Webhook HTTPS 证书校验（默认 true）。设为 false 可支持自签名证书。警告：关闭有严重安全风险（MITM），仅限可信内网 | 可选 |
+| Secret 名称                       | 说明                                                                                                             | 必填 |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------- | :--: |
+| `WECHAT_WEBHOOK_URL`              | 企业微信 Webhook URL                                                                                             | 可选 |
+| `FEISHU_WEBHOOK_URL`              | 飞书 Webhook URL                                                                                                 | 可选 |
+| `FEISHU_WEBHOOK_SECRET`           | 飞书 Webhook 签名密钥（开启“签名校验”时必填）                                                                    | 可选 |
+| `FEISHU_WEBHOOK_KEYWORD`          | 飞书 Webhook 关键词（开启“关键词”时必填）                                                                        | 可选 |
+| `TELEGRAM_BOT_TOKEN`              | Telegram Bot Token（@BotFather 获取）                                                                            | 可选 |
+| `TELEGRAM_CHAT_ID`                | Telegram Chat ID                                                                                                 | 可选 |
+| `TELEGRAM_MESSAGE_THREAD_ID`      | Telegram Topic ID (用于发送到子话题)                                                                             | 可选 |
+| `DISCORD_WEBHOOK_URL`             | Discord Webhook URL（[创建方法](https://support.discord.com/hc/en-us/articles/228383668)）                       | 可选 |
+| `DISCORD_BOT_TOKEN`               | Discord Bot Token（与 Webhook 二选一）                                                                           | 可选 |
+| `DISCORD_MAIN_CHANNEL_ID`         | Discord Channel ID（使用 Bot 时需要）                                                                            | 可选 |
+| `DISCORD_INTERACTIONS_PUBLIC_KEY` | Discord Public Key（仅入站 Interaction/Webhook 回调验签时需要）                                                  | 可选 |
+| `SLACK_BOT_TOKEN`                 | Slack Bot Token（推荐，支持图片上传；同时配置时优先于 Webhook）                                                  | 可选 |
+| `SLACK_CHANNEL_ID`                | Slack Channel ID（使用 Bot 时需要）                                                                              | 可选 |
+| `SLACK_WEBHOOK_URL`               | Slack Incoming Webhook URL（仅文本，不支持图片）                                                                 | 可选 |
+| `EMAIL_SENDER`                    | 发件人邮箱（如 `xxx@qq.com`）                                                                                    | 可选 |
+| `EMAIL_PASSWORD`                  | 邮箱授权码（非登录密码）                                                                                         | 可选 |
+| `EMAIL_RECEIVERS`                 | 收件人邮箱（多个用逗号分隔，留空则发给自己）                                                                     | 可选 |
+| `EMAIL_SENDER_NAME`               | 发件人显示名称（默认：daily_stock_analysis股票分析助手）                                                         | 可选 |
+| `PUSHPLUS_TOKEN`                  | PushPlus Token（[获取地址](https://www.pushplus.plus)，国内推送服务）                                            | 可选 |
+| `SERVERCHAN3_SENDKEY`             | Server酱³ Sendkey（[获取地址](https://sc3.ft07.com/)，手机APP推送服务）                                          | 可选 |
+| `ASTRBOT_URL`                     | AstrBot Webhook URL                                                                                              | 可选 |
+| `ASTRBOT_TOKEN`                   | AstrBot Bearer Token（可选）                                                                                     | 可选 |
+| `CUSTOM_WEBHOOK_URLS`             | 自定义 Webhook（支持钉钉等，多个用逗号分隔）                                                                     | 可选 |
+| `CUSTOM_WEBHOOK_BEARER_TOKEN`     | 自定义 Webhook 的 Bearer Token（用于需要认证的 Webhook）                                                         | 可选 |
+| `CUSTOM_WEBHOOK_BODY_TEMPLATE`    | 自定义 Webhook JSON body 模板，适配 AstrBot、NapCat、自建服务等特殊 payload                                      | 可选 |
+| `WEBHOOK_VERIFY_SSL`              | Webhook HTTPS 证书校验（默认 true）。设为 false 可支持自签名证书。警告：关闭有严重安全风险（MITM），仅限可信内网 | 可选 |
 
-> *注：至少配置一个渠道，配置多个则同时推送
+> \*注：至少配置一个渠道，配置多个则同时推送
 >
 > 当前默认 `daily_analysis.yml` 只显式映射固定 Secret / Variable 名称，不会自动把 `STOCK_GROUP_1`、`EMAIL_GROUP_1` 这类任意编号变量导入运行环境。所以分组邮箱功能目前不适用于仓库自带默认 GitHub Actions workflow；它适用于本地 `.env`、Docker，或你自行显式扩展过 `env:` 映射的运行环境。Actions 已显式映射 `CUSTOM_WEBHOOK_BODY_TEMPLATE`、`WEBHOOK_VERIFY_SSL`、`FEISHU_WEBHOOK_SECRET`、`FEISHU_WEBHOOK_KEYWORD`、`PUSHPLUS_TOPIC`、P3 通知路由键以及 P4 通知降噪键；`MARKDOWN_TO_IMAGE_CHANNELS` 和 `MERGE_EMAIL_NOTIFICATION` 仍作为行为开关不在默认 workflow 中自动映射。
 
 #### 推送行为配置
 
-| Secret 名称 | 说明 | 必填 |
-|------------|------|:----:|
-| `SINGLE_STOCK_NOTIFY` | 单股推送模式：设为 `true` 则每分析完一只股票立即推送 | 可选 |
-| `REPORT_TYPE` | 报告类型：`simple`(精简)、`full`(完整)、`brief`(3-5句概括)，Docker环境推荐设为 `full` | 可选 |
-| `REPORT_LANGUAGE` | 报告输出语言：`zh`(默认中文) / `en`(英文)；会同步影响 Prompt、模板、通知 fallback 与 Web 报告页固定文案。仓库自带 `daily_analysis.yml` 已显式映射该变量，直接在 Actions Secrets/Variables 中配置即可生效 | 可选 |
-| `REPORT_SUMMARY_ONLY` | 仅分析结果摘要：设为 `true` 时只推送汇总，不含个股详情；多股时适合快速浏览（默认 false，Issue #262） | 可选 |
-| `REPORT_TEMPLATES_DIR` | Jinja2 模板目录（相对项目根，默认 `templates`） | 可选 |
-| `REPORT_RENDERER_ENABLED` | 启用 Jinja2 模板渲染（默认 `false`，保证零回归） | 可选 |
-| `REPORT_INTEGRITY_ENABLED` | 启用报告完整性校验，缺失必填字段时重试或占位补全（默认 `true`） | 可选 |
-| `REPORT_INTEGRITY_RETRY` | 完整性校验重试次数（默认 `1`，`0` 表示仅占位不重试） | 可选 |
-| `REPORT_HISTORY_COMPARE_N` | 历史信号对比条数，`0` 关闭（默认），`>0` 启用 | 可选 |
-| `ANALYSIS_DELAY` | 个股分析和大盘分析之间的延迟（秒），避免API限流，如 `10` | 可选 |
-| `MERGE_EMAIL_NOTIFICATION` | 个股与大盘复盘合并推送（默认 false），减少邮件数量、降低垃圾邮件风险；与 `SINGLE_STOCK_NOTIFY` 互斥（单股模式下合并不生效） | 可选 |
-| `MARKDOWN_TO_IMAGE_CHANNELS` | 将 Markdown 转为图片发送的渠道（用逗号分隔）：telegram,wechat,custom,email,slack；单股推送需同时配置且安装转图工具 | 可选 |
-| `NOTIFICATION_REPORT_CHANNELS` | report 路由渠道（单股推送、聚合日报、大盘复盘、合并推送等）；留空表示所有已配置渠道 | 可选 |
-| `NOTIFICATION_ALERT_CHANNELS` | alert 路由渠道（EventMonitor 告警）；留空表示所有已配置渠道 | 可选 |
-| `NOTIFICATION_SYSTEM_ERROR_CHANNELS` | system_error 预留路由渠道；当前不新增自动系统错误生产者，留空表示所有已配置渠道 | 可选 |
-| `NOTIFICATION_DEDUP_TTL_SECONDS` | 通知去重 TTL 秒数，`0` 关闭；同一稳定去重 key 在 TTL 内只发送一次 | 可选 |
-| `NOTIFICATION_COOLDOWN_SECONDS` | 通知冷却秒数，`0` 关闭；同一冷却 key 在窗口内限频 | 可选 |
-| `NOTIFICATION_QUIET_HOURS` | 通知静默时段，格式 `HH:MM-HH:MM`，支持跨午夜；留空关闭 | 可选 |
-| `NOTIFICATION_TIMEZONE` | 静默时段使用的 IANA 时区，如 `Asia/Shanghai`；留空跟随 `TZ` 或系统本地时区 | 可选 |
-| `NOTIFICATION_MIN_SEVERITY` | 最低通知级别：`info`、`warning`、`error`、`critical`；留空保持现状 | 可选 |
-| `NOTIFICATION_DAILY_DIGEST_ENABLED` | 每日摘要预留开关；当前不会发送摘要或持久化摘要内容 | 可选 |
-| `MARKDOWN_TO_IMAGE_MAX_CHARS` | 超过此长度不转图片，避免超大图片（默认 15000） | 可选 |
-| `MD2IMG_ENGINE` | 转图引擎：`wkhtmltoimage`（默认，需 wkhtmltopdf）或 `markdown-to-file`（emoji 更好，需 `npm i -g markdown-to-file`） | 可选 |
-| `PREFETCH_REALTIME_QUOTES` | 设为 `false` 可禁用实时行情预取，避免 efinance/akshare_em 全市场拉取（默认 true） | 可选 |
+| Secret 名称                          | 说明                                                                                                                                                                                                     | 必填 |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--: |
+| `SINGLE_STOCK_NOTIFY`                | 单股推送模式：设为 `true` 则每分析完一只股票立即推送                                                                                                                                                     | 可选 |
+| `REPORT_TYPE`                        | 报告类型：`simple`(精简)、`full`(完整)、`brief`(3-5句概括)，Docker环境推荐设为 `full`                                                                                                                    | 可选 |
+| `REPORT_LANGUAGE`                    | 报告输出语言：`zh`(默认中文) / `en`(英文)；会同步影响 Prompt、模板、通知 fallback 与 Web 报告页固定文案。仓库自带 `daily_analysis.yml` 已显式映射该变量，直接在 Actions Secrets/Variables 中配置即可生效 | 可选 |
+| `REPORT_SUMMARY_ONLY`                | 仅分析结果摘要：设为 `true` 时只推送汇总，不含个股详情；多股时适合快速浏览（默认 false，Issue #262）                                                                                                     | 可选 |
+| `REPORT_TEMPLATES_DIR`               | Jinja2 模板目录（相对项目根，默认 `templates`）                                                                                                                                                          | 可选 |
+| `REPORT_RENDERER_ENABLED`            | 启用 Jinja2 模板渲染（默认 `false`，保证零回归）                                                                                                                                                         | 可选 |
+| `REPORT_INTEGRITY_ENABLED`           | 启用报告完整性校验，缺失必填字段时重试或占位补全（默认 `true`）                                                                                                                                          | 可选 |
+| `REPORT_INTEGRITY_RETRY`             | 完整性校验重试次数（默认 `1`，`0` 表示仅占位不重试）                                                                                                                                                     | 可选 |
+| `REPORT_HISTORY_COMPARE_N`           | 历史信号对比条数，`0` 关闭（默认），`>0` 启用                                                                                                                                                            | 可选 |
+| `ANALYSIS_DELAY`                     | 个股分析和大盘分析之间的延迟（秒），避免API限流，如 `10`                                                                                                                                                 | 可选 |
+| `MERGE_EMAIL_NOTIFICATION`           | 个股与大盘复盘合并推送（默认 false），减少邮件数量、降低垃圾邮件风险；与 `SINGLE_STOCK_NOTIFY` 互斥（单股模式下合并不生效）                                                                              | 可选 |
+| `MARKDOWN_TO_IMAGE_CHANNELS`         | 将 Markdown 转为图片发送的渠道（用逗号分隔）：telegram,wechat,custom,email,slack；单股推送需同时配置且安装转图工具                                                                                       | 可选 |
+| `NOTIFICATION_REPORT_CHANNELS`       | report 路由渠道（单股推送、聚合日报、大盘复盘、合并推送等）；留空表示所有已配置渠道                                                                                                                      | 可选 |
+| `NOTIFICATION_ALERT_CHANNELS`        | alert 路由渠道（EventMonitor 告警）；留空表示所有已配置渠道                                                                                                                                              | 可选 |
+| `NOTIFICATION_SYSTEM_ERROR_CHANNELS` | system_error 预留路由渠道；当前不新增自动系统错误生产者，留空表示所有已配置渠道                                                                                                                          | 可选 |
+| `NOTIFICATION_DEDUP_TTL_SECONDS`     | 通知去重 TTL 秒数，`0` 关闭；同一稳定去重 key 在 TTL 内只发送一次                                                                                                                                        | 可选 |
+| `NOTIFICATION_COOLDOWN_SECONDS`      | 通知冷却秒数，`0` 关闭；同一冷却 key 在窗口内限频                                                                                                                                                        | 可选 |
+| `NOTIFICATION_QUIET_HOURS`           | 通知静默时段，格式 `HH:MM-HH:MM`，支持跨午夜；留空关闭                                                                                                                                                   | 可选 |
+| `NOTIFICATION_TIMEZONE`              | 静默时段使用的 IANA 时区，如 `Asia/Shanghai`；留空跟随 `TZ` 或系统本地时区                                                                                                                               | 可选 |
+| `NOTIFICATION_MIN_SEVERITY`          | 最低通知级别：`info`、`warning`、`error`、`critical`；留空保持现状                                                                                                                                       | 可选 |
+| `NOTIFICATION_DAILY_DIGEST_ENABLED`  | 每日摘要预留开关；当前不会发送摘要或持久化摘要内容                                                                                                                                                       | 可选 |
+| `MARKDOWN_TO_IMAGE_MAX_CHARS`        | 超过此长度不转图片，避免超大图片（默认 15000）                                                                                                                                                           | 可选 |
+| `MD2IMG_ENGINE`                      | 转图引擎：`wkhtmltoimage`（默认，需 wkhtmltopdf）或 `markdown-to-file`（emoji 更好，需 `npm i -g markdown-to-file`）                                                                                     | 可选 |
+| `PREFETCH_REALTIME_QUOTES`           | 设为 `false` 可禁用实时行情预取，避免 efinance/akshare_em 全市场拉取（默认 true）                                                                                                                        | 可选 |
 
 #### 其他配置
 
-| Secret 名称 | 说明 | 必填 |
-|------------|------|:----:|
-| `STOCK_LIST` | 自选股代码，如 `600519,300750,002594` | ✅ |
-| `ANSPIRE_API_KEYS` | [Anspire AI Search](https://aisearch.anspire.cn/) 针对中文内容特别优化；同一 Key 可用于搜索与 Anspire 大模型网关的兜底示例（是否可用以控制台与账号权限为准） | 推荐 |
-| `SERPAPI_API_KEYS` | [SerpAPI](https://serpapi.com/baidu-search-api?utm_source=github_daily_stock_analysis) 搜索引擎结果补强，适合实时金融新闻 | 推荐 |
-| `TAVILY_API_KEYS` | [Tavily](https://tavily.com/) 搜索 API（新闻搜索） | 可选 |
-| `BOCHA_API_KEYS` | [博查搜索](https://open.bocha.cn/) Web Search API（中文搜索优化，支持AI摘要，多个key用逗号分隔） | 可选 |
-| `BRAVE_API_KEYS` | [Brave Search](https://brave.com/search/api/) API（隐私优先，美股优化，多个key用逗号分隔） | 可选 |
-| `MINIMAX_API_KEYS` | [MiniMax](https://platform.minimax.io/) Coding Plan Web Search（结构化搜索结果） | 可选 |
-| `SEARXNG_BASE_URLS` | SearXNG 自建实例（无配额兜底，需在 settings.yml 启用 format: json）；留空时默认自动发现公共实例 | 可选 |
-| `SEARXNG_PUBLIC_INSTANCES_ENABLED` | 是否在 `SEARXNG_BASE_URLS` 为空时自动从 `searx.space` 获取公共实例（默认 `true`） | 可选 |
-| `TUSHARE_TOKEN` | [Tushare Pro](https://tushare.pro/weborder/#/login?reg=834638 ) Token | 可选 |
-| `LONGBRIDGE_APP_KEY` | [Longbridge OpenAPI](https://open.longbridge.com/) App Key（美股/港股量比、换手率、PE 兜底） | 可选 |
-| `LONGBRIDGE_APP_SECRET` | Longbridge App Secret | 可选 |
-| `LONGBRIDGE_ACCESS_TOKEN` | Longbridge Access Token | 可选 |
-| `LONGBRIDGE_STATIC_INFO_TTL_SECONDS` | 长桥 `static_info` 进程内缓存秒数（默认 86400，0=不缓存） | 可选 |
-| `LONGBRIDGE_CONNECTION_COOLDOWN_SECONDS` | 长桥连接关闭类异常后的冷却秒数（默认 15；冷却期内临时跳过 Longbridge，避免频繁重连） | 可选 |
-| `LONGBRIDGE_HTTP_URL` | HTTP 接口地址（默认 `https://openapi.longbridge.com`） | 可选 |
-| `LONGBRIDGE_QUOTE_WS_URL` | 行情 WebSocket 地址（默认 `wss://openapi-quote.longbridge.com/v2`） | 可选 |
-| `LONGBRIDGE_TRADE_WS_URL` | 交易 WebSocket 地址（默认 `wss://openapi-trade.longbridge.com/v2`） | 可选 |
-| `LONGBRIDGE_REGION` | 覆盖接入点；SDK 会按网络自动选择，默认 `hk`，若判断不正确可设置（如 `cn`、`hk`） | 可选 |
-| `LONGBRIDGE_ENABLE_OVERNIGHT` | 是否开启夜盘行情 `true` / `false`，默认 `false` | 可选 |
-| `LONGBRIDGE_PUSH_CANDLESTICK_MODE` | K 线推送模式：`realtime` 或 `confirmed`（默认 `realtime`） | 可选 |
-| `LONGBRIDGE_PRINT_QUOTE_PACKAGES` | 连接时是否打印行情包（未设置时默认 `false`；设为 `1`/`true`/`yes` 开启） | 可选 |
-| `ENABLE_CHIP_DISTRIBUTION` | 启用筹码分布（Actions 默认 false；需筹码数据时在 Variables 中设为 true，接口可能不稳定） | 可选 |
+| Secret 名称                              | 说明                                                                                                                                                         | 必填 |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | :--: |
+| `STOCK_LIST`                             | 自选股代码，如 `600519,300750,002594`                                                                                                                        |  ✅  |
+| `ANSPIRE_API_KEYS`                       | [Anspire AI Search](https://aisearch.anspire.cn/) 针对中文内容特别优化；同一 Key 可用于搜索与 Anspire 大模型网关的兜底示例（是否可用以控制台与账号权限为准） | 推荐 |
+| `SERPAPI_API_KEYS`                       | [SerpAPI](https://serpapi.com/baidu-search-api?utm_source=github_daily_stock_analysis) 搜索引擎结果补强，适合实时金融新闻                                    | 推荐 |
+| `TAVILY_API_KEYS`                        | [Tavily](https://tavily.com/) 搜索 API（新闻搜索）                                                                                                           | 可选 |
+| `BOCHA_API_KEYS`                         | [博查搜索](https://open.bocha.cn/) Web Search API（中文搜索优化，支持AI摘要，多个key用逗号分隔）                                                             | 可选 |
+| `BRAVE_API_KEYS`                         | [Brave Search](https://brave.com/search/api/) API（隐私优先，美股优化，多个key用逗号分隔）                                                                   | 可选 |
+| `MINIMAX_API_KEYS`                       | [MiniMax](https://platform.minimax.io/) Coding Plan Web Search（结构化搜索结果）                                                                             | 可选 |
+| `SEARXNG_BASE_URLS`                      | SearXNG 自建实例（无配额兜底，需在 settings.yml 启用 format: json）；留空时默认自动发现公共实例                                                              | 可选 |
+| `SEARXNG_PUBLIC_INSTANCES_ENABLED`       | 是否在 `SEARXNG_BASE_URLS` 为空时自动从 `searx.space` 获取公共实例（默认 `true`）                                                                            | 可选 |
+| `TUSHARE_TOKEN`                          | [Tushare Pro](https://tushare.pro/weborder/#/login?reg=834638) Token                                                                                         | 可选 |
+| `LONGBRIDGE_APP_KEY`                     | [Longbridge OpenAPI](https://open.longbridge.com/) App Key（美股/港股量比、换手率、PE 兜底）                                                                 | 可选 |
+| `LONGBRIDGE_APP_SECRET`                  | Longbridge App Secret                                                                                                                                        | 可选 |
+| `LONGBRIDGE_ACCESS_TOKEN`                | Longbridge Access Token                                                                                                                                      | 可选 |
+| `LONGBRIDGE_STATIC_INFO_TTL_SECONDS`     | 长桥 `static_info` 进程内缓存秒数（默认 86400，0=不缓存）                                                                                                    | 可选 |
+| `LONGBRIDGE_CONNECTION_COOLDOWN_SECONDS` | 长桥连接关闭类异常后的冷却秒数（默认 15；冷却期内临时跳过 Longbridge，避免频繁重连）                                                                         | 可选 |
+| `LONGBRIDGE_HTTP_URL`                    | HTTP 接口地址（默认 `https://openapi.longbridge.com`）                                                                                                       | 可选 |
+| `LONGBRIDGE_QUOTE_WS_URL`                | 行情 WebSocket 地址（默认 `wss://openapi-quote.longbridge.com/v2`）                                                                                          | 可选 |
+| `LONGBRIDGE_TRADE_WS_URL`                | 交易 WebSocket 地址（默认 `wss://openapi-trade.longbridge.com/v2`）                                                                                          | 可选 |
+| `LONGBRIDGE_REGION`                      | 覆盖接入点；SDK 会按网络自动选择，默认 `hk`，若判断不正确可设置（如 `cn`、`hk`）                                                                             | 可选 |
+| `LONGBRIDGE_ENABLE_OVERNIGHT`            | 是否开启夜盘行情 `true` / `false`，默认 `false`                                                                                                              | 可选 |
+| `LONGBRIDGE_PUSH_CANDLESTICK_MODE`       | K 线推送模式：`realtime` 或 `confirmed`（默认 `realtime`）                                                                                                   | 可选 |
+| `LONGBRIDGE_PRINT_QUOTE_PACKAGES`        | 连接时是否打印行情包（未设置时默认 `false`；设为 `1`/`true`/`yes` 开启）                                                                                     | 可选 |
+| `ENABLE_CHIP_DISTRIBUTION`               | 启用筹码分布（Actions 默认 false；需筹码数据时在 Variables 中设为 true，接口可能不稳定）                                                                     | 可选 |
 
 > **GitHub Actions：** 仓库自带 `daily_analysis.yml` 已把上表中的 `LONGBRIDGE_*` 映射到任务环境。若未在 **Settings → Secrets and variables → Actions** 中配置 `LONGBRIDGE_APP_KEY`、`LONGBRIDGE_APP_SECRET`、`LONGBRIDGE_ACCESS_TOKEN`，CI 内不会调用长桥（日志中一般看不到 `[Longbridge]` 相关行情行）。可选接入点变量（如 `LONGBRIDGE_REGION`）可放在 **Variables** 或 **Secrets**。
 
 > **Longbridge 运行时行为：** 未配置凭据时不会实例化 Longbridge 这个可选 fetcher；若运行时遇到 `client is closed`、`context closed`、`connection closed` 等连接关闭类异常，会进入冷却期（默认 15 秒，可用 `LONGBRIDGE_CONNECTION_COOLDOWN_SECONDS` 调整），冷却期内美股/港股的实时与日线请求会自动跳过 Longbridge，退回 YFinance / AkShare 等兜底链路。
 
 > 补充说明
+
 - TUSHARE_TOKEN，当此参数配置后，但不具备港股日线接口权限时，也会出现港股数据查询不出来或者错误的情况，和老版本提示不支持港股效果相同
 
 #### ✅ 最小配置示例
@@ -206,85 +207,86 @@ daily_stock_analysis/
 > 完整说明见 [LLM 配置指南](LLM_CONFIG_GUIDE.md)（三层配置、渠道模式、Vision、Agent、排错）；常用服务商预设、Actions 变量对照和错误排障见 [LLM 服务商配置指南](llm-providers.md)。
 > 本节仅同步模型/渠道配置清单，不额外引入新的外部 provider / Base URL 兼容约定；兼容语义以当前仓库 `requirements.txt` 依赖约束和相关测试为准，历史回退路径见上述两份文档中“回退/恢复”说明。
 
-| 变量名 | 说明 | 默认值 | 必填 |
-|--------|------|--------|:----:|
-| `LITELLM_MODEL` | 主模型，格式 `provider/model`（如 `gemini/gemini-3.1-pro-preview`），推荐优先使用 | - | 否 |
-| `AGENT_LITELLM_MODEL` | Agent 主模型（可选）；留空继承主模型，无 provider 前缀按 `openai/<model>` 解析 | - | 否 |
-| `LITELLM_FALLBACK_MODELS` | 备选模型，逗号分隔 | - | 否 |
-| `LLM_CHANNELS` | 渠道名称列表（逗号分隔），配合 `LLM_{NAME}_*` 使用，详见 [LLM 配置指南](LLM_CONFIG_GUIDE.md) | - | 否 |
-| `LITELLM_CONFIG` | 高级模型路由 YAML 配置文件路径（高级） | - | 否 |
-| `ANSPIRE_API_KEYS` | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC) API Key，一 Key 同时启用大模型网关和搜索 | - | 可选 |
-| `AIHUBMIX_KEY` | [AIHubmix](https://aihubmix.com/?aff=CfMq) API Key，一 Key 切换使用全系模型，无需额外配置 Base URL | - | 可选 |
-| `GEMINI_API_KEY` | Google Gemini API Key | - | 可选 |
-| `GEMINI_MODEL` | 主模型名称（legacy，`LITELLM_MODEL` 优先） | `gemini-3.1-pro-preview` | 否 |
-| `GEMINI_MODEL_FALLBACK` | 备选模型（legacy） | `gemini-3-flash-preview` | 否 |
-| `OPENAI_API_KEY` | OpenAI 兼容 API Key | - | 可选 |
-| `OPENAI_BASE_URL` | OpenAI 兼容 API 地址 | - | 可选 |
-| `OLLAMA_API_BASE` | Ollama 本地服务地址（如 `http://localhost:11434`），详见 [LLM 配置指南](LLM_CONFIG_GUIDE.md) | - | 可选 |
-| `OPENAI_MODEL` | OpenAI 模型名称（legacy，AIHubmix 用户可填如 `gemini-3.1-pro-preview`、`gpt-5.5`） | `gpt-5.5` | 可选 |
-| `ANTHROPIC_API_KEY` | Anthropic Claude API Key | - | 可选 |
-| `ANTHROPIC_MODEL` | Claude 模型名称 | `claude-sonnet-4-6` | 可选 |
-| `ANTHROPIC_TEMPERATURE` | Claude 温度参数（0.0-1.0） | `0.7` | 可选 |
-| `ANTHROPIC_MAX_TOKENS` | Claude 响应最大 token 数 | `8192` | 可选 |
+| 变量名                    | 说明                                                                                               | 默认值                   | 必填 |
+| ------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------ | :--: |
+| `LITELLM_MODEL`           | 主模型，格式 `provider/model`（如 `gemini/gemini-3.1-pro-preview`），推荐优先使用                  | -                        |  否  |
+| `AGENT_LITELLM_MODEL`     | Agent 主模型（可选）；留空继承主模型，无 provider 前缀按 `openai/<model>` 解析                     | -                        |  否  |
+| `LITELLM_FALLBACK_MODELS` | 备选模型，逗号分隔                                                                                 | -                        |  否  |
+| `LLM_CHANNELS`            | 渠道名称列表（逗号分隔），配合 `LLM_{NAME}_*` 使用，详见 [LLM 配置指南](LLM_CONFIG_GUIDE.md)       | -                        |  否  |
+| `LITELLM_CONFIG`          | 高级模型路由 YAML 配置文件路径（高级）                                                             | -                        |  否  |
+| `ANSPIRE_API_KEYS`        | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC) API Key，一 Key 同时启用大模型网关和搜索   | -                        | 可选 |
+| `AIHUBMIX_KEY`            | [AIHubmix](https://aihubmix.com/?aff=CfMq) API Key，一 Key 切换使用全系模型，无需额外配置 Base URL | -                        | 可选 |
+| `GEMINI_API_KEY`          | Google Gemini API Key                                                                              | -                        | 可选 |
+| `GEMINI_MODEL`            | 主模型名称（legacy，`LITELLM_MODEL` 优先）                                                         | `gemini-3.1-pro-preview` |  否  |
+| `GEMINI_MODEL_FALLBACK`   | 备选模型（legacy）                                                                                 | `gemini-3-flash-preview` |  否  |
+| `OPENAI_API_KEY`          | OpenAI 兼容 API Key                                                                                | -                        | 可选 |
+| `OPENAI_BASE_URL`         | OpenAI 兼容 API 地址                                                                               | -                        | 可选 |
+| `OLLAMA_API_BASE`         | Ollama 本地服务地址（如 `http://localhost:11434`），详见 [LLM 配置指南](LLM_CONFIG_GUIDE.md)       | -                        | 可选 |
+| `OPENAI_MODEL`            | OpenAI 模型名称（legacy，AIHubmix 用户可填如 `gemini-3.1-pro-preview`、`gpt-5.5`）                 | `gpt-5.5`                | 可选 |
+| `ANTHROPIC_API_KEY`       | Anthropic Claude API Key                                                                           | -                        | 可选 |
+| `ANTHROPIC_MODEL`         | Claude 模型名称                                                                                    | `claude-sonnet-4-6`      | 可选 |
+| `ANTHROPIC_TEMPERATURE`   | Claude 温度参数（0.0-1.0）                                                                         | `0.7`                    | 可选 |
+| `ANTHROPIC_MAX_TOKENS`    | Claude 响应最大 token 数                                                                           | `8192`                   | 可选 |
 
-> *注：`ANSPIRE_API_KEYS`、`AIHUBMIX_KEY`、`GEMINI_API_KEY`、`ANTHROPIC_API_KEY`、`OPENAI_API_KEY` 或 `OLLAMA_API_BASE` 至少配置一个。`ANSPIRE_API_KEYS` 与 `AIHUBMIX_KEY` 无需配置 `OPENAI_BASE_URL`，系统自动适配。
+> \*注：`ANSPIRE_API_KEYS`、`AIHUBMIX_KEY`、`GEMINI_API_KEY`、`ANTHROPIC_API_KEY`、`OPENAI_API_KEY` 或 `OLLAMA_API_BASE` 至少配置一个。`ANSPIRE_API_KEYS` 与 `AIHUBMIX_KEY` 无需配置 `OPENAI_BASE_URL`，系统自动适配。
 
 ### 通知渠道配置
 
 更多通知配置基线和诊断说明见 [通知能力基线](notifications.md)。
 
-| 变量名 | 说明 | 必填 |
-|--------|------|:----:|
-| `WECHAT_WEBHOOK_URL` | 企业微信机器人 Webhook URL | 可选 |
-| `FEISHU_WEBHOOK_URL` | 飞书机器人 Webhook URL | 可选 |
-| `FEISHU_WEBHOOK_SECRET` | 飞书机器人签名密钥（仅在机器人安全设置启用“签名校验”时填写） | 可选 |
-| `FEISHU_WEBHOOK_KEYWORD` | 飞书机器人关键词（仅在机器人安全设置启用“关键词”时填写） | 可选 |
-| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token | 可选 |
-| `TELEGRAM_CHAT_ID` | Telegram Chat ID | 可选 |
-| `TELEGRAM_MESSAGE_THREAD_ID` | Telegram Topic ID | 可选 |
-| `DISCORD_WEBHOOK_URL` | Discord Webhook URL | 可选 |
-| `DISCORD_BOT_TOKEN` | Discord Bot Token（与 Webhook 二选一） | 可选 |
-| `DISCORD_MAIN_CHANNEL_ID` | Discord Channel ID（使用 Bot 时需要） | 可选 |
-| `DISCORD_INTERACTIONS_PUBLIC_KEY` | Discord Public Key（仅入站 Interaction/Webhook 回调验签时需要） | 可选 |
-| `DISCORD_MAX_WORDS` | Discord 最大字数限制（默认 免费服务器限制2000） | 可选 |
-| `SLACK_BOT_TOKEN` | Slack Bot Token（推荐，支持图片上传；同时配置时优先于 Webhook） | 可选 |
-| `SLACK_CHANNEL_ID` | Slack Channel ID（使用 Bot 时需要） | 可选 |
-| `SLACK_WEBHOOK_URL` | Slack Incoming Webhook URL（仅文本，不支持图片） | 可选 |
-| `EMAIL_SENDER` | 发件人邮箱 | 可选 |
-| `EMAIL_PASSWORD` | 邮箱授权码（非登录密码） | 可选 |
-| `EMAIL_RECEIVERS` | 收件人邮箱（逗号分隔，留空发给自己） | 可选 |
-| `EMAIL_SENDER_NAME` | 发件人显示名称 | 可选 |
-| `STOCK_GROUP_N` / `EMAIL_GROUP_N` | 邮件分组路由（Issue #268）：`STOCK_GROUP_N` 应为 `STOCK_LIST` 子集，仅影响邮件收件人，不改变分析范围或其他通知渠道 | 可选 |
-| `CUSTOM_WEBHOOK_URLS` | 自定义 Webhook（逗号分隔） | 可选 |
-| `CUSTOM_WEBHOOK_BEARER_TOKEN` | 自定义 Webhook Bearer Token | 可选 |
-| `WEBHOOK_VERIFY_SSL` | Webhook HTTPS 证书校验（默认 true）。设为 false 可支持自签名。警告：关闭有严重安全风险 | 可选 |
-| `PUSHOVER_USER_KEY` | Pushover 用户 Key | 可选 |
-| `PUSHOVER_API_TOKEN` | Pushover API Token | 可选 |
-| `PUSHPLUS_TOKEN` | PushPlus Token（国内推送服务） | 可选 |
-| `SERVERCHAN3_SENDKEY` | Server酱³ Sendkey | 可选 |
-| `ASTRBOT_URL` | AstrBot Webhook URL | 可选 |
-| `ASTRBOT_TOKEN` | AstrBot Bearer Token（可选） | 可选 |
-| `NOTIFICATION_REPORT_CHANNELS` | report 路由渠道，逗号分隔；允许值：wechat,feishu,telegram,email,pushover,pushplus,serverchan3,custom,discord,slack,astrbot | 可选 |
-| `NOTIFICATION_ALERT_CHANNELS` | alert 路由渠道，逗号分隔；留空保持全渠道 | 可选 |
-| `NOTIFICATION_SYSTEM_ERROR_CHANNELS` | system_error 预留路由渠道，逗号分隔；留空保持全渠道 | 可选 |
-| `NOTIFICATION_DEDUP_TTL_SECONDS` | 通知去重 TTL 秒数，`0` 关闭 | 可选 |
-| `NOTIFICATION_COOLDOWN_SECONDS` | 通知冷却秒数，`0` 关闭 | 可选 |
-| `NOTIFICATION_QUIET_HOURS` | 静默时段，格式 `HH:MM-HH:MM`，支持跨午夜 | 可选 |
-| `NOTIFICATION_TIMEZONE` | 静默时段时区，如 `Asia/Shanghai`；留空跟随 `TZ` 或系统本地时区 | 可选 |
-| `NOTIFICATION_MIN_SEVERITY` | 最低通知级别：info, warning, error, critical；留空保持现状 | 可选 |
-| `NOTIFICATION_DAILY_DIGEST_ENABLED` | 每日摘要预留开关；当前不会发送摘要 | 可选 |
+| 变量名                               | 说明                                                                                                                       | 必填 |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- | :--: |
+| `WECHAT_WEBHOOK_URL`                 | 企业微信机器人 Webhook URL                                                                                                 | 可选 |
+| `FEISHU_WEBHOOK_URL`                 | 飞书机器人 Webhook URL                                                                                                     | 可选 |
+| `FEISHU_WEBHOOK_SECRET`              | 飞书机器人签名密钥（仅在机器人安全设置启用“签名校验”时填写）                                                               | 可选 |
+| `FEISHU_WEBHOOK_KEYWORD`             | 飞书机器人关键词（仅在机器人安全设置启用“关键词”时填写）                                                                   | 可选 |
+| `TELEGRAM_BOT_TOKEN`                 | Telegram Bot Token                                                                                                         | 可选 |
+| `TELEGRAM_CHAT_ID`                   | Telegram Chat ID                                                                                                           | 可选 |
+| `TELEGRAM_MESSAGE_THREAD_ID`         | Telegram Topic ID                                                                                                          | 可选 |
+| `DISCORD_WEBHOOK_URL`                | Discord Webhook URL                                                                                                        | 可选 |
+| `DISCORD_BOT_TOKEN`                  | Discord Bot Token（与 Webhook 二选一）                                                                                     | 可选 |
+| `DISCORD_MAIN_CHANNEL_ID`            | Discord Channel ID（使用 Bot 时需要）                                                                                      | 可选 |
+| `DISCORD_INTERACTIONS_PUBLIC_KEY`    | Discord Public Key（仅入站 Interaction/Webhook 回调验签时需要）                                                            | 可选 |
+| `DISCORD_MAX_WORDS`                  | Discord 最大字数限制（默认 免费服务器限制2000）                                                                            | 可选 |
+| `SLACK_BOT_TOKEN`                    | Slack Bot Token（推荐，支持图片上传；同时配置时优先于 Webhook）                                                            | 可选 |
+| `SLACK_CHANNEL_ID`                   | Slack Channel ID（使用 Bot 时需要）                                                                                        | 可选 |
+| `SLACK_WEBHOOK_URL`                  | Slack Incoming Webhook URL（仅文本，不支持图片）                                                                           | 可选 |
+| `EMAIL_SENDER`                       | 发件人邮箱                                                                                                                 | 可选 |
+| `EMAIL_PASSWORD`                     | 邮箱授权码（非登录密码）                                                                                                   | 可选 |
+| `EMAIL_RECEIVERS`                    | 收件人邮箱（逗号分隔，留空发给自己）                                                                                       | 可选 |
+| `EMAIL_SENDER_NAME`                  | 发件人显示名称                                                                                                             | 可选 |
+| `STOCK_GROUP_N` / `EMAIL_GROUP_N`    | 邮件分组路由（Issue #268）：`STOCK_GROUP_N` 应为 `STOCK_LIST` 子集，仅影响邮件收件人，不改变分析范围或其他通知渠道         | 可选 |
+| `CUSTOM_WEBHOOK_URLS`                | 自定义 Webhook（逗号分隔）                                                                                                 | 可选 |
+| `CUSTOM_WEBHOOK_BEARER_TOKEN`        | 自定义 Webhook Bearer Token                                                                                                | 可选 |
+| `WEBHOOK_VERIFY_SSL`                 | Webhook HTTPS 证书校验（默认 true）。设为 false 可支持自签名。警告：关闭有严重安全风险                                     | 可选 |
+| `PUSHOVER_USER_KEY`                  | Pushover 用户 Key                                                                                                          | 可选 |
+| `PUSHOVER_API_TOKEN`                 | Pushover API Token                                                                                                         | 可选 |
+| `PUSHPLUS_TOKEN`                     | PushPlus Token（国内推送服务）                                                                                             | 可选 |
+| `SERVERCHAN3_SENDKEY`                | Server酱³ Sendkey                                                                                                          | 可选 |
+| `ASTRBOT_URL`                        | AstrBot Webhook URL                                                                                                        | 可选 |
+| `ASTRBOT_TOKEN`                      | AstrBot Bearer Token（可选）                                                                                               | 可选 |
+| `NOTIFICATION_REPORT_CHANNELS`       | report 路由渠道，逗号分隔；允许值：wechat,feishu,telegram,email,pushover,pushplus,serverchan3,custom,discord,slack,astrbot | 可选 |
+| `NOTIFICATION_ALERT_CHANNELS`        | alert 路由渠道，逗号分隔；留空保持全渠道                                                                                   | 可选 |
+| `NOTIFICATION_SYSTEM_ERROR_CHANNELS` | system_error 预留路由渠道，逗号分隔；留空保持全渠道                                                                        | 可选 |
+| `NOTIFICATION_DEDUP_TTL_SECONDS`     | 通知去重 TTL 秒数，`0` 关闭                                                                                                | 可选 |
+| `NOTIFICATION_COOLDOWN_SECONDS`      | 通知冷却秒数，`0` 关闭                                                                                                     | 可选 |
+| `NOTIFICATION_QUIET_HOURS`           | 静默时段，格式 `HH:MM-HH:MM`，支持跨午夜                                                                                   | 可选 |
+| `NOTIFICATION_TIMEZONE`              | 静默时段时区，如 `Asia/Shanghai`；留空跟随 `TZ` 或系统本地时区                                                             | 可选 |
+| `NOTIFICATION_MIN_SEVERITY`          | 最低通知级别：info, warning, error, critical；留空保持现状                                                                 | 可选 |
+| `NOTIFICATION_DAILY_DIGEST_ENABLED`  | 每日摘要预留开关；当前不会发送摘要                                                                                         | 可选 |
 
 > 说明：默认 `daily_analysis` GitHub Actions workflow 只映射固定变量名，不会自动导入任意编号的 `STOCK_GROUP_N` / `EMAIL_GROUP_N`。因此分组邮箱目前仅在本地 `.env`、Docker 或其他已显式注入这些环境变量的运行环境中生效；若你要在自己的 GitHub Actions 中使用，需在 workflow 的 job `env:` 中逐组显式映射。
 
 #### 飞书云文档配置（可选，解决消息截断问题）
 
-| 变量名 | 说明 | 必填 |
-|--------|------|:----:|
-| `FEISHU_APP_ID` | 飞书应用 ID | 可选 |
-| `FEISHU_APP_SECRET` | 飞书应用 Secret | 可选 |
+| 变量名                | 说明                 | 必填 |
+| --------------------- | -------------------- | :--: |
+| `FEISHU_APP_ID`       | 飞书应用 ID          | 可选 |
+| `FEISHU_APP_SECRET`   | 飞书应用 Secret      | 可选 |
 | `FEISHU_FOLDER_TOKEN` | 飞书云盘文件夹 Token | 可选 |
 
 > 飞书云文档配置步骤：
+>
 > 1. 在 [飞书开发者后台](https://open.feishu.cn/app) 创建应用
 > 2. 配置 GitHub Secrets
 > 3. 创建群组并添加应用机器人
@@ -294,47 +296,48 @@ daily_stock_analysis/
 
 ### 搜索服务配置
 
-| 变量名 | 说明 | 必填 |
-|--------|------|:----:|
-| `ANSPIRE_API_KEYS` | Anspire Open API Key（可用于搜索与大模型网关共享场景的配置示例；是否可用取决于账号权限与网关可见性，可有效增强 A 股分析效果） | 推荐 |
-| `SERPAPI_API_KEYS` | SerpAPI 搜索引擎结果补强，适合实时金融新闻 | 推荐 |
-| `TAVILY_API_KEYS` | Tavily 搜索 API Key | 可选 |
-| `BOCHA_API_KEYS` | 博查搜索 API Key（中文优化） | 可选 |
-| `BRAVE_API_KEYS` | Brave Search API Key（美股优化） | 可选 |
-| `MINIMAX_API_KEYS` | MiniMax Coding Plan Web Search（结构化搜索结果） | 可选 |
-| `SOCIAL_SENTIMENT_API_KEY` | Stock Sentiment API Key（Reddit / X / Polymarket，可选） | 可选 |
-| `SOCIAL_SENTIMENT_API_URL` | Stock Sentiment API 地址（默认 `https://api.adanos.org`） | 可选 |
-| `SEARXNG_BASE_URLS` | SearXNG 自建实例（无配额兜底，需在 settings.yml 启用 format: json）；留空时默认自动发现公共实例 | 可选 |
-| `SEARXNG_PUBLIC_INSTANCES_ENABLED` | 是否在 `SEARXNG_BASE_URLS` 为空时自动从 `searx.space` 获取公共实例（默认 `true`） | 可选 |
-| `NEWS_STRATEGY_PROFILE` | 新闻策略窗口档位：`ultra_short`(1天)/`short`(3天)/`medium`(7天)/`long`(30天)；实际窗口取与 `NEWS_MAX_AGE_DAYS` 的最小值 | 默认 `short` |
-| `NEWS_MAX_AGE_DAYS` | 新闻最大时效（天），搜索时限制结果在近期内 | 默认 `3` |
-| `BIAS_THRESHOLD` | 乖离率阈值（%），超过提示不追高；强势趋势股自动放宽到 1.5 倍 | 默认 `5.0` |
+| 变量名                             | 说明                                                                                                                          |     必填     |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | :----------: |
+| `ANSPIRE_API_KEYS`                 | Anspire Open API Key（可用于搜索与大模型网关共享场景的配置示例；是否可用取决于账号权限与网关可见性，可有效增强 A 股分析效果） |     推荐     |
+| `SERPAPI_API_KEYS`                 | SerpAPI 搜索引擎结果补强，适合实时金融新闻                                                                                    |     推荐     |
+| `TAVILY_API_KEYS`                  | Tavily 搜索 API Key                                                                                                           |     可选     |
+| `BOCHA_API_KEYS`                   | 博查搜索 API Key（中文优化）                                                                                                  |     可选     |
+| `BRAVE_API_KEYS`                   | Brave Search API Key（美股优化）                                                                                              |     可选     |
+| `MINIMAX_API_KEYS`                 | MiniMax Coding Plan Web Search（结构化搜索结果）                                                                              |     可选     |
+| `SOCIAL_SENTIMENT_API_KEY`         | Stock Sentiment API Key（Reddit / X / Polymarket，可选）                                                                      |     可选     |
+| `SOCIAL_SENTIMENT_API_URL`         | Stock Sentiment API 地址（默认 `https://api.adanos.org`）                                                                     |     可选     |
+| `SEARXNG_BASE_URLS`                | SearXNG 自建实例（无配额兜底，需在 settings.yml 启用 format: json）；留空时默认自动发现公共实例                               |     可选     |
+| `SEARXNG_PUBLIC_INSTANCES_ENABLED` | 是否在 `SEARXNG_BASE_URLS` 为空时自动从 `searx.space` 获取公共实例（默认 `true`）                                             |     可选     |
+| `NEWS_STRATEGY_PROFILE`            | 新闻策略窗口档位：`ultra_short`(1天)/`short`(3天)/`medium`(7天)/`long`(30天)；实际窗口取与 `NEWS_MAX_AGE_DAYS` 的最小值       | 默认 `short` |
+| `NEWS_MAX_AGE_DAYS`                | 新闻最大时效（天），搜索时限制结果在近期内                                                                                    |   默认 `3`   |
+| `BIAS_THRESHOLD`                   | 乖离率阈值（%），超过提示不追高；强势趋势股自动放宽到 1.5 倍                                                                  |  默认 `5.0`  |
 
 > 行为说明：搜索服务与社交舆情服务为可选增强链路。任一服务初始化失败时，系统会记录 warning 并降级为跳过该服务，仅影响对应环节，不会阻塞技术面主链路和主任务流。
 
 ### 数据源配置
 
-| 变量名 | 说明 | 默认值 | 必填 |
-|--------|------|--------|:----:|
-| `TUSHARE_TOKEN` | Tushare Pro Token | - | 可选 |
-| `TICKFLOW_API_KEY` | TickFlow API Key；配置后 A 股大盘复盘指数优先尝试 TickFlow，若套餐支持标的池查询则市场统计也会优先尝试 TickFlow | - | 可选 |
-| `LONGBRIDGE_APP_KEY` | [Longbridge OpenAPI](https://open.longbridge.com/) App Key；配置后美股/港股的量比、换手率、PE 等 YFinance 缺失字段会自动从长桥补充 | - | 可选 |
-| `LONGBRIDGE_APP_SECRET` | Longbridge App Secret | - | 可选 |
-| `LONGBRIDGE_ACCESS_TOKEN` | Longbridge Access Token | - | 可选 |
-| `LONGBRIDGE_*`（可选） | 见官方 [环境变量](https://open.longbridge.com/zh-CN/docs/getting-started#环境变量)；另有 `LONGBRIDGE_STATIC_INFO_TTL_SECONDS` 与 `LONGBRIDGE_CONNECTION_COOLDOWN_SECONDS` | - | 可选 |
-| `ENABLE_REALTIME_QUOTE` | 启用实时行情（关闭后使用历史收盘价分析） | `true` | 可选 |
-| `ENABLE_REALTIME_TECHNICAL_INDICATORS` | 盘中实时技术面：启用时用实时价计算 MA5/MA10/MA20 与多头排列（Issue #234）；关闭则用昨日收盘 | `true` | 可选 |
-| `ENABLE_CHIP_DISTRIBUTION` | 启用筹码分布分析（该接口不稳定，云端部署建议关闭）。GitHub Actions 用户需在 Repository Variables 中设置 `ENABLE_CHIP_DISTRIBUTION=true` 方可启用；workflow 默认关闭。 | `true` | 可选 |
-| `ENABLE_EASTMONEY_PATCH` | 东财接口补丁：东财接口频繁失败（如 RemoteDisconnected、连接被关闭）时建议设为 `true`，注入 NID 令牌与随机 User-Agent 以降低被限流概率 | `false` | 可选 |
-| `REALTIME_SOURCE_PRIORITY` | 实时行情数据源优先级（逗号分隔），如 `tencent,akshare_sina,efinance,akshare_em` | 见 .env.example | 可选 |
-| `ENABLE_FUNDAMENTAL_PIPELINE` | 基本面聚合总开关；关闭时仅返回 `not_supported` 块，不改变原分析链路 | `true` | 可选 |
-| `FUNDAMENTAL_STAGE_TIMEOUT_SECONDS` | 基本面阶段总时延预算（秒） | `1.5` | 可选 |
-| `FUNDAMENTAL_FETCH_TIMEOUT_SECONDS` | 单能力源调用超时（秒） | `0.8` | 可选 |
-| `FUNDAMENTAL_RETRY_MAX` | 基本面能力重试次数（含首次） | `1` | 可选 |
-| `FUNDAMENTAL_CACHE_TTL_SECONDS` | 基本面聚合缓存 TTL（秒），短缓存减轻重复拉取 | `120` | 可选 |
-| `FUNDAMENTAL_CACHE_MAX_ENTRIES` | 基本面缓存最大条目数（TTL 内按时间淘汰） | `256` | 可选 |
+| 变量名                                 | 说明                                                                                                                                                                      | 默认值          | 必填 |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | :--: |
+| `TUSHARE_TOKEN`                        | Tushare Pro Token                                                                                                                                                         | -               | 可选 |
+| `TICKFLOW_API_KEY`                     | TickFlow API Key；配置后 A 股大盘复盘指数优先尝试 TickFlow，若套餐支持标的池查询则市场统计也会优先尝试 TickFlow                                                           | -               | 可选 |
+| `LONGBRIDGE_APP_KEY`                   | [Longbridge OpenAPI](https://open.longbridge.com/) App Key；配置后美股/港股的量比、换手率、PE 等 YFinance 缺失字段会自动从长桥补充                                        | -               | 可选 |
+| `LONGBRIDGE_APP_SECRET`                | Longbridge App Secret                                                                                                                                                     | -               | 可选 |
+| `LONGBRIDGE_ACCESS_TOKEN`              | Longbridge Access Token                                                                                                                                                   | -               | 可选 |
+| `LONGBRIDGE_*`（可选）                 | 见官方 [环境变量](https://open.longbridge.com/zh-CN/docs/getting-started#环境变量)；另有 `LONGBRIDGE_STATIC_INFO_TTL_SECONDS` 与 `LONGBRIDGE_CONNECTION_COOLDOWN_SECONDS` | -               | 可选 |
+| `ENABLE_REALTIME_QUOTE`                | 启用实时行情（关闭后使用历史收盘价分析）                                                                                                                                  | `true`          | 可选 |
+| `ENABLE_REALTIME_TECHNICAL_INDICATORS` | 盘中实时技术面：启用时用实时价计算 MA5/MA10/MA20 与多头排列（Issue #234）；关闭则用昨日收盘                                                                               | `true`          | 可选 |
+| `ENABLE_CHIP_DISTRIBUTION`             | 启用筹码分布分析（该接口不稳定，云端部署建议关闭）。GitHub Actions 用户需在 Repository Variables 中设置 `ENABLE_CHIP_DISTRIBUTION=true` 方可启用；workflow 默认关闭。     | `true`          | 可选 |
+| `ENABLE_EASTMONEY_PATCH`               | 东财接口补丁：东财接口频繁失败（如 RemoteDisconnected、连接被关闭）时建议设为 `true`，注入 NID 令牌与随机 User-Agent 以降低被限流概率                                     | `false`         | 可选 |
+| `REALTIME_SOURCE_PRIORITY`             | 实时行情数据源优先级（逗号分隔），如 `tencent,akshare_sina,efinance,akshare_em`                                                                                           | 见 .env.example | 可选 |
+| `ENABLE_FUNDAMENTAL_PIPELINE`          | 基本面聚合总开关；关闭时仅返回 `not_supported` 块，不改变原分析链路                                                                                                       | `true`          | 可选 |
+| `FUNDAMENTAL_STAGE_TIMEOUT_SECONDS`    | 基本面阶段总时延预算（秒）                                                                                                                                                | `1.5`           | 可选 |
+| `FUNDAMENTAL_FETCH_TIMEOUT_SECONDS`    | 单能力源调用超时（秒）                                                                                                                                                    | `0.8`           | 可选 |
+| `FUNDAMENTAL_RETRY_MAX`                | 基本面能力重试次数（含首次）                                                                                                                                              | `1`             | 可选 |
+| `FUNDAMENTAL_CACHE_TTL_SECONDS`        | 基本面聚合缓存 TTL（秒），短缓存减轻重复拉取                                                                                                                              | `120`           | 可选 |
+| `FUNDAMENTAL_CACHE_MAX_ENTRIES`        | 基本面缓存最大条目数（TTL 内按时间淘汰）                                                                                                                                  | `256`           | 可选 |
 
 > 行为说明：
+>
 > - A 股：按 `valuation/growth/earnings/institution/capital_flow/dragon_tiger/boards` 聚合能力返回；
 > - ETF：返回可得项，缺失能力标记为 `not_supported`，整体不影响原流程；
 > - 美股/港股：返回 `not_supported` 兜底块；
@@ -361,18 +364,18 @@ daily_stock_analysis/
 
 ### 其他配置
 
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `STOCK_LIST` | 自选股代码（逗号分隔） | - |
-| `ADMIN_AUTH_ENABLED` | Web 登录：设为 `true` 启用密码保护；首次访问在网页设置初始密码，可在「系统设置 > 修改密码」修改；忘记密码执行 `python -m src.auth reset_password`。Web 的 `.env` 备份导入导出仅在开启该开关后可用（桌面端不受此限制）。 | `false` |
-| `TRUST_X_FORWARDED_FOR` | 单层可信反向代理部署时设为 `true`，取 `X-Forwarded-For` 最右值作为真实客户端 IP（用于登录限流等）；直连公网时保持 `false` 防伪造。多级代理/CDN 场景下限流 key 可能退化为边缘代理 IP，需额外评估 | `false` |
-| `MAX_WORKERS` | 并发线程数 | `3` |
-| `MARKET_REVIEW_ENABLED` | 启用大盘复盘 | `true` |
-| `MARKET_REVIEW_REGION` | 大盘复盘市场区域：cn(A股)、hk(港股)、us(美股)、both(三市场)，us 适合仅关注美股的用户 | `cn` |
-| `TRADING_DAY_CHECK_ENABLED` | 交易日检查：默认 `true`，非交易日跳过执行；设为 `false` 或使用 `--force-run` 可强制执行（Issue #373） | `true` |
-| `SCHEDULE_ENABLED` | 启用定时任务 | `false` |
-| `SCHEDULE_TIME` | 定时执行时间 | `18:00` |
-| `LOG_DIR` | 日志目录 | `./logs` |
+| 变量名                      | 说明                                                                                                                                                                                                                    | 默认值   |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `STOCK_LIST`                | 自选股代码（逗号分隔）                                                                                                                                                                                                  | -        |
+| `ADMIN_AUTH_ENABLED`        | Web 登录：设为 `true` 启用密码保护；首次访问在网页设置初始密码，可在「系统设置 > 修改密码」修改；忘记密码执行 `python -m src.auth reset_password`。Web 的 `.env` 备份导入导出仅在开启该开关后可用（桌面端不受此限制）。 | `false`  |
+| `TRUST_X_FORWARDED_FOR`     | 单层可信反向代理部署时设为 `true`，取 `X-Forwarded-For` 最右值作为真实客户端 IP（用于登录限流等）；直连公网时保持 `false` 防伪造。多级代理/CDN 场景下限流 key 可能退化为边缘代理 IP，需额外评估                         | `false`  |
+| `MAX_WORKERS`               | 并发线程数                                                                                                                                                                                                              | `3`      |
+| `MARKET_REVIEW_ENABLED`     | 启用大盘复盘                                                                                                                                                                                                            | `true`   |
+| `MARKET_REVIEW_REGION`      | 大盘复盘市场区域：cn(A股)、hk(港股)、us(美股)、both(三市场)，us 适合仅关注美股的用户                                                                                                                                    | `cn`     |
+| `TRADING_DAY_CHECK_ENABLED` | 交易日检查：默认 `true`，非交易日跳过执行；设为 `false` 或使用 `--force-run` 可强制执行（Issue #373）                                                                                                                   | `true`   |
+| `SCHEDULE_ENABLED`          | 启用定时任务                                                                                                                                                                                                            | `false`  |
+| `SCHEDULE_TIME`             | 定时执行时间                                                                                                                                                                                                            | `18:00`  |
+| `LOG_DIR`                   | 日志目录                                                                                                                                                                                                                | `./logs` |
 
 ---
 
@@ -443,18 +446,18 @@ docker run -d \
 
 ### 运行模式说明
 
-| 命令 | 说明 | 端口 |
-|------|------|------|
-| `docker-compose -f ./docker/docker-compose.yml up -d server` | Web 服务模式，提供 API 与 WebUI | 8000 |
-| `docker-compose -f ./docker/docker-compose.yml up -d analyzer` | 定时任务模式，每日自动执行 | - |
-| `docker-compose -f ./docker/docker-compose.yml up -d` | 同时启动两种模式 | 8000 |
+| 命令                                                           | 说明                            | 端口 |
+| -------------------------------------------------------------- | ------------------------------- | ---- |
+| `docker-compose -f ./docker/docker-compose.yml up -d server`   | Web 服务模式，提供 API 与 WebUI | 8000 |
+| `docker-compose -f ./docker/docker-compose.yml up -d analyzer` | 定时任务模式，每日自动执行      | -    |
+| `docker-compose -f ./docker/docker-compose.yml up -d`          | 同时启动两种模式                | 8000 |
 
 ### Docker Compose 配置
 
 `docker-compose.yml` 使用 YAML 锚点复用配置：
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 x-common: &common
   build:
@@ -481,7 +484,16 @@ services:
   server:
     <<: *common
     container_name: stock-server
-    command: ["python", "main.py", "--serve-only", "--host", "0.0.0.0", "--port", "8000"]
+    command:
+      [
+        "python",
+        "main.py",
+        "--serve-only",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+      ]
     ports:
       - "8000:8000"
 ```
@@ -583,18 +595,18 @@ python main.py --workers 5            # 指定并发数
 ```yaml
 schedule:
   # UTC 时间，北京时间 = UTC + 8
-  - cron: '0 10 * * 1-5'   # 周一到周五 18:00（北京时间）
+  - cron: "0 10 * * 1-5" # 周一到周五 18:00（北京时间）
 ```
 
 常用时间对照：
 
-| 北京时间 | UTC cron 表达式 |
-|---------|----------------|
-| 09:30 | `'30 1 * * 1-5'` |
-| 12:00 | `'0 4 * * 1-5'` |
-| 15:00 | `'0 7 * * 1-5'` |
-| 18:00 | `'0 10 * * 1-5'` |
-| 21:00 | `'0 13 * * 1-5'` |
+| 北京时间 | UTC cron 表达式  |
+| -------- | ---------------- |
+| 09:30    | `'30 1 * * 1-5'` |
+| 12:00    | `'0 4 * * 1-5'`  |
+| 15:00    | `'0 7 * * 1-5'`  |
+| 18:00    | `'0 10 * * 1-5'` |
+| 21:00    | `'0 13 * * 1-5'` |
 
 #### GitHub Actions 非交易日手动运行（Issue #461 / #466）
 
@@ -605,12 +617,12 @@ schedule:
 
 推荐优先级理解：
 
-| 配置组合 | 非交易日行为 |
-|---------|-------------|
-| `TRADING_DAY_CHECK_ENABLED=true` + `force_run=false` | 跳过执行（默认行为） |
-| `TRADING_DAY_CHECK_ENABLED=true` + `force_run=true` | 本次强制执行 |
+| 配置组合                                              | 非交易日行为                         |
+| ----------------------------------------------------- | ------------------------------------ |
+| `TRADING_DAY_CHECK_ENABLED=true` + `force_run=false`  | 跳过执行（默认行为）                 |
+| `TRADING_DAY_CHECK_ENABLED=true` + `force_run=true`   | 本次强制执行                         |
 | `TRADING_DAY_CHECK_ENABLED=false` + `force_run=false` | 始终执行（定时和手动都不检查交易日） |
-| `TRADING_DAY_CHECK_ENABLED=false` + `force_run=true` | 始终执行 |
+| `TRADING_DAY_CHECK_ENABLED=false` + `force_run=true`  | 始终执行                             |
 
 手动触发步骤：
 
@@ -641,13 +653,13 @@ python main.py --schedule --no-run-immediately
 
 你也可以通过环境变量配置定时行为（适用于 Docker 或 .env）：
 
-| 变量名 | 说明 | 默认值 | 示例 |
-|--------|------|:-------:|:-----:|
-| `SCHEDULE_ENABLED` | 是否启用定时任务 | `false` | `true` |
-| `SCHEDULE_TIME` | 每日执行时间 (HH:MM) | `18:00` | `09:30` |
-| `SCHEDULE_RUN_IMMEDIATELY` | 定时模式启动时是否立即运行一次；未显式设置时沿用 `RUN_IMMEDIATELY` 的运行时覆盖语义 | `true` | `false` |
-| `RUN_IMMEDIATELY` | 非定时模式启动时是否立即运行一次；同时作为未显式设置 `SCHEDULE_RUN_IMMEDIATELY` 时的 legacy 回退 | `true` | `false` |
-| `TRADING_DAY_CHECK_ENABLED` | 交易日检查：非交易日跳过执行；设为 `false` 可强制执行 | `true` | `false` |
+| 变量名                      | 说明                                                                                             | 默认值  |  示例   |
+| --------------------------- | ------------------------------------------------------------------------------------------------ | :-----: | :-----: |
+| `SCHEDULE_ENABLED`          | 是否启用定时任务                                                                                 | `false` | `true`  |
+| `SCHEDULE_TIME`             | 每日执行时间 (HH:MM)                                                                             | `18:00` | `09:30` |
+| `SCHEDULE_RUN_IMMEDIATELY`  | 定时模式启动时是否立即运行一次；未显式设置时沿用 `RUN_IMMEDIATELY` 的运行时覆盖语义              | `true`  | `false` |
+| `RUN_IMMEDIATELY`           | 非定时模式启动时是否立即运行一次；同时作为未显式设置 `SCHEDULE_RUN_IMMEDIATELY` 时的 legacy 回退 | `true`  | `false` |
+| `TRADING_DAY_CHECK_ENABLED` | 交易日检查：非交易日跳过执行；设为 `false` 可强制执行                                            | `true`  | `false` |
 
 例如在 Docker 中配置：
 
@@ -661,6 +673,7 @@ docker run -e SCHEDULE_ENABLED=true -e SCHEDULE_RUN_IMMEDIATELY=false ...
 #### 交易日判断（Issue #373）
 
 默认根据自选股市场（A 股 / 港股 / 美股）和 `MARKET_REVIEW_REGION` 判断是否为交易日：
+
 - 使用 `exchange-calendars` 区分 A 股 / 港股 / 美股各自的交易日历（含节假日）
 - 混合持仓时，每只股票只在其市场开市日分析，休市股票当日跳过
 - 全部相关市场均为非交易日时，整体跳过执行（不启动 pipeline、不发推送）
@@ -715,6 +728,7 @@ FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your_hook_token
 4. `FEISHU_APP_ID` / `FEISHU_APP_SECRET` 是飞书应用 / Stream Bot / 云文档模式专用，不会触发群 Webhook 推送，不要用它们替代 `FEISHU_WEBHOOK_URL`。
 
 **常见失败原因：**
+
 - 只填了 `FEISHU_APP_ID` / `FEISHU_APP_SECRET`，没有配置 `FEISHU_WEBHOOK_URL`
 - 飞书机器人开启了「签名校验」，但 `FEISHU_WEBHOOK_SECRET` 未配置（或误填为 `FEISHU_APP_SECRET`）
 - 飞书机器人开启了「关键词」，但本地没有同步配置 `FEISHU_WEBHOOK_KEYWORD`
@@ -723,6 +737,7 @@ FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your_hook_token
 - 消息内容超长：飞书单条消息有长度限制，系统会自动分段发送；如需在一个文档内查看完整内容，可配置飞书云文档功能（`FEISHU_APP_ID` / `FEISHU_APP_SECRET` / `FEISHU_FOLDER_TOKEN`）
 
 更完整的图文排查请看 [docs/bot/feishu-bot-config.md](bot/feishu-bot-config.md)。
+
 ### Telegram
 
 1. 与 @BotFather 对话创建 Bot
@@ -738,6 +753,7 @@ FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/your_hook_token
 3. 设置 `EMAIL_SENDER`、`EMAIL_PASSWORD`、`EMAIL_RECEIVERS`
 
 支持的邮箱：
+
 - QQ 邮箱：smtp.qq.com:465
 - 163 邮箱：smtp.163.com:465
 - Gmail：smtp.gmail.com:587
@@ -758,6 +774,7 @@ EMAIL_GROUP_2=user2@example.com
 ### 自定义 Webhook
 
 支持任意 POST JSON 的 Webhook，包括：
+
 - 钉钉机器人
 - Discord Webhook
 - Slack Webhook
@@ -863,6 +880,7 @@ PUSHOVER_API_TOKEN=your_api_token
 ```
 
 特点：
+
 - 支持 iOS/Android 双平台
 - 支持通知优先级和声音设置
 - 免费额度足够个人使用（每月 10,000 条）
@@ -895,24 +913,29 @@ PUSHOVER_API_TOKEN=your_api_token
 系统默认使用 AkShare（免费），也支持其他数据源：
 
 ### AkShare（默认）
+
 - 免费，无需配置
 - 数据来源：东方财富爬虫
 
 ### Tushare Pro
+
 - 需要注册获取 Token
 - 更稳定，数据更全
 - 设置 `TUSHARE_TOKEN`
 
 ### Baostock
+
 - 免费，无需配置
 - 作为备用数据源
 
 ### YFinance
+
 - 免费，无需配置
 - 支持美股/港股数据
 - 美股历史数据与实时行情均统一使用 YFinance，以避免 akshare 美股复权异常导致的技术指标错误
 
 ### Longbridge（长桥）
+
 - 美股/港股数据兜底，补充 YFinance 缺失的量比、换手率、PE 等字段
 - 需从 [open.longbridge.com](https://open.longbridge.com/) 注册并获取 App Key / App Secret / Access Token
 - 设置 `LONGBRIDGE_APP_KEY`、`LONGBRIDGE_APP_SECRET`、`LONGBRIDGE_ACCESS_TOKEN`
@@ -1013,6 +1036,7 @@ python main.py --debug
 ```
 
 日志文件位置：
+
 - 常规日志：`logs/stock_analysis_YYYYMMDD.log`
 - 调试日志：`logs/stock_analysis_debug_YYYYMMDD.log`
 
@@ -1024,12 +1048,12 @@ python main.py --debug
 
 如需调整，可在 `.env` 中设置：
 
-| 变量 | 默认值 | 说明 |
-|------|-------|------|
-| `SQLITE_WAL_ENABLED` | `true` | 文件型 SQLite 是否启用 `journal_mode=WAL` |
-| `SQLITE_BUSY_TIMEOUT_MS` | `5000` | SQLite 等锁超时（毫秒） |
-| `SQLITE_WRITE_RETRY_MAX` | `3` | 遇到 `database is locked` / `database table is locked` 时的最大重试次数 |
-| `SQLITE_WRITE_RETRY_BASE_DELAY` | `0.1` | 写入重试基础退避时间（秒，按指数退避递增） |
+| 变量                            | 默认值 | 说明                                                                    |
+| ------------------------------- | ------ | ----------------------------------------------------------------------- |
+| `SQLITE_WAL_ENABLED`            | `true` | 文件型 SQLite 是否启用 `journal_mode=WAL`                               |
+| `SQLITE_BUSY_TIMEOUT_MS`        | `5000` | SQLite 等锁超时（毫秒）                                                 |
+| `SQLITE_WRITE_RETRY_MAX`        | `3`    | 遇到 `database is locked` / `database table is locked` 时的最大重试次数 |
+| `SQLITE_WRITE_RETRY_BASE_DELAY` | `0.1`  | 写入重试基础退避时间（秒，按指数退避递增）                              |
 
 ---
 
@@ -1054,24 +1078,24 @@ python main.py --debug
 
 ### 操作建议映射
 
-| 操作建议 | 仓位推断 | 预期方向 | 胜利条件 |
-|---------|---------|---------|---------|
-| 买入/加仓/strong buy | long | up | 涨幅 ≥ 中性带 |
-| 卖出/减仓/strong sell | cash | down | 跌幅 ≥ 中性带 |
-| 持有/持有观察/震荡观望/洗盘观察/hold/hold and watch/range-bound watch/shakeout watch | long | not_down | 未显著下跌 |
-| 观望/等待/wait | cash | flat | 价格在中性带内 |
+| 操作建议                                                                             | 仓位推断 | 预期方向 | 胜利条件       |
+| ------------------------------------------------------------------------------------ | -------- | -------- | -------------- |
+| 买入/加仓/strong buy                                                                 | long     | up       | 涨幅 ≥ 中性带  |
+| 卖出/减仓/strong sell                                                                | cash     | down     | 跌幅 ≥ 中性带  |
+| 持有/持有观察/震荡观望/洗盘观察/hold/hold and watch/range-bound watch/shakeout watch | long     | not_down | 未显著下跌     |
+| 观望/等待/wait                                                                       | cash     | flat     | 价格在中性带内 |
 
 ### 配置
 
 在 `.env` 中设置以下变量（均有默认值，可选）：
 
-| 变量 | 默认值 | 说明 |
-|------|-------|------|
-| `BACKTEST_ENABLED` | `true` | 是否在每日分析后自动运行回测 |
-| `BACKTEST_EVAL_WINDOW_DAYS` | `10` | 评估窗口（交易日数） |
-| `BACKTEST_MIN_AGE_DAYS` | `14` | 仅回测 N 天前的记录，避免数据不完整 |
-| `BACKTEST_ENGINE_VERSION` | `v1` | 引擎版本号，升级逻辑时用于区分结果 |
-| `BACKTEST_NEUTRAL_BAND_PCT` | `2.0` | 中性区间阈值（%），±2% 内视为震荡 |
+| 变量                        | 默认值 | 说明                                |
+| --------------------------- | ------ | ----------------------------------- |
+| `BACKTEST_ENABLED`          | `true` | 是否在每日分析后自动运行回测        |
+| `BACKTEST_EVAL_WINDOW_DAYS` | `10`   | 评估窗口（交易日数）                |
+| `BACKTEST_MIN_AGE_DAYS`     | `14`   | 仅回测 N 天前的记录，避免数据不完整 |
+| `BACKTEST_ENGINE_VERSION`   | `v1`   | 引擎版本号，升级逻辑时用于区分结果  |
+| `BACKTEST_NEUTRAL_BAND_PCT` | `2.0`  | 中性区间阈值（%），±2% 内视为震荡   |
 
 ### 自动运行
 
@@ -1079,13 +1103,13 @@ python main.py --debug
 
 ### 评估指标
 
-| 指标 | 说明 |
-|------|------|
-| `direction_accuracy_pct` | 方向预测准确率（预期方向与实际一致） |
-| `win_rate_pct` | 胜率（胜 / (胜+负)，不含中性） |
-| `avg_stock_return_pct` | 平均股票收益率 |
+| 指标                       | 说明                                 |
+| -------------------------- | ------------------------------------ |
+| `direction_accuracy_pct`   | 方向预测准确率（预期方向与实际一致） |
+| `win_rate_pct`             | 胜率（胜 / (胜+负)，不含中性）       |
+| `avg_stock_return_pct`     | 平均股票收益率                       |
 | `avg_simulated_return_pct` | 平均模拟执行收益率（含止盈止损退出） |
-| `stop_loss_trigger_rate` | 止损触发率（仅统计配置了止损的记录） |
+| `stop_loss_trigger_rate`   | 止损触发率（仅统计配置了止损的记录） |
 | `take_profit_trigger_rate` | 止盈触发率（仅统计配置了止盈的记录） |
 
 ---
@@ -1100,10 +1124,10 @@ FastAPI 提供 RESTful API 服务，支持配置管理和触发分析。
 
 ### 启动方式
 
-| 命令 | 说明 |
-|------|------|
-| `python main.py --serve` | 启动 API 服务 + 执行一次完整分析 |
-| `python main.py --serve-only` | 仅启动 API 服务，手动触发分析 |
+| 命令                          | 说明                             |
+| ----------------------------- | -------------------------------- |
+| `python main.py --serve`      | 启动 API 服务 + 执行一次完整分析 |
+| `python main.py --serve-only` | 仅启动 API 服务，手动触发分析    |
 
 ### 功能特性
 
@@ -1117,23 +1141,23 @@ FastAPI 提供 RESTful API 服务，支持配置管理和触发分析。
 
 ### API 接口
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/api/v1/analysis/analyze` | POST | 触发股票分析 |
-| `/api/v1/analysis/market-review` | POST | 后台触发大盘复盘；请求体可传 `{"send_notification": true}`；与 `main.py --market-review` 与 `bot` 复用同一套 `GeminiAnalyzer/SearchService/NotificationService` 组装语义 |
-| `/api/v1/analysis/tasks` | GET | 查询任务列表 |
-| `/api/v1/analysis/tasks/stream` | GET (SSE) | 订阅任务实时状态流 |
-| `/api/v1/analysis/status/{task_id}` | GET | 查询任务状态 |
-| `/api/v1/history` | GET | 查询分析历史 |
-| `/api/v1/usage/summary?period=today|month|all` | GET | 按调用类型与模型维度汇总 LLM 调用次数和 Token 用量 |
-| `/api/v1/backtest/run` | POST | 触发回测 |
-| `/api/v1/backtest/results` | GET | 查询回测结果（分页） |
-| `/api/v1/backtest/performance` | GET | 获取整体回测表现 |
-| `/api/v1/backtest/performance/{code}` | GET | 获取单股回测表现 |
-| `/api/v1/stocks/extract-from-image` | POST | 从图片提取股票代码（multipart，超时 60s） |
-| `/api/v1/stocks/parse-import` | POST | 解析 CSV/Excel/剪贴板（multipart file 或 JSON `{"text":"..."}`，文件≤2MB，文本≤100KB） |
-| `/api/health` | GET | 健康检查 |
-| `/docs` | GET | API Swagger 文档 |
+| 接口                                  | 方法      | 说明                                                                                                                                                                     |
+| ------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- | -------------------------------------------------- |
+| `/api/v1/analysis/analyze`            | POST      | 触发股票分析                                                                                                                                                             |
+| `/api/v1/analysis/market-review`      | POST      | 后台触发大盘复盘；请求体可传 `{"send_notification": true}`；与 `main.py --market-review` 与 `bot` 复用同一套 `GeminiAnalyzer/SearchService/NotificationService` 组装语义 |
+| `/api/v1/analysis/tasks`              | GET       | 查询任务列表                                                                                                                                                             |
+| `/api/v1/analysis/tasks/stream`       | GET (SSE) | 订阅任务实时状态流                                                                                                                                                       |
+| `/api/v1/analysis/status/{task_id}`   | GET       | 查询任务状态                                                                                                                                                             |
+| `/api/v1/history`                     | GET       | 查询分析历史                                                                                                                                                             |
+| `/api/v1/usage/summary?period=today   | month     | all`                                                                                                                                                                     | GET | 按调用类型与模型维度汇总 LLM 调用次数和 Token 用量 |
+| `/api/v1/backtest/run`                | POST      | 触发回测                                                                                                                                                                 |
+| `/api/v1/backtest/results`            | GET       | 查询回测结果（分页）                                                                                                                                                     |
+| `/api/v1/backtest/performance`        | GET       | 获取整体回测表现                                                                                                                                                         |
+| `/api/v1/backtest/performance/{code}` | GET       | 获取单股回测表现                                                                                                                                                         |
+| `/api/v1/stocks/extract-from-image`   | POST      | 从图片提取股票代码（multipart，超时 60s）                                                                                                                                |
+| `/api/v1/stocks/parse-import`         | POST      | 解析 CSV/Excel/剪贴板（multipart file 或 JSON `{"text":"..."}`，文件≤2MB，文本≤100KB）                                                                                   |
+| `/api/health`                         | GET       | 健康检查                                                                                                                                                                 |
+| `/docs`                               | GET       | API Swagger 文档                                                                                                                                                         |
 
 > 说明：`POST /api/v1/analysis/analyze` 在 `async_mode=false` 时仅支持单只股票；批量 `stock_codes` 需使用 `async_mode=true`。异步 `202` 响应对单股返回 `task_id`，对批量返回 `accepted` / `duplicates` 汇总结构。
 > 说明：`POST /api/v1/analysis/market-review` 采用后端与 CLI/Bot 共用的配置路径（`GeminiAnalyzer(config=...)` 与同样的搜索/提示词构造入口）。Provider 兼容路由会优先识别并使用 `litellm_model`、`llm_model_list`，若未配置则回退 legacy `GEMINI_*`、`OPENAI_*`、`ANTHROPIC_*`、`DEEPSEEK_*` 键；不会新增/调整 provider、Base URL 或 LiteLLM 路由语义。
@@ -1141,6 +1165,7 @@ FastAPI 提供 RESTful API 服务，支持配置管理和触发分析。
 > 说明：该端点若返回 `task_id`，WebUI 会轮询 `GET /api/v1/analysis/status/{task_id}` 展示状态。状态为 `completed` 时给出完成提示（报告已生成并按配置推送），状态为 `failed` 时在前端错误区域显示 `error` 原因。
 
 > 兼容性审计证据：
+>
 > - 官方来源：LiteLLM OpenAI-compatible provider 文档 <https://docs.litellm.ai/docs/providers/openai_compatible>；OpenAI Chat API 文档 <https://platform.openai.com/docs/api-reference/chat/create>；DeepSeek API 文档 <https://api-docs.deepseek.com/>。
 > - 依赖版本：项目约束为 `litellm>=1.80.10,!=1.82.7,!=1.82.8,<2.0.0`（见 `requirements.txt`），以上兼容语义回归测试在该版本窗口内执行。
 > - 可复核测试：
@@ -1151,10 +1176,11 @@ FastAPI 提供 RESTful API 服务，支持配置管理和触发分析。
 
 > 进度流说明：`GET /api/v1/analysis/tasks/stream` 除 `task_created / task_started / task_completed / task_failed` 外，新增 `task_progress` 事件。普通分析链路会在“行情准备 / 新闻检索 / 上下文整理 / LLM 生成 / 报告保存”等阶段持续更新 `progress` 与 `message`。LiteLLM 流式返回仅在服务端累积完整文本，最终 JSON 解析成功后才会持久化历史报告；若流式在首个 chunk 前不可用，会自动回退到原非流式调用；若已产生部分 chunk 后失败，系统先尝试同模型非流式重试，失败后再按既有主模型->备用模型顺序继续尝试。  
 > 如果任务进度回调异常，主链路不会中断，系统会提升告警为 warning 级别并在服务端日志中输出完整异常，便于排查 SSE 推送断点。
->  
+>
 > 说明：该特性属于运行时 SSE 与回退链路细节，优先记录于完整指南（`full-guide*.md`），不在 `README.md` 中展开详细行为分支。
 
 **调用示例**：
+
 ```bash
 # 健康检查
 curl http://127.0.0.1:8000/api/health
@@ -1200,13 +1226,13 @@ python main.py --serve-only --host 0.0.0.0 --port 8888
 
 ### 支持的股票代码格式
 
-| 类型 | 格式 | 示例 |
-|------|------|------|
-| A股 | 6位数字 | `600519`、`000001`、`300750` |
-| 北交所 | 8/4/92 开头 6 位，支持 `BJ` 前缀或 `.BJ` 后缀 | `920748`、`BJ920493`、`920493.BJ` |
-| 港股 | hk + 5位数字 | `hk00700`、`hk09988` |
-| 美股 | 1-5 字母（可选 .X 后缀） | `AAPL`、`TSLA`、`BRK.B` |
-| 美股指数 | SPX/DJI/IXIC 等 | `SPX`、`DJI`、`NASDAQ`、`VIX` |
+| 类型     | 格式                                          | 示例                              |
+| -------- | --------------------------------------------- | --------------------------------- |
+| A股      | 6位数字                                       | `600519`、`000001`、`300750`      |
+| 北交所   | 8/4/92 开头 6 位，支持 `BJ` 前缀或 `.BJ` 后缀 | `920748`、`BJ920493`、`920493.BJ` |
+| 港股     | hk + 5位数字                                  | `hk00700`、`hk09988`              |
+| 美股     | 1-5 字母（可选 .X 后缀）                      | `AAPL`、`TSLA`、`BRK.B`           |
+| 美股指数 | SPX/DJI/IXIC 等                               | `SPX`、`DJI`、`NASDAQ`、`VIX`     |
 
 ### 注意事项
 
@@ -1221,15 +1247,19 @@ python main.py --serve-only --host 0.0.0.0 --port 8888
 ## 常见问题
 
 ### Q: 推送消息被截断？
+
 A: 企业微信/飞书有消息长度限制，系统已自动分段发送。如需完整内容，可配置飞书云文档功能。
 
 ### Q: 数据获取失败？
+
 A: AkShare 使用爬虫机制，可能被临时限流。系统已配置重试机制，一般等待几分钟后重试即可。
 
 ### Q: 如何添加自选股？
+
 A: 修改 `STOCK_LIST` 环境变量，多个代码用逗号分隔。
 
 ### Q: GitHub Actions 没有执行？
+
 A: 检查是否启用了 Actions，以及 cron 表达式是否正确（注意是 UTC 时间）。
 
 ---
@@ -1250,11 +1280,11 @@ A: 检查是否启用了 Actions，以及 cron 表达式是否正确（注意是
 
 > 兼容与迁移说明：本节记录当前事件告警规则（含 `price_change_percent`）运行时行为，未变更模型名、provider、Base URL、LiteLLM、`OPENAI_*`、`DEEPSEEK_*`、`GEMINI_*` 等外部模型/API 配置语义。若需回退，删除或关闭 `AGENT_EVENT_MONITOR_ENABLED` 即可恢复到旧行为。
 
-| `alert_type` | 方向字段 | 阈值字段 | 说明 |
-| --- | --- | --- | --- |
-| `price_cross` | `above` / `below` | `price` | 当前价上破或下破指定价格 |
-| `price_change_percent` | `up` / `down` | `change_pct` | 涨跌幅达到指定百分比 |
-| `volume_spike` | - | `multiplier` | 最新成交量超过近 20 日均量的指定倍数 |
+| `alert_type`           | 方向字段          | 阈值字段     | 说明                                 |
+| ---------------------- | ----------------- | ------------ | ------------------------------------ |
+| `price_cross`          | `above` / `below` | `price`      | 当前价上破或下破指定价格             |
+| `price_change_percent` | `up` / `down`     | `change_pct` | 涨跌幅达到指定百分比                 |
+| `volume_spike`         | -                 | `multiplier` | 最新成交量超过近 20 日均量的指定倍数 |
 
 示例：
 
@@ -1276,18 +1306,18 @@ AGENT_EVENT_ALERT_RULES_JSON=[{"stock_code":"600519","alert_type":"price_cross",
 
 ### 相关接口
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/api/v1/portfolio/snapshot` | GET | 查询持仓快照 |
-| `/api/v1/portfolio/risk` | GET | 查询风险摘要 |
-| `/api/v1/portfolio/trades` | GET | 分页查询交易记录 |
-| `/api/v1/portfolio/cash-ledger` | GET | 分页查询现金流水 |
-| `/api/v1/portfolio/corporate-actions` | GET | 分页查询公司行动 |
-| `/api/v1/portfolio/imports/csv/brokers` | GET | 查询内建 CSV 券商解析器 |
-| `/api/v1/portfolio/fx/refresh` | POST | 手动刷新汇率缓存 |
-| `/api/v1/portfolio/trades/{trade_id}` | DELETE | 删除交易记录 |
-| `/api/v1/portfolio/cash-ledger/{entry_id}` | DELETE | 删除现金流水 |
-| `/api/v1/portfolio/corporate-actions/{action_id}` | DELETE | 删除公司行动 |
+| 接口                                              | 方法   | 说明                    |
+| ------------------------------------------------- | ------ | ----------------------- |
+| `/api/v1/portfolio/snapshot`                      | GET    | 查询持仓快照            |
+| `/api/v1/portfolio/risk`                          | GET    | 查询风险摘要            |
+| `/api/v1/portfolio/trades`                        | GET    | 分页查询交易记录        |
+| `/api/v1/portfolio/cash-ledger`                   | GET    | 分页查询现金流水        |
+| `/api/v1/portfolio/corporate-actions`             | GET    | 分页查询公司行动        |
+| `/api/v1/portfolio/imports/csv/brokers`           | GET    | 查询内建 CSV 券商解析器 |
+| `/api/v1/portfolio/fx/refresh`                    | POST   | 手动刷新汇率缓存        |
+| `/api/v1/portfolio/trades/{trade_id}`             | DELETE | 删除交易记录            |
+| `/api/v1/portfolio/cash-ledger/{entry_id}`        | DELETE | 删除现金流水            |
+| `/api/v1/portfolio/corporate-actions/{action_id}` | DELETE | 删除公司行动            |
 
 > 查询类接口统一支持 `account_id`、`date_from`、`date_to`、`page`、`page_size` 等常见筛选参数；事件列表会返回统一的 `items`、`total`、`page`、`page_size` 结构。
 

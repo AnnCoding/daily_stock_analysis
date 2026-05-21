@@ -40,25 +40,25 @@
 
 ## ✨ 功能特性
 
-| 能力 | 覆蓋內容 |
-|------|------|
-| AI 決策報告 | 核心結論、評分、趨勢、買賣點位、風險警報、催化因素、操作檢查清單 |
-| 多市場數據聚合 | A股、港股、美股、ETF；行情、K 線、技術指標、資金流、籌碼、新聞、公告和基本面 |
-| Web / 桌面工作台 | 手動分析、任務進度、歷史報告、完整 Markdown、回測、持倉、配置管理、淺色 / 深色主題 |
-| Agent 策略問股 | 多輪追問，支援均線、纏論、波浪、趨勢等 11 種內建策略，覆蓋 Web/Bot/API |
-| 智能匯入與補全 | 圖片、CSV/Excel、剪貼簿匯入；股票代碼/名稱/拼音/別名補全 |
-| 自動化與推送 | GitHub Actions、Docker、本地定時任務、FastAPI 服務和企業微信/飛書/Telegram/Discord/Slack/郵件推送 |
+| 能力             | 覆蓋內容                                                                                          |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| AI 決策報告      | 核心結論、評分、趨勢、買賣點位、風險警報、催化因素、操作檢查清單                                  |
+| 多市場數據聚合   | A股、港股、美股、ETF；行情、K 線、技術指標、資金流、籌碼、新聞、公告和基本面                      |
+| Web / 桌面工作台 | 手動分析、任務進度、歷史報告、完整 Markdown、回測、持倉、配置管理、淺色 / 深色主題                |
+| Agent 策略問股   | 多輪追問，支援均線、纏論、波浪、趨勢等 11 種內建策略，覆蓋 Web/Bot/API                            |
+| 智能匯入與補全   | 圖片、CSV/Excel、剪貼簿匯入；股票代碼/名稱/拼音/別名補全                                          |
+| 自動化與推送     | GitHub Actions、Docker、本地定時任務、FastAPI 服務和企業微信/飛書/Telegram/Discord/Slack/郵件推送 |
 
 > 功能細節、欄位契約、基本面 P0 超時語義、交易紀律、數據源優先級、Web/API 行為請看 [完整配置與部署指南](./full-guide.md)。
 
 ### 技術棧與數據來源
 
-| 類型 | 支援 |
-|------|------|
-| AI 模型 | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC)、[AIHubMix](https://aihubmix.com/?aff=CfMq)、Gemini、OpenAI 兼容、DeepSeek、通義千問、Claude、Ollama 本地模型等 |
-| 行情數據 | [TickFlow](https://tickflow.org/auth/register?ref=WDSGSPS5XC)、AkShare、Tushare、Pytdx、Baostock、YFinance、Longbridge |
+| 類型     | 支援                                                                                                                                                                                                                                                                                                        |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI 模型  | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC)、[AIHubMix](https://aihubmix.com/?aff=CfMq)、Gemini、OpenAI 兼容、DeepSeek、通義千問、Claude、Ollama 本地模型等                                                                                                                                     |
+| 行情數據 | [TickFlow](https://tickflow.org/auth/register?ref=WDSGSPS5XC)、AkShare、Tushare、Pytdx、Baostock、YFinance、Longbridge                                                                                                                                                                                      |
 | 新聞搜尋 | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC)、[SerpAPI](https://serpapi.com/baidu-search-api?utm_source=github_daily_stock_analysis)、[Tavily](https://tavily.com/)、[Bocha](https://open.bocha.cn/)、[Brave](https://brave.com/search/api/)、[MiniMax](https://platform.minimaxi.com/)、SearXNG |
-| 社交輿情 | [Stock Sentiment API](https://api.adanos.org/docs)（Reddit / X / Polymarket，僅美股，可選） |
+| 社交輿情 | [Stock Sentiment API](https://api.adanos.org/docs)（Reddit / X / Polymarket，僅美股，可選）                                                                                                                                                                                                                 |
 
 > 完整規則見 [數據源配置](./full-guide.md#数据源配置)。
 
@@ -80,49 +80,49 @@
 
 預設先選一個模型服務商並填寫 API Key；需要多模型、圖片識別、本地模型或高級路由時，再參考 [LLM 配置指南](./LLM_CONFIG_GUIDE.md)。
 
-| Secret 名稱 | 說明 | 必填 |
-|-------------|------|:----:|
-| `ANSPIRE_API_KEYS` | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC) API Key，一 Key 同時啟用全球熱門大模型和聯網搜尋，含本項目免費額度 | **推薦** |
-| `AIHUBMIX_KEY` | [AIHubMix](https://aihubmix.com/?aff=CfMq) API Key，一 Key 切換使用全系模型，本項目可享 10% 優惠 | **推薦** |
-| `GEMINI_API_KEY` | Google Gemini API Key | 可選 |
-| `ANTHROPIC_API_KEY` | Anthropic Claude API Key | 可選 |
-| `OPENAI_API_KEY` | OpenAI 兼容 API Key（支援 DeepSeek、通義千問等） | 可選 |
-| `OPENAI_BASE_URL` / `OPENAI_MODEL` | 使用 OpenAI 兼容服務時填寫 | 可選 |
+| Secret 名稱                        | 說明                                                                                                                       |   必填   |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | :------: |
+| `ANSPIRE_API_KEYS`                 | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC) API Key，一 Key 同時啟用全球熱門大模型和聯網搜尋，含本項目免費額度 | **推薦** |
+| `AIHUBMIX_KEY`                     | [AIHubMix](https://aihubmix.com/?aff=CfMq) API Key，一 Key 切換使用全系模型，本項目可享 10% 優惠                           | **推薦** |
+| `GEMINI_API_KEY`                   | Google Gemini API Key                                                                                                      |   可選   |
+| `ANTHROPIC_API_KEY`                | Anthropic Claude API Key                                                                                                   |   可選   |
+| `OPENAI_API_KEY`                   | OpenAI 兼容 API Key（支援 DeepSeek、通義千問等）                                                                           |   可選   |
+| `OPENAI_BASE_URL` / `OPENAI_MODEL` | 使用 OpenAI 兼容服務時填寫                                                                                                 |   可選   |
 
 > Ollama 更適合本地 / Docker 部署，GitHub Actions 推薦使用雲端 API。
 
 **通知渠道配置（至少配置一個）**
 
-| Secret 名稱 | 說明 |
-|-------------|------|
-| `WECHAT_WEBHOOK_URL` | 企業微信機器人 |
-| `FEISHU_WEBHOOK_URL` | 飛書機器人 |
-| `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` | Telegram |
-| `DISCORD_WEBHOOK_URL` | Discord Webhook |
-| `SLACK_BOT_TOKEN` + `SLACK_CHANNEL_ID` | Slack Bot |
-| `EMAIL_SENDER` + `EMAIL_PASSWORD` | 郵件推送 |
+| Secret 名稱                               | 說明            |
+| ----------------------------------------- | --------------- |
+| `WECHAT_WEBHOOK_URL`                      | 企業微信機器人  |
+| `FEISHU_WEBHOOK_URL`                      | 飛書機器人      |
+| `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` | Telegram        |
+| `DISCORD_WEBHOOK_URL`                     | Discord Webhook |
+| `SLACK_BOT_TOKEN` + `SLACK_CHANNEL_ID`    | Slack Bot       |
+| `EMAIL_SENDER` + `EMAIL_PASSWORD`         | 郵件推送        |
 
 更多渠道、簽名校驗、分組郵件、Markdown 轉圖片等配置見 [通知渠道詳細配置](./full-guide.md#通知渠道详细配置)。
 
 **自選股配置（必填）**
 
-| Secret 名稱 | 說明 | 必填 |
-|-------------|------|:----:|
-| `STOCK_LIST` | 自選股代碼，如 `600519,hk00700,AAPL,TSLA` | ✅ |
+| Secret 名稱  | 說明                                      | 必填 |
+| ------------ | ----------------------------------------- | :--: |
+| `STOCK_LIST` | 自選股代碼，如 `600519,hk00700,AAPL,TSLA` |  ✅  |
 
 **新聞源配置（推薦）**
 
 新聞源會顯著影響輿情、公告、事件和催化因素品質，建議至少配置一個搜尋服務。
 
-| Secret 名稱 | 說明 | 必填 |
-|-------------|------|:----:|
-| `ANSPIRE_API_KEYS` | [Anspire AI Search](https://aisearch.anspire.cn/)：中文內容特別優化，可增強 A 股分析效果；同一 Key 也可作為 Anspire 大模型網關兜底示例 | **推薦** |
-| `SERPAPI_API_KEYS` | [SerpAPI](https://serpapi.com/baidu-search-api?utm_source=github_daily_stock_analysis)：搜尋引擎結果補強，適合即時金融新聞 | **推薦** |
-| `TAVILY_API_KEYS` | [Tavily](https://tavily.com/)：通用新聞搜尋 API | 可選 |
-| `BOCHA_API_KEYS` | [博查搜尋](https://open.bocha.cn/)：中文搜尋優化，支援 AI 摘要 | 可選 |
-| `BRAVE_API_KEYS` | [Brave Search](https://brave.com/search/api/)：隱私優先，美股資訊補強 | 可選 |
-| `MINIMAX_API_KEYS` | [MiniMax](https://platform.minimaxi.com/)：結構化搜尋結果 | 可選 |
-| `SEARXNG_BASE_URLS` | SearXNG 自建實例：無配額兜底，適合私有部署 | 可選 |
+| Secret 名稱         | 說明                                                                                                                                   |   必填   |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | :------: |
+| `ANSPIRE_API_KEYS`  | [Anspire AI Search](https://aisearch.anspire.cn/)：中文內容特別優化，可增強 A 股分析效果；同一 Key 也可作為 Anspire 大模型網關兜底示例 | **推薦** |
+| `SERPAPI_API_KEYS`  | [SerpAPI](https://serpapi.com/baidu-search-api?utm_source=github_daily_stock_analysis)：搜尋引擎結果補強，適合即時金融新聞             | **推薦** |
+| `TAVILY_API_KEYS`   | [Tavily](https://tavily.com/)：通用新聞搜尋 API                                                                                        |   可選   |
+| `BOCHA_API_KEYS`    | [博查搜尋](https://open.bocha.cn/)：中文搜尋優化，支援 AI 摘要                                                                         |   可選   |
+| `BRAVE_API_KEYS`    | [Brave Search](https://brave.com/search/api/)：隱私優先，美股資訊補強                                                                  |   可選   |
+| `MINIMAX_API_KEYS`  | [MiniMax](https://platform.minimaxi.com/)：結構化搜尋結果                                                                              |   可選   |
+| `SEARXNG_BASE_URLS` | SearXNG 自建實例：無配額兜底，適合私有部署                                                                                             |   可選   |
 
 更多搜尋源、社交輿情和降級規則見 [搜尋服務配置](./full-guide.md#搜索服务配置)。
 
@@ -195,6 +195,7 @@ python main.py --serve-only
 🎯 2026-01-10 大盤復盤
 
 📊 主要指數
+
 - 上證指數: 3250.12 (+0.85%)
 - 深證成指: 10521.36 (+1.02%)
 - 創業板指: 2156.78 (+1.35%)
@@ -233,10 +234,10 @@ python main.py --webui-only
 
 > DSA 聚焦日常分析報告；以下兩個同系列項目分別覆蓋選股、策略驗證與策略進化，適合按需延伸使用。它們目前獨立維護，後續會優先探索與 DSA 的候選股導入、回測驗證和報告聯動。
 
-| 項目 | 定位 |
-|------|------|
-| [AlphaSift](https://github.com/ZhuLinsen/alphasift) | 多因子選股與全市場掃描，用於從股票池中整理候選標的 |
-| [AlphaEvo](https://github.com/ZhuLinsen/alphaevo) | 策略回測與自我進化，用於驗證策略規則，並透過迭代探索策略參數與組合 |
+| 項目                                                | 定位                                                               |
+| --------------------------------------------------- | ------------------------------------------------------------------ |
+| [AlphaSift](https://github.com/ZhuLinsen/alphasift) | 多因子選股與全市場掃描，用於從股票池中整理候選標的                 |
+| [AlphaEvo](https://github.com/ZhuLinsen/alphaevo)   | 策略回測與自我進化，用於驗證策略規則，並透過迭代探索策略參數與組合 |
 
 ## 📬 聯繫與合作
 

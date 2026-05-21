@@ -1,4 +1,4 @@
-import camelcaseKeys from 'camelcase-keys';
+import camelcaseKeys from "camelcase-keys";
 
 /**
  * 将 snake_case 对象键转换为 camelCase
@@ -6,8 +6,8 @@ import camelcaseKeys from 'camelcase-keys';
  * @returns 转换后的 camelCase 对象
  */
 export function toCamelCase<T>(data: unknown): T {
-    if (data === null || data === undefined) {
-        return data as T;
-    }
-    return camelcaseKeys(data as Record<string, unknown>, { deep: true }) as T;
+  if (data === null || data === undefined) {
+    return data as T;
+  }
+  return camelcaseKeys(data as Record<string, unknown>, { deep: true }) as T;
 }

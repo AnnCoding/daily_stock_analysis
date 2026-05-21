@@ -1,11 +1,14 @@
-import type React from 'react';
-import { useCallback, useRef, useState } from 'react';
-import { getParsedApiError } from '../../api/error';
-import { stocksApi, type ExtractItem } from '../../api/stocks';
-import { systemConfigApi, SystemConfigConflictError } from '../../api/systemConfig';
-import { Badge, Button, InlineAlert } from '../common';
+import type React from "react";
+import { useCallback, useRef, useState } from "react";
+import { getParsedApiError } from "../../api/error";
+import { stocksApi, type ExtractItem } from "../../api/stocks";
+import {
+  systemConfigApi,
+  SystemConfigConflictError,
+} from "../../api/systemConfig";
+import { Badge, Button, InlineAlert } from "../common";
 
-const IMG_EXT = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+const IMG_EXT = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
 const IMG_MAX = 5 * 1024 * 1024; // 5MB
 const FILE_MAX = 2 * 1024 * 1024; // 2MB
 const TEXT_MAX = 100 * 1024; // 100KB
@@ -20,29 +23,35 @@ interface IntelligentImportProps {
 
 type ItemWithChecked = ExtractItem & { id: string; checked: boolean };
 
-function getConfidenceMeta(confidence: 'high' | 'medium' | 'low') {
-  if (confidence === 'high') {
-    return { label: '高', badge: 'success' as const };
+function getConfidenceMeta(confidence: "high" | "medium" | "low") {
+  if (confidence === "high") {
+    return { label: "高", badge: "success" as const };
   }
-  if (confidence === 'low') {
-    return { label: '低', badge: 'warning' as const };
+  if (confidence === "low") {
+    return { label: "低", badge: "warning" as const };
   }
-  return { label: '中', badge: 'default' as const };
+  return { label: "中", badge: "default" as const };
 }
 
-function normalizeConfidence(confidence?: string | null): 'high' | 'medium' | 'low' {
-  if (confidence === 'high' || confidence === 'low' || confidence === 'medium') {
+function normalizeConfidence(
+  confidence?: string | null,
+): "high" | "medium" | "low" {
+  if (
+    confidence === "high" ||
+    confidence === "low" ||
+    confidence === "medium"
+  ) {
     return confidence;
   }
-  return 'medium';
+  return "medium";
 }
 
 function mergeItems(
   prev: ItemWithChecked[],
-  newItems: ExtractItem[]
+  newItems: ExtractItem[],
 ): ItemWithChecked[] {
   const byCode = new Map<string, ItemWithChecked>();
-  const confOrder: Record<'high' | 'medium' | 'low', number> = {
+  const confOrder: Record<"high" | "medium" | "low", number> = {
     high: 3,
     medium: 2,
     low: 1,
@@ -64,20 +73,25 @@ function mergeItems(
           ...it,
           confidence: normalizedConfidence,
           id: `${it.code}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-          checked: normalizedConfidence === 'high',
+          checked: normalizedConfidence === "high",
         });
       } else {
         const existingConfidence = normalizeConfidence(existing.confidence);
-        const shouldUpgradeConfidence = confOrder[normalizedConfidence] > confOrder[existingConfidence];
+        const shouldUpgradeConfidence =
+          confOrder[normalizedConfidence] > confOrder[existingConfidence];
         const shouldFillName = !existing.name && !!it.name;
 
         if (shouldUpgradeConfidence || shouldFillName) {
           byCode.set(it.code, {
             ...existing,
             name: it.name || existing.name,
-            confidence: shouldUpgradeConfidence ? normalizedConfidence : existingConfidence,
+            confidence: shouldUpgradeConfidence
+              ? normalizedConfidence
+              : existingConfidence,
             checked: shouldUpgradeConfidence
-              ? (normalizedConfidence === 'high' ? true : existing.checked)
+              ? normalizedConfidence === "high"
+                ? true
+                : existing.checked
               : existing.checked,
           });
         }
@@ -106,13 +120,13 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
   const [isMerging, setIsMerging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [pasteText, setPasteText] = useState('');
+  const [pasteText, setPasteText] = useState("");
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const dataFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const parseCurrentList = useCallback(() => {
     return stockListValue
-      .split(',')
+      .split(",")
       .map((c) => c.trim())
       .filter(Boolean);
   }, [stockListValue]);
@@ -123,26 +137,38 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
 
   const handleImageFile = useCallback(
     async (file: File) => {
-      const ext = '.' + (file.name.split('.').pop() ?? '').toLowerCase();
+      const ext = "." + (file.name.split(".").pop() ?? "").toLowerCase();
       if (!IMG_EXT.includes(ext)) {
-        setError('图片仅支持 JPG、PNG、WebP、GIF');
+        setError("图片仅支持 JPG、PNG、WebP、GIF");
         return;
       }
       if (file.size > IMG_MAX) {
-        setError('图片不超过 5MB');
+        setError("图片不超过 5MB");
         return;
       }
       setError(null);
       setIsLoading(true);
       try {
         const res = await stocksApi.extractFromImage(file);
-        addItems(res.items ?? res.codes.map((c) => ({ code: c, name: null, confidence: 'medium' })));
+        addItems(
+          res.items ??
+            res.codes.map((c) => ({
+              code: c,
+              name: null,
+              confidence: "medium",
+            })),
+        );
       } catch (e) {
         const parsed = getParsedApiError(e);
-        const err = e && typeof e === 'object' ? (e as { response?: { status?: number }; code?: string }) : null;
-        let fallback = '识别失败，请重试';
-        if (err?.response?.status === 429) fallback = '请求过于频繁，请稍后再试';
-        else if (err?.code === 'ECONNABORTED') fallback = '请求超时，请检查网络后重试';
+        const err =
+          e && typeof e === "object"
+            ? (e as { response?: { status?: number }; code?: string })
+            : null;
+        let fallback = "识别失败，请重试";
+        if (err?.response?.status === 429)
+          fallback = "请求过于频繁，请稍后再试";
+        else if (err?.code === "ECONNABORTED")
+          fallback = "请求超时，请检查网络后重试";
         setError(parsed.message || fallback);
       } finally {
         setIsLoading(false);
@@ -154,17 +180,24 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
   const handleDataFile = useCallback(
     async (file: File) => {
       if (file.size > FILE_MAX) {
-        setError('文件不超过 2MB');
+        setError("文件不超过 2MB");
         return;
       }
       setError(null);
       setIsLoading(true);
       try {
         const res = await stocksApi.parseImport(file);
-        addItems(res.items ?? res.codes.map((c) => ({ code: c, name: null, confidence: 'medium' })));
+        addItems(
+          res.items ??
+            res.codes.map((c) => ({
+              code: c,
+              name: null,
+              confidence: "medium",
+            })),
+        );
       } catch (e) {
         const parsed = getParsedApiError(e);
-        setError(parsed.message || '解析失败');
+        setError(parsed.message || "解析失败");
       } finally {
         setIsLoading(false);
       }
@@ -176,7 +209,7 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
     const t = pasteText.trim();
     if (!t) return;
     if (new Blob([t]).size > TEXT_MAX) {
-      setError('粘贴文本不超过 100KB');
+      setError("粘贴文本不超过 100KB");
       return;
     }
     setError(null);
@@ -184,12 +217,19 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
     stocksApi
       .parseImport(undefined, t)
       .then((res) => {
-        addItems(res.items ?? res.codes.map((c) => ({ code: c, name: null, confidence: 'medium' })));
-        setPasteText('');
+        addItems(
+          res.items ??
+            res.codes.map((c) => ({
+              code: c,
+              name: null,
+              confidence: "medium",
+            })),
+        );
+        setPasteText("");
       })
       .catch((e) => {
         const parsed = getParsedApiError(e);
-        setError(parsed.message || '解析失败');
+        setError(parsed.message || "解析失败");
       })
       .finally(() => setIsLoading(false));
   }, [pasteText, addItems]);
@@ -201,7 +241,7 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
       if (disabled || isLoading) return;
       const f = e.dataTransfer?.files?.[0];
       if (!f) return;
-      const ext = '.' + (f.name.split('.').pop() ?? '').toLowerCase();
+      const ext = "." + (f.name.split(".").pop() ?? "").toLowerCase();
       if (IMG_EXT.includes(ext)) void handleImageFile(f);
       else void handleDataFile(f);
     },
@@ -212,7 +252,7 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const f = e.target.files?.[0];
       if (f) void handleImageFile(f);
-      e.target.value = '';
+      e.target.value = "";
     },
     [handleImageFile],
   );
@@ -221,20 +261,27 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const f = e.target.files?.[0];
       if (f) void handleDataFile(f);
-      e.target.value = '';
+      e.target.value = "";
     },
     [handleDataFile],
   );
 
-  const openFilePicker = useCallback((inputRef: React.RefObject<HTMLInputElement | null>) => {
-    if (disabled || isLoading) {
-      return;
-    }
-    inputRef.current?.click();
-  }, [disabled, isLoading]);
+  const openFilePicker = useCallback(
+    (inputRef: React.RefObject<HTMLInputElement | null>) => {
+      if (disabled || isLoading) {
+        return;
+      }
+      inputRef.current?.click();
+    },
+    [disabled, isLoading],
+  );
 
   const toggleChecked = useCallback((id: string) => {
-    setItems((prev) => prev.map((p) => (p.id === id && p.code ? { ...p, checked: !p.checked } : p)));
+    setItems((prev) =>
+      prev.map((p) =>
+        p.id === id && p.code ? { ...p, checked: !p.checked } : p,
+      ),
+    );
   }, []);
 
   const toggleAll = useCallback((checked: boolean) => {
@@ -247,20 +294,22 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
 
   const clearAll = useCallback(() => {
     setItems([]);
-    setPasteText('');
+    setPasteText("");
     setError(null);
   }, []);
 
   const mergeToWatchlist = useCallback(async () => {
-    const toMerge = items.filter((i) => i.checked && i.code).map((i) => i.code!);
+    const toMerge = items
+      .filter((i) => i.checked && i.code)
+      .map((i) => i.code!);
     if (toMerge.length === 0) return;
     if (!configVersion) {
-      setError('请先加载配置后再合并');
+      setError("请先加载配置后再合并");
       return;
     }
     const current = parseCurrentList();
     const merged = [...new Set([...current, ...toMerge])];
-    const value = merged.join(',');
+    const value = merged.join(",");
 
     setIsMerging(true);
     setError(null);
@@ -269,17 +318,17 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
         configVersion,
         maskToken,
         reloadNow: true,
-        items: [{ key: 'STOCK_LIST', value }],
+        items: [{ key: "STOCK_LIST", value }],
       });
       setItems([]);
-      setPasteText('');
+      setPasteText("");
       await onMerged(value);
     } catch (e) {
       if (e instanceof SystemConfigConflictError) {
         await onMerged(value);
-        setError('配置已更新，请再次点击「合并到自选股」');
+        setError("配置已更新，请再次点击「合并到自选股」");
       } else {
-        setError(e instanceof Error ? e.message : '合并保存失败');
+        setError(e instanceof Error ? e.message : "合并保存失败");
       }
     } finally {
       setIsMerging(false);
@@ -292,19 +341,30 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
   return (
     <div className="space-y-4">
       <div className="settings-surface-panel settings-border-strong rounded-xl border p-4 shadow-soft-card">
-        <p className="text-sm font-medium text-foreground">支持图片、CSV/Excel 文件与剪贴板文本</p>
+        <p className="text-sm font-medium text-foreground">
+          支持图片、CSV/Excel 文件与剪贴板文本
+        </p>
         <p className="mt-1 text-xs leading-5 text-secondary-text">
-          图片识别需预先配置 Vision 模型。建议先人工核对解析结果，再合并到自选股。
+          图片识别需预先配置 Vision
+          模型。建议先人工核对解析结果，再合并到自选股。
         </p>
       </div>
 
       <div
         onDrop={onDrop}
-        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-        onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+        }}
         className={`flex min-h-[96px] flex-col gap-4 rounded-xl border border-dashed  p-4 transition-colors ${
-          isDragging ? 'settings-drag-active' : 'settings-border-strong settings-surface-overlay-soft'
-        } ${disabled || isLoading ? 'cursor-not-allowed opacity-60' : ''}`}
+          isDragging
+            ? "settings-drag-active"
+            : "settings-border-strong settings-surface-overlay-soft"
+        } ${disabled || isLoading ? "cursor-not-allowed opacity-60" : ""}`}
       >
         <div className="flex flex-wrap items-center gap-2">
           <Button
@@ -381,13 +441,25 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
               共 {validCount} 条可合并，已勾选 {checkedCount} 条
             </span>
             <div className="flex gap-2">
-              <button type="button" className="text-xs text-secondary-text transition-colors hover:text-foreground" onClick={() => toggleAll(true)}>
+              <button
+                type="button"
+                className="text-xs text-secondary-text transition-colors hover:text-foreground"
+                onClick={() => toggleAll(true)}
+              >
                 全选
               </button>
-              <button type="button" className="text-xs text-secondary-text transition-colors hover:text-foreground" onClick={() => toggleAll(false)}>
+              <button
+                type="button"
+                className="text-xs text-secondary-text transition-colors hover:text-foreground"
+                onClick={() => toggleAll(false)}
+              >
                 取消
               </button>
-              <button type="button" className="text-xs text-secondary-text transition-colors hover:text-foreground" onClick={clearAll}>
+              <button
+                type="button"
+                className="text-xs text-secondary-text transition-colors hover:text-foreground"
+                onClick={clearAll}
+              >
                 清空
               </button>
             </div>
@@ -401,7 +473,9 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
                 <div
                   key={it.id}
                   className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
-                    it.code ? 'settings-border bg-[var(--settings-surface-strong)]' : 'border-danger/25 bg-danger/10'
+                    it.code
+                      ? "settings-border bg-[var(--settings-surface-strong)]"
+                      : "border-danger/25 bg-danger/10"
                   }`}
                 >
                   <input
@@ -411,10 +485,18 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
                     disabled={!it.code || disabled}
                     className="settings-input-checkbox h-4 w-4 rounded border-border/70 bg-base"
                   />
-                  <span className={it.code ? 'font-medium text-foreground' : 'font-medium text-danger'}>
-                    {it.code || '解析失败'}
+                  <span
+                    className={
+                      it.code
+                        ? "font-medium text-foreground"
+                        : "font-medium text-danger"
+                    }
+                  >
+                    {it.code || "解析失败"}
                   </span>
-                  {it.name && <span className="text-secondary-text">({it.name})</span>}
+                  {it.name && (
+                    <span className="text-secondary-text">({it.name})</span>
+                  )}
                   <div className="ml-auto flex items-center gap-2">
                     <Badge variant={confidenceMeta.badge} size="sm">
                       {confidenceMeta.label}
@@ -439,7 +521,7 @@ export const IntelligentImport: React.FC<IntelligentImportProps> = ({
             onClick={() => void mergeToWatchlist()}
             disabled={disabled || isMerging || checkedCount === 0}
           >
-            {isMerging ? '保存中...' : '合并到自选股'}
+            {isMerging ? "保存中..." : "合并到自选股"}
           </Button>
         </div>
       )}

@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from bot.commands.base import BotCommand
 from bot.models import BotMessage, BotResponse
-from data_provider.base import canonical_stock_code
+from data_provider.base import canonical_stock_code, normalize_stock_code
 from src.config import get_config
 from src.storage import get_db
 
@@ -53,7 +53,7 @@ class AskCommand(BotCommand):
             return "", []
 
         code_like = re.compile(
-            r"^,?(\d{6}|hk\d{5}|[A-Za-z]{1,5}(\.[A-Za-z]{1,2})?),?$",
+            r"^,?(\d{6}|\d{5}(\.(HK|SS|SZ|SH|BJ))?|hk\d{1,5}|[A-Za-z]{1,5}(\.[A-Za-z]{1,2})?),?$",
             re.IGNORECASE,
         )
         raw_codes_parts = [args[0]]
@@ -87,8 +87,8 @@ class AskCommand(BotCommand):
 
     def _parse_stock_codes(self, raw: str) -> List[str]:
         """Parse one or more stock codes from the first argument."""
-        parts = [p.strip().upper() for p in raw.replace("，", ",").split(",") if p.strip()]
-        return [canonical_stock_code(part) for part in parts]
+        parts = [p.strip() for p in raw.replace("，", ",").split(",") if p.strip()]
+        return [normalize_stock_code(canonical_stock_code(part)) for part in parts]
 
     def _validate_single_code(self, code: str) -> Optional[str]:
         """Validate a single stock code format."""
@@ -96,9 +96,12 @@ class AskCommand(BotCommand):
         is_a_stock = re.match(r"^\d{6}$", normalized)
         is_hk_stock = re.match(r"^HK\d{5}$", normalized)
         is_us_stock = re.match(r"^[A-Z]{1,5}(\.[A-Z]{1,2})?$", normalized)
+        is_jj_fund = normalized.startswith("JJ") and len(normalized) == 8
+        # 5-digit pure number treated as HK stock (A-share codes are always 6 digits)
+        is_hk_5digit = re.match(r"^\d{5}$", normalized)
 
-        if not (is_a_stock or is_hk_stock or is_us_stock):
-            return f"无效的股票代码: {normalized}（A股6位数字 / 港股HK+5位数字 / 美股1-5个字母）"
+        if not (is_a_stock or is_hk_stock or is_us_stock or is_jj_fund or is_hk_5digit):
+            return f"无效的股票代码: {normalized}（A股6位数字 / 港股5位数字或HK+5位数字 / 美股1-5个字母）"
         return None
 
     def validate_args(self, args: List[str]) -> Optional[str]:

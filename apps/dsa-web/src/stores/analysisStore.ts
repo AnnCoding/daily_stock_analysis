@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import type { ParsedApiError } from '../api/error';
-import type { AnalysisResult, AnalysisReport } from '../types/analysis';
+import { create } from "zustand";
+import type { ParsedApiError } from "../api/error";
+import type { AnalysisResult, AnalysisReport } from "../types/analysis";
 
 interface AnalysisState {
   // 分析状态
