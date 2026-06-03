@@ -14,7 +14,10 @@ LongbridgeFetcher - 长桥兜底数据源 (Priority 5)
 3. 懒加载 QuoteContext，首次调用时才建立连接
 4. static_info 进程内短缓存，减少重复请求（默认 24h，可调；见 LONGBRIDGE_STATIC_INFO_TTL_SECONDS）
 
-凭证：`LONGBRIDGE_APP_KEY` / `LONGBRIDGE_APP_SECRET` / `LONGBRIDGE_ACCESS_TOKEN`。
+凭证（二选一）：
+  - OAuth 2.0（推荐）：通过 `OAuthBuilder` 浏览器授权，token 自动保存在 `~/.longbridge/openapi/tokens/<client_id>`。
+    环境变量 `LONGBRIDGE_OAUTH_CLIENT_ID` 指定 client_id。
+  - Legacy API Key：`LONGBRIDGE_APP_KEY` / `LONGBRIDGE_APP_SECRET` / `LONGBRIDGE_ACCESS_TOKEN`。
 可选：`LONGBRIDGE_STATIC_INFO_TTL_SECONDS`；SDK `language` 取自 `REPORT_LANGUAGE`，`log_path` 为 `{LOG_DIR}/longbridge_sdk.log`；
 `LONGBRIDGE_HTTP_URL` / `LONGBRIDGE_QUOTE_WS_URL` / `LONGBRIDGE_TRADE_WS_URL` / `LONGBRIDGE_REGION` （见官方文档默认值）。
 """
@@ -326,9 +329,19 @@ class LongbridgeFetcher(BaseFetcher):
         return True
 
     def _is_available(self) -> bool:
-        """Check if Longbridge credentials are configured."""
+        """Check if Longbridge credentials are configured (OAuth or Legacy API Key)."""
         if self._available is not None:
             return self._available
+
+        # OAuth 2.0: check client_id + saved token file
+        oauth_client_id = os.getenv("LONGBRIDGE_OAUTH_CLIENT_ID", "").strip()
+        if oauth_client_id:
+            token_path = Path.home() / ".longbridge" / "openapi" / "tokens" / oauth_client_id
+            if token_path.exists():
+                self._available = True
+                return True
+
+        # Legacy API Key
         try:
             from src.config import get_config
             config = get_config()
@@ -381,35 +394,45 @@ class LongbridgeFetcher(BaseFetcher):
                     if v and not os.environ.get(k):
                         os.environ[k] = v
 
-                # ── 3. Build Config ──
+                # ── 3. Build Config (OAuth preferred, fallback to API Key) ──
                 extra_kw = _longbridge_config_kwargs()
                 lb_config = None
 
-                # Prefer from_apikey_env() — reads all LONGBRIDGE_* env vars
-                # (credentials + URLs + options) including .env files.
-                # Available in longbridge >= 4.x.  from_env() only exists on
-                # the unreleased master branch.
-                for factory_name in ("from_apikey_env", "from_env"):
-                    factory = getattr(Config, factory_name, None)
-                    if factory is None:
-                        continue
+                # Try OAuth 2.0 first (token auto-loaded from saved file)
+                oauth_client_id = os.getenv("LONGBRIDGE_OAUTH_CLIENT_ID", "").strip()
+                if oauth_client_id:
                     try:
-                        lb_config = factory()
-                        logger.info("[Longbridge] Config.%s() 成功", factory_name)
-                        break
+                        from longbridge.openapi import OAuthBuilder
+                        oauth = OAuthBuilder(oauth_client_id).build(lambda url: None)
+                        lb_config = Config.from_oauth(oauth)
+                        logger.info("[Longbridge] OAuth 2.0 配置成功 (client_id=%s)", oauth_client_id)
                     except Exception as e:
-                        logger.debug(
-                            "[Longbridge] Config.%s() 失败: %s", factory_name, e
-                        )
+                        logger.debug("[Longbridge] OAuth 2.0 加载失败: %s", e)
+                        lb_config = None
 
+                # Fallback: Legacy API Key
                 if lb_config is None:
-                    lb_config = Config.from_apikey(
-                        app_key,
-                        app_secret,
-                        access_token,
-                        **extra_kw,
-                    )
-                    logger.info("[Longbridge] Config.from_apikey() 创建成功")
+                    for factory_name in ("from_apikey_env", "from_env"):
+                        factory = getattr(Config, factory_name, None)
+                        if factory is None:
+                            continue
+                        try:
+                            lb_config = factory()
+                            logger.info("[Longbridge] Config.%s() 成功", factory_name)
+                            break
+                        except Exception as e:
+                            logger.debug(
+                                "[Longbridge] Config.%s() 失败: %s", factory_name, e
+                            )
+
+                    if lb_config is None:
+                        lb_config = Config.from_apikey(
+                            app_key,
+                            app_secret,
+                            access_token,
+                            **extra_kw,
+                        )
+                        logger.info("[Longbridge] Config.from_apikey() 创建成功")
 
                 # Diagnostic logging
                 region = os.getenv("LONGBRIDGE_REGION") or os.getenv("LONGPORT_REGION") or "(auto)"

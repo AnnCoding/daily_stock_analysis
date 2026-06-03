@@ -1034,9 +1034,12 @@ class DataFetcherManager:
             logger.debug("[数据源初始化] 跳过未配置的 TushareFetcher")
 
         has_longbridge_creds = bool(
-            (getattr(config, "longbridge_app_key", None) or "").strip()
-            and (getattr(config, "longbridge_app_secret", None) or "").strip()
-            and (getattr(config, "longbridge_access_token", None) or "").strip()
+            (
+                (getattr(config, "longbridge_app_key", None) or "").strip()
+                and (getattr(config, "longbridge_app_secret", None) or "").strip()
+                and (getattr(config, "longbridge_access_token", None) or "").strip()
+            )
+            or (getattr(config, "longbridge_oauth_client_id", None) or "").strip()
         )
         if has_longbridge_creds:
             optional_fetchers.append(LongbridgeFetcher())  # 长桥（美股/港股兜底，懒加载）

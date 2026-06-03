@@ -31,6 +31,14 @@ _AKSHARE_LOCAL_CACHE_PATH = os.path.join(
     "data", "akshare_name_cache.json",
 )
 
+# AkShare HK stock cache: (timestamp, name_to_code_dict)
+_akshare_hk_cache: Optional[tuple[float, Dict[str, str]]] = None
+_AKSHARE_HK_CACHE_TTL = 1800  # 30 MIN
+_AKSHARE_HK_LOCAL_CACHE_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "data", "akshare_hk_name_cache.json",
+)
+
 # AkShare fund name cache: (timestamp, name_to_code_dict)
 _akshare_fund_cache: Optional[tuple[float, Dict[str, str]]] = None
 _AKSHARE_FUND_CACHE_TTL = 3600  # 60 MIN
@@ -143,6 +151,69 @@ def _get_akshare_name_to_code() -> Optional[Dict[str, str]]:
     return None
 
 
+def _get_akshare_hk_name_to_code() -> Optional[Dict[str, str]]:
+    """Fetch HK stock name->code from AkShare, with in-memory + file cache."""
+    global _akshare_hk_cache
+    now = time.time()
+    if _akshare_hk_cache is not None and (now - _akshare_hk_cache[0]) < _AKSHARE_HK_CACHE_TTL:
+        return _akshare_hk_cache[1]
+
+    try:
+        import akshare as ak
+
+        df = ak.stock_hk_spot_em()
+        if df is not None and not df.empty:
+            code_to_name = {}
+            for _, row in df.iterrows():
+                code = str(row.get("代码", "")).strip()
+                name = str(row.get("名称", "")).strip()
+                if not code or not name:
+                    continue
+                code = code.zfill(5)
+                code_to_name[code] = name
+            result = _build_reverse_map_no_duplicates(code_to_name)
+            _akshare_hk_cache = (now, result)
+            logger.info(f"[NameResolver] AkShare HK cache loaded: {len(result)} name->code mappings")
+            _save_cache_json(_AKSHARE_HK_LOCAL_CACHE_PATH, result)
+            return result
+    except Exception as e:
+        logger.warning(f"[NameResolver] AkShare HK fallback failed: {e}")
+
+    cached = _load_cache_json(_AKSHARE_HK_LOCAL_CACHE_PATH, min_entries=50)
+    if cached:
+        _akshare_hk_cache = (now, cached)
+        logger.info(f"[NameResolver] Using local HK file cache: {len(cached)} name->code mappings")
+        return cached
+    return None
+
+
+def _save_cache_json(path: str, data: Dict[str, str]) -> None:
+    """Persist name->code mapping to a local JSON file."""
+    try:
+        cache_dir = os.path.dirname(path)
+        os.makedirs(cache_dir, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False)
+        logger.debug("[NameResolver] Cache saved to %s", path)
+    except Exception as e:
+        logger.debug("[NameResolver] Failed to save cache to %s: %s", path, e)
+
+
+def _load_cache_json(path: str, min_entries: int = 100) -> Optional[Dict[str, str]]:
+    """Load name->code mapping from a local JSON file."""
+    try:
+        if not os.path.exists(path):
+            return None
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, dict) and len(data) > min_entries:
+            return data
+        return None
+    except Exception as e:
+        logger.debug("[NameResolver] Failed to load cache from %s: %s", path, e)
+        return None
+
+
 def _get_akshare_fund_name_to_code() -> Optional[Dict[str, str]]:
     """Fetch fund name->code from AkShare (ak.fund_name_em), with cache."""
     global _akshare_fund_cache
@@ -184,30 +255,11 @@ def _is_single_char_typo(input_name: str, candidate_name: str) -> bool:
 
 
 def _save_akshare_local_cache(data: Dict[str, str]) -> None:
-    """Persist name->code mapping to a local JSON file."""
-    try:
-        cache_dir = os.path.dirname(_AKSHARE_LOCAL_CACHE_PATH)
-        os.makedirs(cache_dir, exist_ok=True)
-        with open(_AKSHARE_LOCAL_CACHE_PATH, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False)
-        logger.debug("[NameResolver] Local cache saved to %s", _AKSHARE_LOCAL_CACHE_PATH)
-    except Exception as e:
-        logger.debug("[NameResolver] Failed to save local cache: %s", e)
+    _save_cache_json(_AKSHARE_LOCAL_CACHE_PATH, data)
 
 
 def _load_akshare_local_cache() -> Optional[Dict[str, str]]:
-    """Load name->code mapping from local JSON file."""
-    try:
-        if not os.path.exists(_AKSHARE_LOCAL_CACHE_PATH):
-            return None
-        with open(_AKSHARE_LOCAL_CACHE_PATH, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        if isinstance(data, dict) and len(data) > 100:
-            return data
-        return None
-    except Exception as e:
-        logger.debug("[NameResolver] Failed to load local cache: %s", e)
-        return None
+    return _load_cache_json(_AKSHARE_LOCAL_CACHE_PATH, min_entries=100)
 
 
 def resolve_name_to_code(name: str) -> Optional[str]:
@@ -266,16 +318,24 @@ def resolve_name_to_code(name: str) -> Optional[str]:
         logger.debug(f"[NameResolver] Skip CJK-only fallbacks for non-CJK input: {s}")
         return None
 
-    # 4. AkShare fallback
+    # 4. AkShare A-share fallback
     akshare_map = _get_akshare_name_to_code()
     if akshare_map and s in akshare_map:
-        logger.debug(f"[NameResolver] 命中 AkShare 映射: {s} -> {akshare_map[s]}")
+        logger.debug(f"[NameResolver] 命中 AkShare A股映射: {s} -> {akshare_map[s]}")
         return akshare_map[s]
 
-    # 5. Fuzzy match (local + akshare, local takes precedence)
+    # 4.5. AkShare HK stock fallback
+    akshare_hk_map = _get_akshare_hk_name_to_code()
+    if akshare_hk_map and s in akshare_hk_map:
+        logger.debug(f"[NameResolver] 命中 AkShare 港股映射: {s} -> {akshare_hk_map[s]}")
+        return akshare_hk_map[s]
+
+    # 5. Fuzzy match (local + akshare A-share + HK, local takes precedence)
     all_name_to_code = dict(local_reverse)
     if akshare_map:
         all_name_to_code.update(akshare_map)
+    if akshare_hk_map:
+        all_name_to_code.update(akshare_hk_map)
     # Skip fuzzy matching for very short inputs (<=2 chars) to avoid false positives,
     # e.g. '中国' matching arbitrary company names in a pool of 5000+ stocks.
     # Use a higher cutoff (0.8) to reduce mis-hits on longer inputs as well.
