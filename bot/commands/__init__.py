@@ -19,6 +19,7 @@ from bot.commands.research import ResearchCommand
 from bot.commands.strategies import StrategiesCommand
 from bot.commands.history import HistoryCommand
 from bot.commands.subscribe import SubscribeCommand, UnsubscribeCommand, MySubsCommand
+from bot.commands.alert import AlertCommand, UnalertCommand, MyAlertsCommand, TryAlertCommand
 
 # All available commands (for auto-registration)
 ALL_COMMANDS = [
@@ -35,6 +36,10 @@ ALL_COMMANDS = [
     SubscribeCommand,
     UnsubscribeCommand,
     MySubsCommand,
+    AlertCommand,
+    UnalertCommand,
+    MyAlertsCommand,
+    TryAlertCommand,
 ]
 
 __all__ = [
@@ -52,5 +57,9 @@ __all__ = [
     'SubscribeCommand',
     'UnsubscribeCommand',
     'MySubsCommand',
+    'AlertCommand',
+    'UnalertCommand',
+    'MyAlertsCommand',
+    'TryAlertCommand',
     'ALL_COMMANDS',
 ]

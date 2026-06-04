@@ -648,6 +648,27 @@ class UserSubscription(Base):
     )
 
 
+class AlertSubscription(Base):
+    """信号监控订阅 — 买入/卖出点触发提醒"""
+
+    __tablename__ = 'alert_subscriptions'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    platform = Column(String(20), nullable=False)
+    user_id = Column(String(100), nullable=False)
+    chat_id = Column(String(100), nullable=False)
+    chat_type = Column(String(20), nullable=False)
+    message_id = Column(String(100), nullable=True)
+    stock_codes = Column(Text, nullable=False)
+    enabled = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    __table_args__ = (
+        UniqueConstraint('platform', 'user_id', 'chat_id', name='uq_alert_user_chat'),
+    )
+
+
 class DatabaseManager:
     """
     数据库管理器 - 单例模式

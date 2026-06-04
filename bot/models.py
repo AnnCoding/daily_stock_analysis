@@ -95,6 +95,12 @@ class BotMessage:
                 ('订阅', 'subscribe'),
                 ('取消订阅', 'unsubscribe'),
                 ('我的订阅', 'subs'),
+                ('试看信号', 'tryalert'),
+                ('试监控', 'tryalert'),
+                ('信号监控', 'alert'),
+                ('监控', 'alert'),
+                ('取消监控', 'unalert'),
+                ('我的监控', 'myalerts'),
             ]
             for cn_cmd, en_cmd in chinese_commands:
                 if text.startswith(cn_cmd):
