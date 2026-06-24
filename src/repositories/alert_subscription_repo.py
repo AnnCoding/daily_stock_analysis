@@ -41,7 +41,13 @@ class AlertSubscriptionRepo:
                 .one_or_none()
             )
             if sub:
-                sub.stock_codes = stock_codes
+                existing = set(c.strip() for c in (sub.stock_codes or "").split(",") if c.strip())
+                new_codes = [c.strip() for c in stock_codes.split(",") if c.strip()]
+                merged = list(dict.fromkeys(
+                    [c for c in (sub.stock_codes or "").split(",") if c.strip()] +
+                    [c for c in new_codes if c not in existing]
+                ))
+                sub.stock_codes = ",".join(merged)
                 sub.enabled = True
                 sub.updated_at = datetime.now()
                 if message_id:

@@ -97,16 +97,22 @@ class AlertCommand(BotCommand):
             return BotResponse.error_response("监控保存失败，请稍后重试")
 
         codes_display = "、".join(codes)
+        all_codes = [c.strip() for c in sub.stock_codes.split(",") if c.strip()]
+        all_display = "、".join(all_codes)
         failed_info = ""
         if failed:
             failed_info = f"\n\n⚠️ 未识别: {', '.join(failed)}"
+        added_info = ""
+        if len(all_codes) > len(codes):
+            added_info = f"\n\n📋 当前监控共 {len(all_codes)} 只：{all_display}"
 
         return BotResponse.markdown_response(
-            f"✅ 信号监控已开启！\n\n"
-            f"**监控股票：** {codes_display}\n"
+            f"✅ 已追加到信号监控！\n\n"
+            f"**新增：** {codes_display}\n"
             f"**触发时间：** 9:10（盘前）、12:40（午盘前）、18:00（盘后）\n"
             f"**分析策略：** 🌀缠论 × 💰情绪周期 × 🌊波浪理论 × 📊均线金叉（四策略投票）\n"
             f"**推送方式：** {'私聊' if chat_type_str == 'private' else '群内回复'}"
+            f"{added_info}"
             f"{failed_info}"
         )
 

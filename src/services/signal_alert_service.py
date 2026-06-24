@@ -447,9 +447,17 @@ def _push_to_chat(chat_id: str, chat_type: str,
                   message_id: Optional[str], message: str):
     """Push alert message via Feishu Stream."""
     try:
+        from src.config import get_config
         from bot.platforms.feishu_stream import FeishuReplyClient
 
-        client = FeishuReplyClient()
+        config = get_config()
+        app_id = getattr(config, "feishu_app_id", None)
+        app_secret = getattr(config, "feishu_app_secret", None)
+        if not app_id or not app_secret:
+            logger.error("[SignalAlert] 缺少飞书凭证，无法推送")
+            return
+
+        client = FeishuReplyClient(app_id, app_secret)
         if chat_type == "group" and message_id:
             success = client.reply_text(message_id, message, at_user=False)
         else:

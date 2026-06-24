@@ -930,7 +930,7 @@ def main() -> int:
         start_bot_stream_clients(config)
 
     # === 启动每日汇总调度器 ===
-    if start_serve and not args.serve_only:
+    if start_serve:
         try:
             from src.services.daily_summary import DailySummaryScheduler
             summary_hour = int(os.getenv("DAILY_SUMMARY_HOUR", "17"))
@@ -941,7 +941,7 @@ def main() -> int:
             logger.warning(f"[Main] 每日汇总调度器启动失败: {e}")
 
     # === 启动用户自选股订阅调度器 ===
-    if start_serve and not args.serve_only:
+    if start_serve:
         try:
             from src.services.subscription_scheduler import SubscriptionScheduler
             _sub_scheduler = SubscriptionScheduler()
@@ -950,7 +950,7 @@ def main() -> int:
             logger.warning(f"[Main] 订阅调度器启动失败: {e}")
 
     # === 启动信号监控调度器 ===
-    if start_serve and not args.serve_only:
+    if start_serve:
         try:
             from src.services.signal_alert_service import SignalAlertScheduler
             _alert_scheduler = SignalAlertScheduler()
