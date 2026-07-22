@@ -1,78 +1,85 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
-import { SidebarNav } from '../SidebarNav';
+import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { describe, expect, it, vi } from "vitest";
+import { SidebarNav } from "../SidebarNav";
 
 const mockLogout = vi.fn().mockResolvedValue(undefined);
 const mockThemeToggle = vi.fn(({ collapsed }: { collapsed?: boolean }) => (
-  <button type="button">{collapsed ? '切换主题(折叠)' : '切换主题'}</button>
+  <button type="button">{collapsed ? "切换主题(折叠)" : "切换主题"}</button>
 ));
 
 const completionBadgeState = { value: true };
 
-vi.mock('../../../contexts/AuthContext', () => ({
+vi.mock("../../../contexts/AuthContext", () => ({
   useAuth: () => ({
     authEnabled: true,
     logout: mockLogout,
   }),
 }));
 
-vi.mock('../../../stores/agentChatStore', () => ({
-  useAgentChatStore: (selector: (state: { completionBadge: boolean }) => unknown) =>
-    selector({ completionBadge: completionBadgeState.value }),
+vi.mock("../../../stores/agentChatStore", () => ({
+  useAgentChatStore: (
+    selector: (state: { completionBadge: boolean }) => unknown,
+  ) => selector({ completionBadge: completionBadgeState.value }),
 }));
 
-vi.mock('../../theme/ThemeToggle', () => ({
+vi.mock("../../theme/ThemeToggle", () => ({
   ThemeToggle: (props: { collapsed?: boolean }) => mockThemeToggle(props),
 }));
 
-describe('SidebarNav', () => {
-  it('shows the shared completion badge only when chat completion is pending', () => {
+describe("SidebarNav", () => {
+  it("shows the shared completion badge only when chat completion is pending", () => {
     completionBadgeState.value = true;
 
     const { rerender } = render(
-      <MemoryRouter initialEntries={['/chat']}>
+      <MemoryRouter initialEntries={["/chat"]}>
         <SidebarNav />
       </MemoryRouter>,
     );
 
-    expect(screen.getByTestId('chat-completion-badge')).toBeInTheDocument();
-    expect(screen.getByLabelText('问股有新消息')).toBeInTheDocument();
+    expect(screen.getByTestId("chat-completion-badge")).toBeInTheDocument();
+    expect(screen.getByLabelText("问股有新消息")).toBeInTheDocument();
 
     completionBadgeState.value = false;
     rerender(
-      <MemoryRouter initialEntries={['/chat']}>
+      <MemoryRouter initialEntries={["/chat"]}>
         <SidebarNav />
       </MemoryRouter>,
     );
 
-    expect(screen.queryByTestId('chat-completion-badge')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("chat-completion-badge"),
+    ).not.toBeInTheDocument();
   });
 
-  it('renders the collapsed theme toggle variant when the sidebar is collapsed', () => {
+  it("renders the collapsed theme toggle variant when the sidebar is collapsed", () => {
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={["/"]}>
         <SidebarNav collapsed />
       </MemoryRouter>,
     );
 
     expect(mockThemeToggle).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: 'nav', collapsed: true }),
+      expect.objectContaining({ variant: "nav", collapsed: true }),
     );
-    expect(screen.getByRole('button', { name: '切换主题(折叠)' })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "切换主题(折叠)" }),
+    ).toBeInTheDocument();
   });
 
-  it('opens the logout confirmation and confirms logout', async () => {
+  it("opens the logout confirmation and confirms logout", async () => {
     render(
-      <MemoryRouter initialEntries={['/chat']}>
+      <MemoryRouter initialEntries={["/chat"]}>
         <SidebarNav />
       </MemoryRouter>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: '退出' }));
+    fireEvent.click(screen.getByRole("button", { name: "退出" }));
 
-    expect(await screen.findByRole('heading', { name: '退出登录' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: '确认退出' }));
+    expect(
+      await screen.findByRole("heading", { name: "退出登录" }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "确认退出" }));
     expect(mockLogout).toHaveBeenCalled();
   });
 });

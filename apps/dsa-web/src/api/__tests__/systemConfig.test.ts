@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { systemConfigApi } from '../systemConfig';
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { systemConfigApi } from "../systemConfig";
 
 const get = vi.hoisted(() => vi.fn());
 const post = vi.hoisted(() => vi.fn());
 
-vi.mock('../index', () => ({
+vi.mock("../index", () => ({
   default: {
     get,
     post,
@@ -12,75 +12,75 @@ vi.mock('../index', () => ({
   },
 }));
 
-describe('systemConfigApi', () => {
+describe("systemConfigApi", () => {
   beforeEach(() => {
     get.mockReset();
     post.mockReset();
     post.mockResolvedValue({
       data: {
         success: true,
-        message: 'ok',
+        message: "ok",
         error: null,
         error_code: null,
-        stage: 'chat_completion',
+        stage: "chat_completion",
         retryable: false,
         details: {},
-        resolved_protocol: 'openai',
-        resolved_model: 'openai/gpt-4o-mini',
+        resolved_protocol: "openai",
+        resolved_model: "openai/gpt-4o-mini",
         latency_ms: 10,
         capability_results: {},
       },
     });
   });
 
-  it('omits capability_checks from basic LLM channel test payloads', async () => {
+  it("omits capability_checks from basic LLM channel test payloads", async () => {
     await systemConfigApi.testLLMChannel({
-      name: 'openai',
-      protocol: 'openai',
-      baseUrl: 'https://api.openai.com/v1',
-      apiKey: 'sk-test',
-      models: ['gpt-4o-mini'],
+      name: "openai",
+      protocol: "openai",
+      baseUrl: "https://api.openai.com/v1",
+      apiKey: "sk-test",
+      models: ["gpt-4o-mini"],
     });
 
     expect(post).toHaveBeenCalledWith(
-      '/api/v1/system/config/llm/test-channel',
+      "/api/v1/system/config/llm/test-channel",
       expect.not.objectContaining({ capability_checks: expect.anything() }),
     );
   });
 
-  it('sends capability_checks only for explicit runtime capability checks', async () => {
+  it("sends capability_checks only for explicit runtime capability checks", async () => {
     await systemConfigApi.testLLMChannel({
-      name: 'openai',
-      protocol: 'openai',
-      baseUrl: 'https://api.openai.com/v1',
-      apiKey: 'sk-test',
-      models: ['gpt-4o-mini'],
-      capabilityChecks: ['json', 'stream'],
+      name: "openai",
+      protocol: "openai",
+      baseUrl: "https://api.openai.com/v1",
+      apiKey: "sk-test",
+      models: ["gpt-4o-mini"],
+      capabilityChecks: ["json", "stream"],
     });
 
     expect(post).toHaveBeenCalledWith(
-      '/api/v1/system/config/llm/test-channel',
-      expect.objectContaining({ capability_checks: ['json', 'stream'] }),
+      "/api/v1/system/config/llm/test-channel",
+      expect.objectContaining({ capability_checks: ["json", "stream"] }),
     );
   });
 
-  it('sends notification channel test payloads with snake_case fields', async () => {
+  it("sends notification channel test payloads with snake_case fields", async () => {
     post.mockResolvedValueOnce({
       data: {
         success: true,
-        message: 'ok',
+        message: "ok",
         error_code: null,
-        stage: 'notification_send',
+        stage: "notification_send",
         retryable: false,
         latency_ms: 15,
         attempts: [
           {
-            channel: 'custom',
+            channel: "custom",
             success: true,
-            message: 'sent',
-            target: 'https://example.com/hook?token=***',
+            message: "sent",
+            target: "https://example.com/hook?token=***",
             error_code: null,
-            stage: 'notification_send',
+            stage: "notification_send",
             retryable: false,
             latency_ms: 15,
             http_status: 200,
@@ -90,22 +90,32 @@ describe('systemConfigApi', () => {
     });
 
     const result = await systemConfigApi.testNotificationChannel({
-      channel: 'custom',
-      items: [{ key: 'CUSTOM_WEBHOOK_URLS', value: 'https://example.com/hook?token=secret' }],
-      maskToken: '******',
-      title: 'hello',
-      content: 'world',
+      channel: "custom",
+      items: [
+        {
+          key: "CUSTOM_WEBHOOK_URLS",
+          value: "https://example.com/hook?token=secret",
+        },
+      ],
+      maskToken: "******",
+      title: "hello",
+      content: "world",
       timeoutSeconds: 7,
     });
 
     expect(post).toHaveBeenCalledWith(
-      '/api/v1/system/config/notification/test-channel',
+      "/api/v1/system/config/notification/test-channel",
       {
-        channel: 'custom',
-        items: [{ key: 'CUSTOM_WEBHOOK_URLS', value: 'https://example.com/hook?token=secret' }],
-        mask_token: '******',
-        title: 'hello',
-        content: 'world',
+        channel: "custom",
+        items: [
+          {
+            key: "CUSTOM_WEBHOOK_URLS",
+            value: "https://example.com/hook?token=secret",
+          },
+        ],
+        mask_token: "******",
+        title: "hello",
+        content: "world",
         timeout_seconds: 7,
       },
     );
@@ -114,22 +124,22 @@ describe('systemConfigApi', () => {
     expect(result.attempts[0].httpStatus).toBe(200);
   });
 
-  it('loads first-run setup status with camelCase fields', async () => {
+  it("loads first-run setup status with camelCase fields", async () => {
     get.mockResolvedValueOnce({
       data: {
         is_complete: false,
         ready_for_smoke: false,
-        required_missing_keys: ['llm_primary'],
-        next_step_key: 'llm_primary',
+        required_missing_keys: ["llm_primary"],
+        next_step_key: "llm_primary",
         checks: [
           {
-            key: 'llm_primary',
-            title: 'LLM 主渠道',
-            category: 'ai_model',
+            key: "llm_primary",
+            title: "LLM 主渠道",
+            category: "ai_model",
             required: true,
-            status: 'needs_action',
-            message: '缺少主模型配置',
-            next_step: '打开系统设置',
+            status: "needs_action",
+            message: "缺少主模型配置",
+            next_step: "打开系统设置",
           },
         ],
       },
@@ -137,9 +147,9 @@ describe('systemConfigApi', () => {
 
     const result = await systemConfigApi.getSetupStatus();
 
-    expect(get).toHaveBeenCalledWith('/api/v1/system/config/setup/status');
+    expect(get).toHaveBeenCalledWith("/api/v1/system/config/setup/status");
     expect(result.isComplete).toBe(false);
-    expect(result.nextStepKey).toBe('llm_primary');
-    expect(result.checks[0].nextStep).toBe('打开系统设置');
+    expect(result.nextStepKey).toBe("llm_primary");
+    expect(result.checks[0].nextStep).toBe("打开系统设置");
   });
 });

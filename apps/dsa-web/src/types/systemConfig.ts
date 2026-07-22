@@ -1,30 +1,18 @@
 export type SystemConfigCategory =
-  | 'base'
-  | 'data_source'
-  | 'ai_model'
-  | 'notification'
-  | 'system'
-  | 'agent'
-  | 'backtest'
-  | 'uncategorized';
+  | "base"
+  | "data_source"
+  | "ai_model"
+  | "notification"
+  | "system"
+  | "agent"
+  | "backtest"
+  | "uncategorized";
 
 export type SystemConfigDataType =
-  | 'string'
-  | 'integer'
-  | 'number'
-  | 'boolean'
-  | 'array'
-  | 'json'
-  | 'time';
+  "string" | "integer" | "number" | "boolean" | "array" | "json" | "time";
 
 export type SystemConfigUIControl =
-  | 'text'
-  | 'password'
-  | 'number'
-  | 'select'
-  | 'textarea'
-  | 'switch'
-  | 'time';
+  "text" | "password" | "number" | "select" | "textarea" | "switch" | "time";
 
 export interface SystemConfigOption {
   label: string;
@@ -87,9 +75,9 @@ export interface SystemConfigResponse {
 export interface SetupStatusCheck {
   key: string;
   title: string;
-  category: 'base' | 'ai_model' | 'agent' | 'notification' | 'system';
+  category: "base" | "ai_model" | "agent" | "notification" | "system";
   required: boolean;
-  status: 'configured' | 'inherited' | 'optional' | 'needs_action';
+  status: "configured" | "inherited" | "optional" | "needs_action";
   message: string;
   nextStep?: string | null;
 }
@@ -144,7 +132,7 @@ export interface ConfigValidationIssue {
   key: string;
   code: string;
   message: string;
-  severity: 'error' | 'warning';
+  severity: "error" | "warning";
   expected?: string;
   actual?: string;
 }
@@ -165,10 +153,10 @@ export interface TestLLMChannelRequest {
   capabilityChecks?: LLMCapabilityCheck[];
 }
 
-export type LLMCapabilityCheck = 'json' | 'tools' | 'vision' | 'stream';
+export type LLMCapabilityCheck = "json" | "tools" | "vision" | "stream";
 
 export interface LLMCapabilityCheckResult {
-  status: 'passed' | 'failed' | 'skipped';
+  status: "passed" | "failed" | "skipped";
   message: string;
   errorCode?: string | null;
   stage: string;
@@ -188,21 +176,23 @@ export interface TestLLMChannelResponse {
   resolvedProtocol?: string | null;
   resolvedModel?: string | null;
   latencyMs?: number | null;
-  capabilityResults?: Partial<Record<LLMCapabilityCheck, LLMCapabilityCheckResult>>;
+  capabilityResults?: Partial<
+    Record<LLMCapabilityCheck, LLMCapabilityCheckResult>
+  >;
 }
 
 export type NotificationTestChannel =
-  | 'wechat'
-  | 'feishu'
-  | 'telegram'
-  | 'email'
-  | 'pushover'
-  | 'pushplus'
-  | 'serverchan3'
-  | 'custom'
-  | 'discord'
-  | 'slack'
-  | 'astrbot';
+  | "wechat"
+  | "feishu"
+  | "telegram"
+  | "email"
+  | "pushover"
+  | "pushplus"
+  | "serverchan3"
+  | "custom"
+  | "discord"
+  | "slack"
+  | "astrbot";
 
 export interface NotificationTestAttempt {
   channel: NotificationTestChannel;

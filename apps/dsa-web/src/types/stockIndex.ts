@@ -4,8 +4,8 @@
  * Stock data index for autocomplete functionality
  */
 
-export type Market = 'CN' | 'HK' | 'US' | 'INDEX' | 'ETF' | 'BSE';
-export type AssetType = 'stock' | 'index' | 'etf';
+export type Market = "CN" | "HK" | "US" | "INDEX" | "ETF" | "BSE";
+export type AssetType = "stock" | "index" | "etf";
 
 /**
  * Stock index item (full format)
@@ -48,9 +48,9 @@ export interface StockSuggestion {
   /** Market */
   market: Market;
   /** Match type */
-  matchType: 'exact' | 'prefix' | 'contains' | 'fuzzy';
+  matchType: "exact" | "prefix" | "contains" | "fuzzy";
   /** Match field */
-  matchField: 'code' | 'name' | 'pinyin' | 'alias';
+  matchField: "code" | "name" | "pinyin" | "alias";
   /** Sort score */
   score: number;
 }
@@ -59,9 +59,9 @@ export interface StockSuggestion {
  * Compressed format stock index item (for reducing file size)
  */
 export type StockIndexTuple = [
-  string,  // canonicalCode
-  string,  // displayCode
-  string,  // nameZh
+  string, // canonicalCode
+  string, // displayCode
+  string, // nameZh
   string | undefined, // pinyinFull
   string | undefined, // pinyinAbbr
   string[], // aliases (required, use empty array if none)

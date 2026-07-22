@@ -1,6 +1,6 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import BacktestPage from '../BacktestPage';
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import BacktestPage from "../BacktestPage";
 
 const {
   mockGetResults,
@@ -14,7 +14,7 @@ const {
   mockRun: vi.fn(),
 }));
 
-vi.mock('../../api/backtest', () => ({
+vi.mock("../../api/backtest", () => ({
   backtestApi: {
     getResults: mockGetResults,
     getOverallPerformance: mockGetOverallPerformance,
@@ -24,9 +24,9 @@ vi.mock('../../api/backtest', () => ({
 }));
 
 const basePerformance = {
-  scope: 'overall',
+  scope: "overall",
   evalWindowDays: 10,
-  engineVersion: 'test-engine',
+  engineVersion: "test-engine",
   totalEvaluations: 3,
   completedCount: 2,
   insufficientCount: 1,
@@ -59,19 +59,19 @@ beforeEach(() => {
     items: [
       {
         analysisHistoryId: 101,
-        code: '600519',
-        stockName: '贵州茅台',
-        analysisDate: '2026-03-20',
+        code: "600519",
+        stockName: "贵州茅台",
+        analysisDate: "2026-03-20",
         evalWindowDays: 10,
-        engineVersion: 'test-engine',
-        evalStatus: 'completed',
-        operationAdvice: '继续持有',
-        trendPrediction: '震荡偏多',
-        actualMovement: 'up',
+        engineVersion: "test-engine",
+        evalStatus: "completed",
+        operationAdvice: "继续持有",
+        trendPrediction: "震荡偏多",
+        actualMovement: "up",
         actualReturnPct: 3.8,
-        directionExpected: 'long',
+        directionExpected: "long",
         directionCorrect: true,
-        outcome: 'win',
+        outcome: "win",
         simulatedReturnPct: 3.8,
       },
     ],
@@ -85,73 +85,79 @@ beforeEach(() => {
   });
 });
 
-describe('BacktestPage', () => {
-  it('renders shared surface inputs and prediction tracking outputs', async () => {
+describe("BacktestPage", () => {
+  it("renders shared surface inputs and prediction tracking outputs", async () => {
     render(<BacktestPage />);
 
-    const filterInput = await screen.findByPlaceholderText('Filter by stock code (leave empty for all)');
-    const windowInput = screen.getByPlaceholderText('10');
+    const filterInput = await screen.findByPlaceholderText(
+      "Filter by stock code (leave empty for all)",
+    );
+    const windowInput = screen.getByPlaceholderText("10");
 
-    expect(filterInput).toHaveClass('input-surface');
-    expect(filterInput).toHaveClass('input-focus-glow');
-    expect(windowInput).toHaveClass('input-surface');
-    expect(windowInput).toHaveClass('input-focus-glow');
+    expect(filterInput).toHaveClass("input-surface");
+    expect(filterInput).toHaveClass("input-focus-glow");
+    expect(windowInput).toHaveClass("input-surface");
+    expect(windowInput).toHaveClass("input-focus-glow");
 
-    expect(await screen.findByText('WIN')).toBeInTheDocument();
-    expect(screen.getByText('completed')).toBeInTheDocument();
-    expect(screen.getByText('600519')).toBeInTheDocument();
-    expect(screen.getByText('贵州茅台')).toBeInTheDocument();
-    expect(screen.getByText('震荡偏多')).toBeInTheDocument();
-    expect(screen.getByText('UP')).toBeInTheDocument();
-    expect(screen.getByText('Window Return')).toBeInTheDocument();
-    expect(screen.getByText('Direction Match')).toBeInTheDocument();
-    expect(screen.getAllByLabelText('yes').length).toBeGreaterThan(0);
+    expect(await screen.findByText("WIN")).toBeInTheDocument();
+    expect(screen.getByText("completed")).toBeInTheDocument();
+    expect(screen.getByText("600519")).toBeInTheDocument();
+    expect(screen.getByText("贵州茅台")).toBeInTheDocument();
+    expect(screen.getByText("震荡偏多")).toBeInTheDocument();
+    expect(screen.getByText("UP")).toBeInTheDocument();
+    expect(screen.getByText("Window Return")).toBeInTheDocument();
+    expect(screen.getByText("Direction Match")).toBeInTheDocument();
+    expect(screen.getAllByLabelText("yes").length).toBeGreaterThan(0);
   });
 
-  it('filters results with stock code, window, and analysis date range when clicking Filter', async () => {
+  it("filters results with stock code, window, and analysis date range when clicking Filter", async () => {
     render(<BacktestPage />);
 
-    const filterInput = await screen.findByPlaceholderText('Filter by stock code (leave empty for all)');
-    const windowInput = screen.getByPlaceholderText('10');
-    const fromInput = screen.getByLabelText('Analysis date from');
-    const toInput = screen.getByLabelText('Analysis date to');
+    const filterInput = await screen.findByPlaceholderText(
+      "Filter by stock code (leave empty for all)",
+    );
+    const windowInput = screen.getByPlaceholderText("10");
+    const fromInput = screen.getByLabelText("Analysis date from");
+    const toInput = screen.getByLabelText("Analysis date to");
 
-    fireEvent.change(filterInput, { target: { value: 'aapl' } });
-    fireEvent.change(windowInput, { target: { value: '20' } });
-    fireEvent.change(fromInput, { target: { value: '2026-03-01' } });
-    fireEvent.change(toInput, { target: { value: '2026-03-31' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Filter' }));
+    fireEvent.change(filterInput, { target: { value: "aapl" } });
+    fireEvent.change(windowInput, { target: { value: "20" } });
+    fireEvent.change(fromInput, { target: { value: "2026-03-01" } });
+    fireEvent.change(toInput, { target: { value: "2026-03-31" } });
+    fireEvent.click(screen.getByRole("button", { name: "Filter" }));
 
     await waitFor(() => {
       expect(mockGetResults).toHaveBeenLastCalledWith({
-        code: 'AAPL',
+        code: "AAPL",
         evalWindowDays: 20,
-        analysisDateFrom: '2026-03-01',
-        analysisDateTo: '2026-03-31',
+        analysisDateFrom: "2026-03-01",
+        analysisDateTo: "2026-03-31",
         page: 1,
         limit: 20,
       });
-      expect(mockGetStockPerformance).toHaveBeenLastCalledWith('AAPL', {
+      expect(mockGetStockPerformance).toHaveBeenLastCalledWith("AAPL", {
         evalWindowDays: 20,
-        analysisDateFrom: '2026-03-01',
-        analysisDateTo: '2026-03-31',
+        analysisDateFrom: "2026-03-01",
+        analysisDateTo: "2026-03-31",
       });
     });
   });
 
-  it('runs a backtest and refreshes results using the shared filter values', async () => {
+  it("runs a backtest and refreshes results using the shared filter values", async () => {
     render(<BacktestPage />);
 
-    const filterInput = await screen.findByPlaceholderText('Filter by stock code (leave empty for all)');
-    const windowInput = screen.getByPlaceholderText('10');
+    const filterInput = await screen.findByPlaceholderText(
+      "Filter by stock code (leave empty for all)",
+    );
+    const windowInput = screen.getByPlaceholderText("10");
 
-    fireEvent.change(filterInput, { target: { value: 'tsla' } });
-    fireEvent.change(windowInput, { target: { value: '15' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Run Backtest' }));
+    fireEvent.change(filterInput, { target: { value: "tsla" } });
+    fireEvent.change(windowInput, { target: { value: "15" } });
+    fireEvent.click(screen.getByRole("button", { name: "Run Backtest" }));
 
     await waitFor(() => {
       expect(mockRun).toHaveBeenCalledWith({
-        code: 'TSLA',
+        code: "TSLA",
         force: undefined,
         minAgeDays: undefined,
         evalWindowDays: 15,
@@ -160,29 +166,31 @@ describe('BacktestPage', () => {
 
     await waitFor(() => {
       expect(mockGetResults).toHaveBeenLastCalledWith({
-        code: 'TSLA',
+        code: "TSLA",
         evalWindowDays: 15,
         analysisDateFrom: undefined,
         analysisDateTo: undefined,
         page: 1,
         limit: 20,
       });
-      expect(mockGetStockPerformance).toHaveBeenLastCalledWith('TSLA', {
+      expect(mockGetStockPerformance).toHaveBeenLastCalledWith("TSLA", {
         evalWindowDays: 15,
         analysisDateFrom: undefined,
         analysisDateTo: undefined,
       });
     });
 
-    expect(await screen.findByText('Processed:')).toBeInTheDocument();
-    expect(screen.getByText('Saved:')).toBeInTheDocument();
+    expect(await screen.findByText("Processed:")).toBeInTheDocument();
+    expect(screen.getByText("Saved:")).toBeInTheDocument();
   });
 
-  it('switches to next-day validation with the 1D shortcut', async () => {
+  it("switches to next-day validation with the 1D shortcut", async () => {
     render(<BacktestPage />);
 
-    await screen.findByPlaceholderText('Filter by stock code (leave empty for all)');
-    fireEvent.click(screen.getByRole('button', { name: '1D Validation' }));
+    await screen.findByPlaceholderText(
+      "Filter by stock code (leave empty for all)",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "1D Validation" }));
 
     await waitFor(() => {
       expect(mockGetResults).toHaveBeenLastCalledWith({
@@ -200,8 +208,12 @@ describe('BacktestPage', () => {
       });
     });
 
-    expect(screen.getByText('Actual')).toBeInTheDocument();
-    expect(screen.getByText('Accuracy')).toBeInTheDocument();
-    expect(screen.getByText('Next-day validation mode compares AI predictions with the next trading day close.')).toBeInTheDocument();
+    expect(screen.getByText("Actual")).toBeInTheDocument();
+    expect(screen.getByText("Accuracy")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Next-day validation mode compares AI predictions with the next trading day close.",
+      ),
+    ).toBeInTheDocument();
   });
 });

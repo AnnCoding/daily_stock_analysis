@@ -39,7 +39,11 @@
       body {
         margin: 0;
         font-family: "Fira Sans", "IBM Plex Sans", "Segoe UI", sans-serif;
-        background: radial-gradient(circle at top left, var(--bg-secondary), var(--bg) 55%);
+        background: radial-gradient(
+          circle at top left,
+          var(--bg-secondary),
+          var(--bg) 55%
+        );
         color: var(--text);
         height: 100vh;
         display: flex;
@@ -105,7 +109,8 @@
       }
 
       @keyframes pulse {
-        0%, 100% {
+        0%,
+        100% {
           transform: scale(1);
           opacity: 1;
         }
@@ -124,18 +129,20 @@
         <span class="dot"></span>
         <span>Preparing backend and loading UI...</span>
       </div>
-      <p class="tips">If this takes long, check your API keys and network connectivity.</p>
+      <p class="tips">
+        If this takes long, check your API keys and network connectivity.
+      </p>
       <div class="error" id="errorBox"></div>
     </div>
     <script>
       (function () {
         const params = new URLSearchParams(window.location.search);
-        const error = params.get('error');
+        const error = params.get("error");
         if (!error) return;
-        const box = document.getElementById('errorBox');
+        const box = document.getElementById("errorBox");
         if (!box) return;
         box.textContent = `Error: ${decodeURIComponent(error)}`;
-        box.style.display = 'block';
+        box.style.display = "block";
       })();
     </script>
   </body>

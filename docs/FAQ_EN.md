@@ -13,6 +13,7 @@ This document compiles common issues encountered by users and their solutions.
 **Cause**: Earlier version code matching logic prioritized A-share rules, causing code conflicts.
 
 **Solution**:
+
 1. Fixed in v2.3.0, system now supports automatic US stock code recognition
 2. If issues persist, set in `.env`:
    ```bash
@@ -31,6 +32,7 @@ This document compiles common issues encountered by users and their solutions.
 **Cause**: Some default real-time quote sources (e.g., Sina interface) don't provide volume ratio field.
 
 **Solution**:
+
 1. Fixed in v2.3.0, Tencent interface now supports volume ratio parsing
 2. Recommended real-time quote source priority:
    ```bash
@@ -47,6 +49,7 @@ This document compiles common issues encountered by users and their solutions.
 **Symptom**: Log shows `Tushare data fetch failed: Your token is incorrect, please verify`
 
 **Solution**:
+
 1. **No Tushare account**: No need to configure `TUSHARE_TOKEN`, system will automatically use free data sources (AkShare, Efinance)
 2. **Have Tushare account**: Verify Token is correct, check in [Tushare Pro](https://tushare.pro/weborder/#/login?reg=834638) personal center
 3. All core features of this project work normally without Tushare
@@ -60,6 +63,7 @@ This document compiles common issues encountered by users and their solutions.
 **Cause**: Free data sources (Eastmoney, Sina, etc.) have anti-scraping mechanisms, high-frequency requests get rate-limited.
 
 **Solution**:
+
 1. System has built-in multi-source auto-switching and circuit breaker protection
 2. Reduce watchlist size, or increase request intervals
 3. Avoid frequently manually triggering analysis
@@ -75,6 +79,7 @@ This document compiles common issues encountered by users and their solutions.
 **Cause**: GitHub distinguishes `Secrets` (encrypted) and `Variables` (regular variables), wrong configuration location causes read failure.
 
 **Solution**:
+
 1. Go to repo `Settings` → `Secrets and variables` → `Actions`
 2. **Secrets** (click `New repository secret`): Store sensitive information
    - `GEMINI_API_KEY`
@@ -91,6 +96,7 @@ This document compiles common issues encountered by users and their solutions.
 ### Q6: Configuration not taking effect after modifying .env file?
 
 **Solution**:
+
 1. Ensure `.env` file is in project root directory
 2. **Docker deployment / WebUI Settings**:
    - WebUI saves `STOCK_LIST`, `SCHEDULE_ENABLED`, `SCHEDULE_TIME`, `SCHEDULE_RUN_IMMEDIATELY`, and `RUN_IMMEDIATELY` back into the container's `.env`
@@ -112,6 +118,7 @@ This document compiles common issues encountered by users and their solutions.
 **Solution**:
 
 Configure in `.env`:
+
 ```bash
 USE_PROXY=true
 PROXY_HOST=127.0.0.1
@@ -151,11 +158,13 @@ First confirm whether `LITELLM_CONFIG` or `LLM_CHANNELS` is active, because eith
 **Symptom**: Analysis succeeded but no notification received, log shows 400 error or `Message too long`
 
 **Cause**: Different platforms have different message length limits:
+
 - WeChat Work: 4KB
 - Feishu: 20KB
 - DingTalk: 20KB
 
 **Solution**:
+
 1. **Auto-chunking**: Latest version implements automatic long message splitting
 2. **Single stock push mode**: Set `SINGLE_STOCK_NOTIFY=true`, push immediately after each stock analysis
 3. **Brief report**: Set `REPORT_TYPE=simple` for simplified format
@@ -165,6 +174,7 @@ First confirm whether `LITELLM_CONFIG` or `LLM_CHANNELS` is active, because eith
 ### Q9: Not receiving Telegram push messages?
 
 **Solution**:
+
 1. Confirm both `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are configured
 2. How to get Chat ID:
    - Send any message to the Bot
@@ -178,6 +188,7 @@ First confirm whether `LITELLM_CONFIG` or `LLM_CHANNELS` is active, because eith
 ### Q10: WeChat Work Markdown format not displaying correctly?
 
 **Solution**:
+
 1. WeChat Work has limited Markdown support, try setting:
    ```bash
    WECHAT_MSG_TYPE=text
@@ -193,6 +204,7 @@ First confirm whether `LITELLM_CONFIG` or `LLM_CHANNELS` is active, because eith
 **Symptom**: Log shows `Resource has been exhausted` or `429 Too Many Requests`
 
 **Solution**:
+
 1. Gemini free tier has rate limits (about 15 RPM)
 2. Reduce number of stocks analyzed simultaneously
 3. Increase request delay:
@@ -217,6 +229,7 @@ OPENAI_MODEL=deepseek-v4-flash
 ```
 
 Supported model services:
+
 - DeepSeek: `https://api.deepseek.com`
 - Qwen (Tongyi Qianwen): `https://dashscope.aliyuncs.com/compatible-mode/v1`
 - Moonshot: `https://api.moonshot.cn/v1`
@@ -238,12 +251,14 @@ Supported model services:
 Work through the following 5 checkpoints in order:
 
 1. **Is the Ollama service running?**
+
    ```bash
    # Check process
    pgrep -a ollama
    # If no output, start it first
    ollama serve
    ```
+
    Verify it is listening: `curl http://localhost:11434` should return `Ollama is running`.
 
 2. **Is `OLLAMA_API_BASE` set correctly?**
@@ -255,6 +270,7 @@ Work through the following 5 checkpoints in order:
    - ❌ Wrong: `LITELLM_MODEL=qwen3:8b` (missing prefix — litellm cannot route to Ollama)
 
 4. **Has the model been pulled locally?**
+
    ```bash
    ollama list           # list downloaded models
    ollama pull qwen3:8b  # pull if missing
@@ -273,6 +289,7 @@ Work through the following 5 checkpoints in order:
 ### Q13: Docker container exits immediately after starting?
 
 **Solution**:
+
 1. View container logs:
    ```bash
    docker logs <container_id>
@@ -287,12 +304,13 @@ Work through the following 5 checkpoints in order:
 ### Q14: API service inaccessible in Docker?
 
 **Solution**:
+
 1. Ensure startup command includes `--host 0.0.0.0` (cannot be 127.0.0.1)
 2. Check port mapping is correct:
    ```yaml
-    ports:
-      - "8000:8000"
-    ```
+   ports:
+     - "8000:8000"
+   ```
 
 ---
 
@@ -301,12 +319,14 @@ Work through the following 5 checkpoints in order:
 **Short answer**: For Docker users, the authoritative version is **the image tag you actually deployed**, not a hardcoded constant in a Python source file.
 
 **Why**:
+
 1. Docker publishing is driven by `.github/workflows/docker-publish.yml`, which only publishes release images for Git tags matching `v*.*.*` (for example, `v3.12.0`).
 2. So the Docker image version follows the **GitHub Release / Git tag**, rather than a fixed value in `main.py`, `server.py`, or another backend module.
 3. The `version` field in `apps/dsa-web/package.json` is currently a placeholder `0.0.0`. The WebUI version/build card is useful for checking whether frontend assets were rebuilt, but it is not the Docker release version.
 4. The desktop app has its own version in `apps/dsa-desktop/package.json`, and that only applies to the Electron desktop build, not the Docker image.
 
 **How to check your current Docker version**:
+
 1. **Check the image tag in your deploy command or Compose file**. For example, in `ghcr.io/zhulinsen/daily_stock_analysis:v3.12.0`, the deployed version is `v3.12.0`.
 2. **If you used `latest`**, check your original `docker pull`, `docker-compose.yml`, or deployment script, then compare with [GitHub Releases](https://github.com/ZhuLinsen/daily_stock_analysis/releases).
 3. **If you only want to confirm the frontend was refreshed**, open WebUI → Settings and inspect `Build ID` / `Build Time`; that confirms static asset freshness, not the Docker release version.
@@ -320,6 +340,7 @@ Work through the following 5 checkpoints in order:
 ### Q15: How to run only market review, without stock analysis?
 
 **Method**:
+
 ```bash
 # Local run
 python main.py --market-only
@@ -341,10 +362,11 @@ python main.py --market-only
 ## Still Have Questions?
 
 If the above content doesn't solve your issue, welcome to:
+
 1. Check [Complete Configuration Guide](full-guide_EN.md)
 2. Search or submit [GitHub Issue](https://github.com/ZhuLinsen/daily_stock_analysis/issues)
 3. Check [Changelog](CHANGELOG.md) for latest fixes
 
 ---
 
-*Last updated: 2026-04-20*
+_Last updated: 2026-04-20_

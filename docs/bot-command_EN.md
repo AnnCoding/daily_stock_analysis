@@ -150,15 +150,15 @@ class BotCommand(ABC):
 
 ## 4. Supported Commands
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `/analyze` | Analyze a specific stock | `/analyze AAPL` or `/analyze 600519` |
-| `/ask` | Single-turn question about a stock or the market | `/ask what is RSI for AAPL` |
-| `/batch` | Batch-analyze your configured watchlist | `/batch` |
-| `/chat` | Multi-turn strategy chat (maintains conversation context) | `/chat` |
-| `/market` | Market review (A-shares / US stocks) | `/market` |
-| `/help` | Show help text | `/help` |
-| `/status` | Show system status | `/status` |
+| Command    | Description                                               | Example                              |
+| ---------- | --------------------------------------------------------- | ------------------------------------ |
+| `/analyze` | Analyze a specific stock                                  | `/analyze AAPL` or `/analyze 600519` |
+| `/ask`     | Single-turn question about a stock or the market          | `/ask what is RSI for AAPL`          |
+| `/batch`   | Batch-analyze your configured watchlist                   | `/batch`                             |
+| `/chat`    | Multi-turn strategy chat (maintains conversation context) | `/chat`                              |
+| `/market`  | Market review (A-shares / US stocks)                      | `/market`                            |
+| `/help`    | Show help text                                            | `/help`                              |
+| `/status`  | Show system status                                        | `/status`                            |
 
 > **Stock code formats:** A-shares use 6-digit codes (e.g. `600519`); HK stocks prefix `hk` (e.g. `hk00700`); US stocks use ticker symbols (e.g. `AAPL`, `TSLA`).
 
@@ -196,12 +196,12 @@ class BotCommand(ABC):
 Handler functions for each platform live in `bot/handler.py`.
 These routes are **not yet wired** into the FastAPI application — you must mount them manually.
 
-| Route | Method | Status | Notes |
-|-------|--------|--------|-------|
-| `/bot/dingtalk` | POST | **Ready** | `DingtalkPlatform` is registered in `ALL_PLATFORMS` |
-| `/bot/feishu` | POST | Stream only | Use `feishu_stream.py`; no Webhook adapter in `ALL_PLATFORMS` |
-| `/bot/wecom` | POST | Not implemented | Handler exists but no platform adapter |
-| `/bot/telegram` | POST | Not implemented | Handler exists but no platform adapter |
+| Route           | Method | Status          | Notes                                                         |
+| --------------- | ------ | --------------- | ------------------------------------------------------------- |
+| `/bot/dingtalk` | POST   | **Ready**       | `DingtalkPlatform` is registered in `ALL_PLATFORMS`           |
+| `/bot/feishu`   | POST   | Stream only     | Use `feishu_stream.py`; no Webhook adapter in `ALL_PLATFORMS` |
+| `/bot/wecom`    | POST   | Not implemented | Handler exists but no platform adapter                        |
+| `/bot/telegram` | POST   | Not implemented | Handler exists but no platform adapter                        |
 
 To mount the DingTalk webhook in your FastAPI app:
 

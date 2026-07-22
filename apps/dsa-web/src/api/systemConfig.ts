@@ -1,6 +1,10 @@
-import apiClient from './index';
-import { createParsedApiError, getParsedApiError, type ParsedApiError } from './error';
-import { toCamelCase } from './utils';
+import apiClient from "./index";
+import {
+  createParsedApiError,
+  getParsedApiError,
+  type ParsedApiError,
+} from "./error";
+import { toCamelCase } from "./utils";
 import type {
   DiscoverLLMChannelModelsRequest,
   DiscoverLLMChannelModelsResponse,
@@ -19,23 +23,29 @@ import type {
   UpdateSystemConfigResponse,
   ValidateSystemConfigRequest,
   ValidateSystemConfigResponse,
-} from '../types/systemConfig';
+} from "../types/systemConfig";
 
 export class SystemConfigValidationError extends Error {
-  issues: SystemConfigValidationErrorResponse['issues'];
+  issues: SystemConfigValidationErrorResponse["issues"];
   parsedError: ParsedApiError;
 
-  constructor(message: string, issues: SystemConfigValidationErrorResponse['issues'], parsedError?: ParsedApiError) {
+  constructor(
+    message: string,
+    issues: SystemConfigValidationErrorResponse["issues"],
+    parsedError?: ParsedApiError,
+  ) {
     super(message);
-    this.name = 'SystemConfigValidationError';
+    this.name = "SystemConfigValidationError";
     this.issues = issues;
-    this.parsedError = parsedError ?? createParsedApiError({
-      title: '配置校验失败',
-      message,
-      rawMessage: message,
-      status: 400,
-      category: 'http_error',
-    });
+    this.parsedError =
+      parsedError ??
+      createParsedApiError({
+        title: "配置校验失败",
+        message,
+        rawMessage: message,
+        status: 400,
+        category: "http_error",
+      });
   }
 }
 
@@ -43,24 +53,32 @@ export class SystemConfigConflictError extends Error {
   currentConfigVersion?: string;
   parsedError: ParsedApiError;
 
-  constructor(message: string, currentConfigVersion?: string, parsedError?: ParsedApiError) {
+  constructor(
+    message: string,
+    currentConfigVersion?: string,
+    parsedError?: ParsedApiError,
+  ) {
     super(message);
-    this.name = 'SystemConfigConflictError';
+    this.name = "SystemConfigConflictError";
     this.currentConfigVersion = currentConfigVersion;
-    this.parsedError = parsedError ?? createParsedApiError({
-      title: '配置版本冲突',
-      message,
-      rawMessage: message,
-      status: 409,
-      category: 'http_error',
-    });
+    this.parsedError =
+      parsedError ??
+      createParsedApiError({
+        title: "配置版本冲突",
+        message,
+        rawMessage: message,
+        status: 409,
+        category: "http_error",
+      });
   }
 }
 
-function toSnakeUpdatePayload(payload: UpdateSystemConfigRequest): Record<string, unknown> {
+function toSnakeUpdatePayload(
+  payload: UpdateSystemConfigRequest,
+): Record<string, unknown> {
   return {
     config_version: payload.configVersion,
-    mask_token: payload.maskToken ?? '******',
+    mask_token: payload.maskToken ?? "******",
     reload_now: payload.reloadNow ?? true,
     items: payload.items.map((item) => ({
       key: item.key,
@@ -69,7 +87,9 @@ function toSnakeUpdatePayload(payload: UpdateSystemConfigRequest): Record<string
   };
 }
 
-function toSnakeValidatePayload(payload: ValidateSystemConfigRequest): Record<string, unknown> {
+function toSnakeValidatePayload(
+  payload: ValidateSystemConfigRequest,
+): Record<string, unknown> {
   return {
     items: payload.items.map((item) => ({
       key: item.key,
@@ -78,7 +98,9 @@ function toSnakeValidatePayload(payload: ValidateSystemConfigRequest): Record<st
   };
 }
 
-function toSnakeImportPayload(payload: ImportSystemConfigRequest): Record<string, unknown> {
+function toSnakeImportPayload(
+  payload: ImportSystemConfigRequest,
+): Record<string, unknown> {
   return {
     config_version: payload.configVersion,
     content: payload.content,
@@ -86,12 +108,14 @@ function toSnakeImportPayload(payload: ImportSystemConfigRequest): Record<string
   };
 }
 
-function toSnakeTestChannelPayload(payload: TestLLMChannelRequest): Record<string, unknown> {
+function toSnakeTestChannelPayload(
+  payload: TestLLMChannelRequest,
+): Record<string, unknown> {
   const request: Record<string, unknown> = {
     name: payload.name,
     protocol: payload.protocol,
-    base_url: payload.baseUrl ?? '',
-    api_key: payload.apiKey ?? '',
+    base_url: payload.baseUrl ?? "",
+    api_key: payload.apiKey ?? "",
     models: payload.models,
     enabled: payload.enabled ?? true,
     timeout_seconds: payload.timeoutSeconds ?? 20,
@@ -102,26 +126,30 @@ function toSnakeTestChannelPayload(payload: TestLLMChannelRequest): Record<strin
   return request;
 }
 
-function toSnakeNotificationTestPayload(payload: TestNotificationChannelRequest): Record<string, unknown> {
+function toSnakeNotificationTestPayload(
+  payload: TestNotificationChannelRequest,
+): Record<string, unknown> {
   return {
     channel: payload.channel,
     items: (payload.items || []).map((item) => ({
       key: item.key,
       value: item.value,
     })),
-    mask_token: payload.maskToken ?? '******',
-    title: payload.title ?? 'DSA 通知测试',
-    content: payload.content ?? '这是一条来自 DSA Web 设置页的通知测试消息。',
+    mask_token: payload.maskToken ?? "******",
+    title: payload.title ?? "DSA 通知测试",
+    content: payload.content ?? "这是一条来自 DSA Web 设置页的通知测试消息。",
     timeout_seconds: payload.timeoutSeconds ?? 20,
   };
 }
 
-function toSnakeDiscoverModelsPayload(payload: DiscoverLLMChannelModelsRequest): Record<string, unknown> {
+function toSnakeDiscoverModelsPayload(
+  payload: DiscoverLLMChannelModelsRequest,
+): Record<string, unknown> {
   return {
     name: payload.name,
     protocol: payload.protocol,
-    base_url: payload.baseUrl ?? '',
-    api_key: payload.apiKey ?? '',
+    base_url: payload.baseUrl ?? "",
+    api_key: payload.apiKey ?? "",
     models: payload.models,
     timeout_seconds: payload.timeoutSeconds ?? 20,
   };
@@ -129,14 +157,19 @@ function toSnakeDiscoverModelsPayload(payload: DiscoverLLMChannelModelsRequest):
 
 export const systemConfigApi = {
   async getConfig(includeSchema = true): Promise<SystemConfigResponse> {
-    const response = await apiClient.get<Record<string, unknown>>('/api/v1/system/config', {
-      params: { include_schema: includeSchema },
-    });
+    const response = await apiClient.get<Record<string, unknown>>(
+      "/api/v1/system/config",
+      {
+        params: { include_schema: includeSchema },
+      },
+    );
     return toCamelCase<SystemConfigResponse>(response.data);
   },
 
   async exportEnv(): Promise<ExportSystemConfigResponse> {
-    const response = await apiClient.get<Record<string, unknown>>('/api/v1/system/config/export');
+    const response = await apiClient.get<Record<string, unknown>>(
+      "/api/v1/system/config/export",
+    );
     return toCamelCase<ExportSystemConfigResponse>(response.data);
   },
 
@@ -145,46 +178,60 @@ export const systemConfigApi = {
   },
 
   async getSchema(): Promise<SystemConfigSchemaResponse> {
-    const response = await apiClient.get<Record<string, unknown>>('/api/v1/system/config/schema');
+    const response = await apiClient.get<Record<string, unknown>>(
+      "/api/v1/system/config/schema",
+    );
     return toCamelCase<SystemConfigSchemaResponse>(response.data);
   },
 
   async getSetupStatus(): Promise<SetupStatusResponse> {
-    const response = await apiClient.get<Record<string, unknown>>('/api/v1/system/config/setup/status');
+    const response = await apiClient.get<Record<string, unknown>>(
+      "/api/v1/system/config/setup/status",
+    );
     return toCamelCase<SetupStatusResponse>(response.data);
   },
 
-  async validate(payload: ValidateSystemConfigRequest): Promise<ValidateSystemConfigResponse> {
+  async validate(
+    payload: ValidateSystemConfigRequest,
+  ): Promise<ValidateSystemConfigResponse> {
     const response = await apiClient.post<Record<string, unknown>>(
-      '/api/v1/system/config/validate',
+      "/api/v1/system/config/validate",
       toSnakeValidatePayload(payload),
     );
     return toCamelCase<ValidateSystemConfigResponse>(response.data);
   },
 
-  async importEnv(payload: ImportSystemConfigRequest): Promise<UpdateSystemConfigResponse> {
+  async importEnv(
+    payload: ImportSystemConfigRequest,
+  ): Promise<UpdateSystemConfigResponse> {
     const response = await apiClient.post<Record<string, unknown>>(
-      '/api/v1/system/config/import',
+      "/api/v1/system/config/import",
       toSnakeImportPayload(payload),
     );
     return toCamelCase<UpdateSystemConfigResponse>(response.data);
   },
 
-  async importDesktopEnv(payload: ImportSystemConfigRequest): Promise<UpdateSystemConfigResponse> {
+  async importDesktopEnv(
+    payload: ImportSystemConfigRequest,
+  ): Promise<UpdateSystemConfigResponse> {
     return this.importEnv(payload);
   },
 
-  async testLLMChannel(payload: TestLLMChannelRequest): Promise<TestLLMChannelResponse> {
+  async testLLMChannel(
+    payload: TestLLMChannelRequest,
+  ): Promise<TestLLMChannelResponse> {
     const response = await apiClient.post<Record<string, unknown>>(
-      '/api/v1/system/config/llm/test-channel',
+      "/api/v1/system/config/llm/test-channel",
       toSnakeTestChannelPayload(payload),
     );
     return toCamelCase<TestLLMChannelResponse>(response.data);
   },
 
-  async testNotificationChannel(payload: TestNotificationChannelRequest): Promise<TestNotificationChannelResponse> {
+  async testNotificationChannel(
+    payload: TestNotificationChannelRequest,
+  ): Promise<TestNotificationChannelResponse> {
     const response = await apiClient.post<Record<string, unknown>>(
-      '/api/v1/system/config/notification/test-channel',
+      "/api/v1/system/config/notification/test-channel",
       toSnakeNotificationTestPayload(payload),
     );
     return toCamelCase<TestNotificationChannelResponse>(response.data);
@@ -194,38 +241,45 @@ export const systemConfigApi = {
     payload: DiscoverLLMChannelModelsRequest,
   ): Promise<DiscoverLLMChannelModelsResponse> {
     const response = await apiClient.post<Record<string, unknown>>(
-      '/api/v1/system/config/llm/discover-models',
+      "/api/v1/system/config/llm/discover-models",
       toSnakeDiscoverModelsPayload(payload),
     );
     return toCamelCase<DiscoverLLMChannelModelsResponse>(response.data);
   },
 
-  async update(payload: UpdateSystemConfigRequest): Promise<UpdateSystemConfigResponse> {
+  async update(
+    payload: UpdateSystemConfigRequest,
+  ): Promise<UpdateSystemConfigResponse> {
     try {
       const response = await apiClient.put<Record<string, unknown>>(
-        '/api/v1/system/config',
+        "/api/v1/system/config",
         toSnakeUpdatePayload(payload),
       );
       return toCamelCase<UpdateSystemConfigResponse>(response.data);
     } catch (error: unknown) {
       const parsed = getParsedApiError(error);
-      if (error && typeof error === 'object' && 'response' in error) {
-        const status = (error as { response?: { status?: number } }).response?.status;
-        const payloadData = (error as { response?: { data?: unknown } }).response?.data;
+      if (error && typeof error === "object" && "response" in error) {
+        const status = (error as { response?: { status?: number } }).response
+          ?.status;
+        const payloadData = (error as { response?: { data?: unknown } })
+          .response?.data;
 
         if (status === 400) {
-          const validationError = toCamelCase<SystemConfigValidationErrorResponse>(payloadData ?? {});
+          const validationError =
+            toCamelCase<SystemConfigValidationErrorResponse>(payloadData ?? {});
           throw new SystemConfigValidationError(
-            parsed.message || validationError.message || '配置校验失败',
+            parsed.message || validationError.message || "配置校验失败",
             validationError.issues || [],
             parsed,
           );
         }
 
         if (status === 409) {
-          const conflict = toCamelCase<SystemConfigConflictResponse>(payloadData ?? {});
+          const conflict = toCamelCase<SystemConfigConflictResponse>(
+            payloadData ?? {},
+          );
           throw new SystemConfigConflictError(
-            parsed.message || conflict.message || '配置版本冲突',
+            parsed.message || conflict.message || "配置版本冲突",
             conflict.currentConfigVersion,
             parsed,
           );

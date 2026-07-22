@@ -4,22 +4,22 @@
 
 ## 渠道基线
 
-| 渠道 | 类型 | Minimal key | Advanced key | 说明 |
-| --- | --- | --- | --- | --- |
-| 企业微信 | 静态配置 | `WECHAT_WEBHOOK_URL` | `WECHAT_MSG_TYPE` | 配置后参与批量通知发送 |
-| 飞书 Webhook | 静态配置 | `FEISHU_WEBHOOK_URL` | `FEISHU_WEBHOOK_SECRET`, `FEISHU_WEBHOOK_KEYWORD` | `FEISHU_APP_ID` / `FEISHU_APP_SECRET` 不会单独开启群 Webhook 推送 |
-| Telegram | 静态配置 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | `TELEGRAM_MESSAGE_THREAD_ID` | token 与 chat id 必须同时存在 |
-| 邮件 | 静态配置 | `EMAIL_SENDER`, `EMAIL_PASSWORD` | `EMAIL_RECEIVERS`, `EMAIL_SENDER_NAME` | `EMAIL_RECEIVERS` 留空时发给自己 |
-| Pushover | 静态配置 | `PUSHOVER_USER_KEY`, `PUSHOVER_API_TOKEN` | - | 两个 key 必须同时存在 |
-| PushPlus | 静态配置 | `PUSHPLUS_TOKEN` | `PUSHPLUS_TOPIC` | `PUSHPLUS_TOPIC` 仅在 token 存在时生效 |
-| Server酱3 | 静态配置 | `SERVERCHAN3_SENDKEY` | - | 手机 App 推送 |
-| 自定义 Webhook | 静态配置 | `CUSTOM_WEBHOOK_URLS` | `CUSTOM_WEBHOOK_BEARER_TOKEN`, `CUSTOM_WEBHOOK_BODY_TEMPLATE`, `WEBHOOK_VERIFY_SSL` | 支持多个 URL，逗号分隔 |
-| Discord | 静态配置 | `DISCORD_WEBHOOK_URL` 或 `DISCORD_BOT_TOKEN` + `DISCORD_MAIN_CHANNEL_ID` | `DISCORD_INTERACTIONS_PUBLIC_KEY` | Webhook 与 Bot 均可启用发送 |
-| Slack | 静态配置 | `SLACK_WEBHOOK_URL` 或 `SLACK_BOT_TOKEN` + `SLACK_CHANNEL_ID` | - | Bot 优先用于文本与图片同频道发送 |
-| AstrBot | 静态配置 | `ASTRBOT_URL` | `ASTRBOT_TOKEN`, `WEBHOOK_VERIFY_SSL` | `ASTRBOT_TOKEN` 可选 |
-| `UNKNOWN` | 兜底枚举 | - | - | 仅为未知渠道兜底，不由静态环境变量启用 |
-| 钉钉会话 | 运行时上下文 | - | - | 从来源消息上下文提取，无法仅由 `.env` 静态判断 |
-| 飞书会话 | 运行时上下文 | - | - | 从来源消息上下文提取，无法仅由 `.env` 静态判断 |
+| 渠道           | 类型         | Minimal key                                                              | Advanced key                                                                        | 说明                                                              |
+| -------------- | ------------ | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| 企业微信       | 静态配置     | `WECHAT_WEBHOOK_URL`                                                     | `WECHAT_MSG_TYPE`                                                                   | 配置后参与批量通知发送                                            |
+| 飞书 Webhook   | 静态配置     | `FEISHU_WEBHOOK_URL`                                                     | `FEISHU_WEBHOOK_SECRET`, `FEISHU_WEBHOOK_KEYWORD`                                   | `FEISHU_APP_ID` / `FEISHU_APP_SECRET` 不会单独开启群 Webhook 推送 |
+| Telegram       | 静态配置     | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`                                 | `TELEGRAM_MESSAGE_THREAD_ID`                                                        | token 与 chat id 必须同时存在                                     |
+| 邮件           | 静态配置     | `EMAIL_SENDER`, `EMAIL_PASSWORD`                                         | `EMAIL_RECEIVERS`, `EMAIL_SENDER_NAME`                                              | `EMAIL_RECEIVERS` 留空时发给自己                                  |
+| Pushover       | 静态配置     | `PUSHOVER_USER_KEY`, `PUSHOVER_API_TOKEN`                                | -                                                                                   | 两个 key 必须同时存在                                             |
+| PushPlus       | 静态配置     | `PUSHPLUS_TOKEN`                                                         | `PUSHPLUS_TOPIC`                                                                    | `PUSHPLUS_TOPIC` 仅在 token 存在时生效                            |
+| Server酱3      | 静态配置     | `SERVERCHAN3_SENDKEY`                                                    | -                                                                                   | 手机 App 推送                                                     |
+| 自定义 Webhook | 静态配置     | `CUSTOM_WEBHOOK_URLS`                                                    | `CUSTOM_WEBHOOK_BEARER_TOKEN`, `CUSTOM_WEBHOOK_BODY_TEMPLATE`, `WEBHOOK_VERIFY_SSL` | 支持多个 URL，逗号分隔                                            |
+| Discord        | 静态配置     | `DISCORD_WEBHOOK_URL` 或 `DISCORD_BOT_TOKEN` + `DISCORD_MAIN_CHANNEL_ID` | `DISCORD_INTERACTIONS_PUBLIC_KEY`                                                   | Webhook 与 Bot 均可启用发送                                       |
+| Slack          | 静态配置     | `SLACK_WEBHOOK_URL` 或 `SLACK_BOT_TOKEN` + `SLACK_CHANNEL_ID`            | -                                                                                   | Bot 优先用于文本与图片同频道发送                                  |
+| AstrBot        | 静态配置     | `ASTRBOT_URL`                                                            | `ASTRBOT_TOKEN`, `WEBHOOK_VERIFY_SSL`                                               | `ASTRBOT_TOKEN` 可选                                              |
+| `UNKNOWN`      | 兜底枚举     | -                                                                        | -                                                                                   | 仅为未知渠道兜底，不由静态环境变量启用                            |
+| 钉钉会话       | 运行时上下文 | -                                                                        | -                                                                                   | 从来源消息上下文提取，无法仅由 `.env` 静态判断                    |
+| 飞书会话       | 运行时上下文 | -                                                                        | -                                                                                   | 从来源消息上下文提取，无法仅由 `.env` 静态判断                    |
 
 ## Minimal / Advanced 分层
 
@@ -121,11 +121,11 @@ CUSTOM_WEBHOOK_BODY_TEMPLATE={"group_id":123456789,"message":$content_json}
 
 P3 新增三类通知路由配置：
 
-| 路由类型 | 配置 key | 当前生产者 |
-| --- | --- | --- |
-| `report` | `NOTIFICATION_REPORT_CHANNELS` | 单股推送、聚合日报、大盘复盘、合并推送、飞书文档成功链接 |
-| `alert` | `NOTIFICATION_ALERT_CHANNELS` | EventMonitor 触发通知 |
-| `system_error` | `NOTIFICATION_SYSTEM_ERROR_CHANNELS` | 预留能力；当前不新增自动系统错误生产者 |
+| 路由类型       | 配置 key                             | 当前生产者                                               |
+| -------------- | ------------------------------------ | -------------------------------------------------------- |
+| `report`       | `NOTIFICATION_REPORT_CHANNELS`       | 单股推送、聚合日报、大盘复盘、合并推送、飞书文档成功链接 |
+| `alert`        | `NOTIFICATION_ALERT_CHANNELS`        | EventMonitor 触发通知                                    |
+| `system_error` | `NOTIFICATION_SYSTEM_ERROR_CHANNELS` | 预留能力；当前不新增自动系统错误生产者                   |
 
 配置值为逗号分隔渠道枚举：`wechat,feishu,telegram,email,pushover,pushplus,serverchan3,custom,discord,slack,astrbot`。
 
@@ -140,14 +140,14 @@ P3 新增三类通知路由配置：
 
 P4 新增进程内降噪，只影响静态配置渠道，不影响 `send_to_context()` 的机器人触发会话回执。默认所有配置关闭，未设置时保持旧行为。
 
-| 配置 key | 默认值 | 说明 |
-| --- | --- | --- |
-| `NOTIFICATION_DEDUP_TTL_SECONDS` | `0` | 同一稳定去重 key 在 TTL 内只发送一次；`0` 关闭 |
-| `NOTIFICATION_COOLDOWN_SECONDS` | `0` | 同一冷却 key 在窗口内限频；`0` 关闭 |
-| `NOTIFICATION_QUIET_HOURS` | 空 | 静默时段，格式 `HH:MM-HH:MM`，支持跨午夜 |
-| `NOTIFICATION_TIMEZONE` | 空 | 静默时段时区，如 `Asia/Shanghai`；留空使用 Python 运行时本地时区（通常由进程 `TZ` 或系统时区决定） |
-| `NOTIFICATION_MIN_SEVERITY` | 空 | `info`, `warning`, `error`, `critical`；留空不过滤 |
-| `NOTIFICATION_DAILY_DIGEST_ENABLED` | `false` | 预留配置；当前不会发送每日摘要或持久化摘要内容 |
+| 配置 key                            | 默认值  | 说明                                                                                               |
+| ----------------------------------- | ------- | -------------------------------------------------------------------------------------------------- |
+| `NOTIFICATION_DEDUP_TTL_SECONDS`    | `0`     | 同一稳定去重 key 在 TTL 内只发送一次；`0` 关闭                                                     |
+| `NOTIFICATION_COOLDOWN_SECONDS`     | `0`     | 同一冷却 key 在窗口内限频；`0` 关闭                                                                |
+| `NOTIFICATION_QUIET_HOURS`          | 空      | 静默时段，格式 `HH:MM-HH:MM`，支持跨午夜                                                           |
+| `NOTIFICATION_TIMEZONE`             | 空      | 静默时段时区，如 `Asia/Shanghai`；留空使用 Python 运行时本地时区（通常由进程 `TZ` 或系统时区决定） |
+| `NOTIFICATION_MIN_SEVERITY`         | 空      | `info`, `warning`, `error`, `critical`；留空不过滤                                                 |
+| `NOTIFICATION_DAILY_DIGEST_ENABLED` | `false` | 预留配置；当前不会发送每日摘要或持久化摘要内容                                                     |
 
 严重级别默认值：
 

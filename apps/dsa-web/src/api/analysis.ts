@@ -1,5 +1,5 @@
-import apiClient from './index';
-import { toCamelCase } from './utils';
+import apiClient from "./index";
+import { toCamelCase } from "./utils";
 import type {
   AnalysisRequest,
   AnalysisResult,
@@ -10,7 +10,7 @@ import type {
   MarketReviewRequest,
   TaskStatus,
   TaskListResponse,
-} from '../types/analysis';
+} from "../types/analysis";
 
 // ============ API Interfaces ============
 
@@ -24,7 +24,7 @@ export const analysisApi = {
     const requestData = {
       stock_code: data.stockCode,
       stock_codes: data.stockCodes,
-      report_type: data.reportType || 'detailed',
+      report_type: data.reportType || "detailed",
       force_refresh: data.forceRefresh || false,
       async_mode: data.asyncMode || false,
       stock_name: data.stockName,
@@ -34,14 +34,14 @@ export const analysisApi = {
     };
 
     const response = await apiClient.post<Record<string, unknown>>(
-      '/api/v1/analysis/analyze',
-      requestData
+      "/api/v1/analysis/analyze",
+      requestData,
     );
 
     const result = toCamelCase<AnalyzeResponse>(response.data);
 
     // Ensure the sync analysis report payload is converted recursively.
-    if ('report' in result && result.report) {
+    if ("report" in result && result.report) {
       result.report = toCamelCase<AnalysisReport>(result.report);
     }
 
@@ -53,11 +53,13 @@ export const analysisApi = {
    * @param data Analysis request payload
    * @returns Accepted task payloads; throws DuplicateTaskError on 409
    */
-  analyzeAsync: async (data: AnalysisRequest): Promise<AnalyzeAsyncResponse> => {
+  analyzeAsync: async (
+    data: AnalysisRequest,
+  ): Promise<AnalyzeAsyncResponse> => {
     const requestData = {
       stock_code: data.stockCode,
       stock_codes: data.stockCodes,
-      report_type: data.reportType || 'detailed',
+      report_type: data.reportType || "detailed",
       force_refresh: data.forceRefresh || false,
       async_mode: true,
       stock_name: data.stockName,
@@ -67,12 +69,13 @@ export const analysisApi = {
     };
 
     const response = await apiClient.post<Record<string, unknown>>(
-      '/api/v1/analysis/analyze',
+      "/api/v1/analysis/analyze",
       requestData,
       {
         // Allow 202 accepted responses in addition to standard success codes.
-        validateStatus: (status) => status === 200 || status === 202 || status === 409,
-      }
+        validateStatus: (status) =>
+          status === 200 || status === 202 || status === 409,
+      },
     );
 
     // Handle duplicate submission compatibility.
@@ -83,7 +86,11 @@ export const analysisApi = {
         stockCode: string;
         existingTaskId: string;
       }>(response.data);
-      throw new DuplicateTaskError(errorData.stockCode, errorData.existingTaskId, errorData.message);
+      throw new DuplicateTaskError(
+        errorData.stockCode,
+        errorData.existingTaskId,
+        errorData.message,
+      );
     }
 
     return toCamelCase<AnalyzeAsyncResponse>(response.data);
@@ -92,23 +99,26 @@ export const analysisApi = {
   /**
    * Trigger market review in background mode.
    */
-  triggerMarketReview: async (data: MarketReviewRequest = {}): Promise<MarketReviewAccepted> => {
+  triggerMarketReview: async (
+    data: MarketReviewRequest = {},
+  ): Promise<MarketReviewAccepted> => {
     const response = await apiClient.post<Record<string, unknown>>(
-      '/api/v1/analysis/market-review',
+      "/api/v1/analysis/market-review",
       {
         send_notification: data.sendNotification ?? true,
       },
       {
         validateStatus: (status) => status === 202 || status === 409,
-      }
+      },
     );
 
     if (response.status === 409) {
       const detail = response.data?.detail;
-      const message = detail && typeof detail === 'object' && 'message' in detail
-        ? String((detail as { message?: unknown }).message || '')
-        : String(response.data?.message || '');
-      throw new Error(message || '大盘复盘正在执行中，请稍后再试');
+      const message =
+        detail && typeof detail === "object" && "message" in detail
+          ? String((detail as { message?: unknown }).message || "")
+          : String(response.data?.message || "");
+      throw new Error(message || "大盘复盘正在执行中，请稍后再试");
     }
 
     return toCamelCase<MarketReviewAccepted>(response.data);
@@ -120,7 +130,7 @@ export const analysisApi = {
    */
   getStatus: async (taskId: string): Promise<TaskStatus> => {
     const response = await apiClient.get<Record<string, unknown>>(
-      `/api/v1/analysis/status/${taskId}`
+      `/api/v1/analysis/status/${taskId}`,
     );
 
     const data = toCamelCase<TaskStatus>(response.data);
@@ -145,8 +155,8 @@ export const analysisApi = {
     limit?: number;
   }): Promise<TaskListResponse> => {
     const response = await apiClient.get<Record<string, unknown>>(
-      '/api/v1/analysis/tasks',
-      { params }
+      "/api/v1/analysis/tasks",
+      { params },
     );
 
     const data = toCamelCase<TaskListResponse>(response.data);
@@ -159,7 +169,7 @@ export const analysisApi = {
    */
   getTaskStreamUrl: (): string => {
     // Read API base URL from the shared client.
-    const baseUrl = apiClient.defaults.baseURL || '';
+    const baseUrl = apiClient.defaults.baseURL || "";
     return `${baseUrl}/api/v1/analysis/tasks/stream`;
   },
 };
@@ -175,7 +185,7 @@ export class DuplicateTaskError extends Error {
 
   constructor(stockCode: string, existingTaskId: string, message?: string) {
     super(message || `股票 ${stockCode} 正在分析中`);
-    this.name = 'DuplicateTaskError';
+    this.name = "DuplicateTaskError";
     this.stockCode = stockCode;
     this.existingTaskId = existingTaskId;
   }

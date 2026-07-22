@@ -40,25 +40,25 @@ English | [简体中文](../README.md) | [繁體中文](README_CHT.md)
 
 ## ✨ Key Features
 
-| Capability | Coverage |
-|------------|----------|
-| AI decision reports | Core conclusion, score, trend, entry/exit levels, risk alerts, catalysts, and action checklist |
-| Multi-market data | A-shares, Hong Kong, US stocks, ETFs; quotes, K-lines, technicals, capital flow, chips, news, announcements, and fundamentals |
-| Web / desktop workspace | Manual analysis, task progress, history, full Markdown reports, backtest, portfolio, settings, and light/dark themes |
-| Agent strategy chat | Multi-turn Q&A with 11 built-in strategies across Web/Bot/API |
-| Smart import & autocomplete | Image, CSV/Excel, clipboard import; code/name/pinyin/alias autocomplete |
-| Automation & notifications | GitHub Actions, Docker, local scheduler, FastAPI service, and WeChat Work / Feishu / Telegram / Discord / Slack / Email delivery |
+| Capability                  | Coverage                                                                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| AI decision reports         | Core conclusion, score, trend, entry/exit levels, risk alerts, catalysts, and action checklist                                   |
+| Multi-market data           | A-shares, Hong Kong, US stocks, ETFs; quotes, K-lines, technicals, capital flow, chips, news, announcements, and fundamentals    |
+| Web / desktop workspace     | Manual analysis, task progress, history, full Markdown reports, backtest, portfolio, settings, and light/dark themes             |
+| Agent strategy chat         | Multi-turn Q&A with 11 built-in strategies across Web/Bot/API                                                                    |
+| Smart import & autocomplete | Image, CSV/Excel, clipboard import; code/name/pinyin/alias autocomplete                                                          |
+| Automation & notifications  | GitHub Actions, Docker, local scheduler, FastAPI service, and WeChat Work / Feishu / Telegram / Discord / Slack / Email delivery |
 
 > Detailed fields, fundamental P0 timeout semantics, trading rules, data-source priority, Web/API behavior, and troubleshooting live in the [Full Guide](./full-guide_EN.md).
 
 ### Tech Stack & Data Sources
 
-| Type | Supported |
-|------|-----------|
-| AI Models | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC), [AIHubMix](https://aihubmix.com/?aff=CfMq), Gemini, OpenAI-compatible providers, DeepSeek, Qwen, Claude, Ollama |
-| Market Data | [TickFlow](https://tickflow.org/auth/register?ref=WDSGSPS5XC), AkShare, Tushare, Pytdx, Baostock, YFinance, Longbridge |
-| News Search | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC), [SerpAPI](https://serpapi.com/baidu-search-api?utm_source=github_daily_stock_analysis), [Tavily](https://tavily.com/), [Bocha](https://open.bocha.cn/), [Brave](https://brave.com/search/api/), [MiniMax](https://platform.minimaxi.com/), SearXNG |
-| Social Sentiment | [Stock Sentiment API](https://api.adanos.org/docs) for Reddit / X / Polymarket, US stocks only |
+| Type             | Supported                                                                                                                                                                                                                                                                                                   |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI Models        | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC), [AIHubMix](https://aihubmix.com/?aff=CfMq), Gemini, OpenAI-compatible providers, DeepSeek, Qwen, Claude, Ollama                                                                                                                                    |
+| Market Data      | [TickFlow](https://tickflow.org/auth/register?ref=WDSGSPS5XC), AkShare, Tushare, Pytdx, Baostock, YFinance, Longbridge                                                                                                                                                                                      |
+| News Search      | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC), [SerpAPI](https://serpapi.com/baidu-search-api?utm_source=github_daily_stock_analysis), [Tavily](https://tavily.com/), [Bocha](https://open.bocha.cn/), [Brave](https://brave.com/search/api/), [MiniMax](https://platform.minimaxi.com/), SearXNG |
+| Social Sentiment | [Stock Sentiment API](https://api.adanos.org/docs) for Reddit / X / Polymarket, US stocks only                                                                                                                                                                                                              |
 
 > Full behavior is documented in [Data Source Configuration](./full-guide_EN.md#data-source-configuration).
 
@@ -80,49 +80,49 @@ Open your forked repository, then go to `Settings` -> `Secrets and variables` ->
 
 Start with one provider and one API key. For multi-model routing, image recognition, local models, or advanced routing, see the [LLM Config Guide](./LLM_CONFIG_GUIDE_EN.md).
 
-| Secret Name | Description | Required |
-|-------------|-------------|:--------:|
-| `ANSPIRE_API_KEYS` | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC) API key, one key for popular LLMs and web search with free quota for this project | **Recommended** |
-| `AIHUBMIX_KEY` | [AIHubMix](https://aihubmix.com/?aff=CfMq) API key, one key for multiple model families and a 10% top-up discount for this project | **Recommended** |
-| `GEMINI_API_KEY` | Google Gemini API key | Optional |
-| `ANTHROPIC_API_KEY` | Anthropic Claude API key | Optional |
-| `OPENAI_API_KEY` | OpenAI-compatible API key, including DeepSeek and Qwen-compatible services | Optional |
-| `OPENAI_BASE_URL` / `OPENAI_MODEL` | Fill these when using an OpenAI-compatible provider | Optional |
+| Secret Name                        | Description                                                                                                                               |    Required     |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | :-------------: |
+| `ANSPIRE_API_KEYS`                 | [Anspire](https://open.anspire.cn/?share_code=QFBC0FYC) API key, one key for popular LLMs and web search with free quota for this project | **Recommended** |
+| `AIHUBMIX_KEY`                     | [AIHubMix](https://aihubmix.com/?aff=CfMq) API key, one key for multiple model families and a 10% top-up discount for this project        | **Recommended** |
+| `GEMINI_API_KEY`                   | Google Gemini API key                                                                                                                     |    Optional     |
+| `ANTHROPIC_API_KEY`                | Anthropic Claude API key                                                                                                                  |    Optional     |
+| `OPENAI_API_KEY`                   | OpenAI-compatible API key, including DeepSeek and Qwen-compatible services                                                                |    Optional     |
+| `OPENAI_BASE_URL` / `OPENAI_MODEL` | Fill these when using an OpenAI-compatible provider                                                                                       |    Optional     |
 
 > Ollama is better suited for local or Docker deployment. GitHub Actions is usually smoother with a cloud API.
 
 **Notification channels (configure at least one)**
 
-| Secret Name | Description |
-|-------------|-------------|
-| `WECHAT_WEBHOOK_URL` | WeChat Work bot |
-| `FEISHU_WEBHOOK_URL` | Feishu bot |
-| `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` | Telegram |
-| `DISCORD_WEBHOOK_URL` | Discord webhook |
-| `SLACK_BOT_TOKEN` + `SLACK_CHANNEL_ID` | Slack bot |
-| `EMAIL_SENDER` + `EMAIL_PASSWORD` | Email push |
+| Secret Name                               | Description     |
+| ----------------------------------------- | --------------- |
+| `WECHAT_WEBHOOK_URL`                      | WeChat Work bot |
+| `FEISHU_WEBHOOK_URL`                      | Feishu bot      |
+| `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` | Telegram        |
+| `DISCORD_WEBHOOK_URL`                     | Discord webhook |
+| `SLACK_BOT_TOKEN` + `SLACK_CHANNEL_ID`    | Slack bot       |
+| `EMAIL_SENDER` + `EMAIL_PASSWORD`         | Email push      |
 
 More channels, signatures, email groups, and Markdown-to-image settings are in [Notification Configuration](./full-guide_EN.md#notification-channel-configuration).
 
 **Watchlist (required)**
 
-| Secret Name | Description | Required |
-|-------------|-------------|:--------:|
-| `STOCK_LIST` | Watchlist codes, such as `600519,hk00700,AAPL,TSLA` | ✅ |
+| Secret Name  | Description                                         | Required |
+| ------------ | --------------------------------------------------- | :------: |
+| `STOCK_LIST` | Watchlist codes, such as `600519,hk00700,AAPL,TSLA` |    ✅    |
 
 **News sources (recommended)**
 
 News search strongly improves sentiment, announcements, events, and catalyst quality. Configure at least one search provider if possible.
 
-| Secret Name | Description | Required |
-|-------------|-------------|:--------:|
-| `ANSPIRE_API_KEYS` | [Anspire AI Search](https://aisearch.anspire.cn/), optimized for Chinese content and A-share analysis; the same key can also be used for Anspire LLM fallback examples | **Recommended** |
-| `SERPAPI_API_KEYS` | [SerpAPI](https://serpapi.com/baidu-search-api?utm_source=github_daily_stock_analysis), search-engine results for realtime financial news | **Recommended** |
-| `TAVILY_API_KEYS` | [Tavily](https://tavily.com/), general news search API | Optional |
-| `BOCHA_API_KEYS` | [Bocha](https://open.bocha.cn/), Chinese search with AI summaries | Optional |
-| `BRAVE_API_KEYS` | [Brave Search](https://brave.com/search/api/), privacy-first search and US-stock news enrichment | Optional |
-| `MINIMAX_API_KEYS` | [MiniMax](https://platform.minimaxi.com/), structured search results | Optional |
-| `SEARXNG_BASE_URLS` | Self-hosted SearXNG instances for quota-free fallback | Optional |
+| Secret Name         | Description                                                                                                                                                            |    Required     |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------: |
+| `ANSPIRE_API_KEYS`  | [Anspire AI Search](https://aisearch.anspire.cn/), optimized for Chinese content and A-share analysis; the same key can also be used for Anspire LLM fallback examples | **Recommended** |
+| `SERPAPI_API_KEYS`  | [SerpAPI](https://serpapi.com/baidu-search-api?utm_source=github_daily_stock_analysis), search-engine results for realtime financial news                              | **Recommended** |
+| `TAVILY_API_KEYS`   | [Tavily](https://tavily.com/), general news search API                                                                                                                 |    Optional     |
+| `BOCHA_API_KEYS`    | [Bocha](https://open.bocha.cn/), Chinese search with AI summaries                                                                                                      |    Optional     |
+| `BRAVE_API_KEYS`    | [Brave Search](https://brave.com/search/api/), privacy-first search and US-stock news enrichment                                                                       |    Optional     |
+| `MINIMAX_API_KEYS`  | [MiniMax](https://platform.minimaxi.com/), structured search results                                                                                                   |    Optional     |
+| `SEARXNG_BASE_URLS` | Self-hosted SearXNG instances for quota-free fallback                                                                                                                  |    Optional     |
 
 More search providers, social sentiment, and fallback behavior are in [Search Configuration](./full-guide_EN.md#search-service-configuration).
 
@@ -195,6 +195,7 @@ Catalyst 2: Recent earnings growth provides fundamental support.
 🎯 2026-01-10 Market Review
 
 📊 Major Indices
+
 - SSE Composite: 3250.12 (+0.85%)
 - SZSE Component: 10521.36 (+1.02%)
 - ChiNext: 2156.78 (+1.35%)
@@ -233,10 +234,10 @@ After configuring any available AI API key, the Web `/chat` page can use strateg
 
 > DSA focuses on daily analysis reports. These sibling projects cover stock screening, strategy validation, and strategy evolution for users who want to extend the workflow. They are maintained independently today, with candidate import, backtest validation, and report handoff planned as future integration directions.
 
-| Project | Focus |
-|---------|-------|
-| [AlphaSift](https://github.com/ZhuLinsen/alphasift) | Multi-factor stock screening and full-market scanning for building candidate watchlists |
-| [AlphaEvo](https://github.com/ZhuLinsen/alphaevo) | Strategy backtesting and self-evolution experiments for validating rules and iteratively exploring strategy parameters and combinations |
+| Project                                             | Focus                                                                                                                                   |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| [AlphaSift](https://github.com/ZhuLinsen/alphasift) | Multi-factor stock screening and full-market scanning for building candidate watchlists                                                 |
+| [AlphaEvo](https://github.com/ZhuLinsen/alphaevo)   | Strategy backtesting and self-evolution experiments for validating rules and iteratively exploring strategy parameters and combinations |
 
 ## 📞 Contact
 

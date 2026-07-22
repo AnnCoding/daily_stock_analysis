@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 type Particle = {
   x: number;
@@ -10,7 +10,12 @@ type Particle = {
   baseAlpha: number;
 };
 
-const PARTICLE_COLORS = ['14, 165, 233', '16, 185, 129', '59, 130, 246', '139, 92, 246'];
+const PARTICLE_COLORS = [
+  "14, 165, 233",
+  "16, 185, 129",
+  "59, 130, 246",
+  "139, 92, 246",
+];
 
 function createParticle(canvas: HTMLCanvasElement): Particle {
   return {
@@ -49,7 +54,7 @@ export const ParticleBackground = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     let animationFrameId: number;
@@ -86,7 +91,7 @@ export const ParticleBackground = () => {
           c.moveTo(particles[i].x, particles[i].y);
           c.lineTo(mouse.x, mouse.y);
           c.stroke();
-          
+
           const force = (250 - distMouse) / 250;
           particles[i].x += (dxMouse / distMouse) * force * 2.0;
           particles[i].y += (dyMouse / distMouse) * force * 2.0;
@@ -133,17 +138,17 @@ export const ParticleBackground = () => {
       mouse.y = -1000;
     };
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseout', handleMouseOut);
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseout", handleMouseOut);
 
     resize();
     animate();
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseout', handleMouseOut);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseout", handleMouseOut);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
@@ -152,7 +157,7 @@ export const ParticleBackground = () => {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 z-0 pointer-events-none"
-      style={{ background: 'transparent' }}
+      style={{ background: "transparent" }}
     />
   );
 };

@@ -3,11 +3,11 @@ name: Docker Release Publish
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag in semver format, e.g. v3.0.6'
+        description: "Release tag in semver format, e.g. v3.0.6"
         required: true
         type: string
 
@@ -51,8 +51,8 @@ jobs:
 
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
 
       - name: Install backend gate dependencies
         run: |

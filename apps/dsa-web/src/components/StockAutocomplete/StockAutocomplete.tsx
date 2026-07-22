@@ -5,17 +5,17 @@
  * Supports keyboard navigation, IME input method, graceful degradation
  */
 
-import { Component, useRef, useEffect, useState } from 'react';
-import type { KeyboardEvent } from 'react';
-import type { ErrorInfo, ReactNode } from 'react';
-import { createPortal } from 'react-dom';
-import { useStockIndex } from '../../hooks/useStockIndex';
-import { useAutocomplete } from '../../hooks/useAutocomplete';
-import { SuggestionsList } from './SuggestionsList';
-import { cn } from '../../utils/cn';
+import { Component, useRef, useEffect, useState } from "react";
+import type { KeyboardEvent } from "react";
+import type { ErrorInfo, ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { useStockIndex } from "../../hooks/useStockIndex";
+import { useAutocomplete } from "../../hooks/useAutocomplete";
+import { SuggestionsList } from "./SuggestionsList";
+import { cn } from "../../utils/cn";
 
 const AUTOCOMPLETE_INPUT_CLASS =
-  'input-surface input-focus-glow h-11 w-full rounded-xl border bg-transparent px-4 text-sm transition-all focus:outline-none disabled:cursor-not-allowed disabled:opacity-60';
+  "input-surface input-focus-glow h-11 w-full rounded-xl border bg-transparent px-4 text-sm transition-all focus:outline-none disabled:cursor-not-allowed disabled:opacity-60";
 
 export interface StockAutocompleteProps {
   /** Input value */
@@ -23,7 +23,11 @@ export interface StockAutocompleteProps {
   /** Value change callback */
   onChange: (value: string) => void;
   /** Submit callback (code, name, source) */
-  onSubmit: (code: string, name?: string, source?: 'manual' | 'autocomplete') => void;
+  onSubmit: (
+    code: string,
+    name?: string,
+    source?: "manual" | "autocomplete",
+  ) => void;
   /** Whether disabled */
   disabled?: boolean;
   /** Placeholder text */
@@ -37,7 +41,7 @@ function FallbackInput({
   onChange,
   onSubmit,
   disabled = false,
-  placeholder = '输入股票代码或名称',
+  placeholder = "输入股票代码或名称",
   className,
 }: StockAutocompleteProps) {
   return (
@@ -46,7 +50,7 @@ function FallbackInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' && !disabled && value) {
+        if (e.key === "Enter" && !disabled && value) {
           onSubmit(value);
         }
       }}
@@ -77,7 +81,11 @@ class StockAutocompleteBoundary extends Component<
   }
 
   override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Autocomplete runtime error. Falling back to plain input.', error, errorInfo);
+    console.error(
+      "Autocomplete runtime error. Falling back to plain input.",
+      error,
+      errorInfo,
+    );
   }
 
   override render() {
@@ -96,7 +104,7 @@ function StockAutocompleteInner({
   onChange,
   onSubmit,
   disabled = false,
-  placeholder = '输入股票代码或名称',
+  placeholder = "输入股票代码或名称",
   className,
 }: StockAutocompleteProps) {
   const { index, loading, fallback } = useStockIndex();
@@ -119,7 +127,11 @@ function StockAutocompleteInner({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const prevValueRef = useRef(value);
-  const [dropdownStyle, setDropdownStyle] = useState<{ top: number; left: number; width: string } | null>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<{
+    top: number;
+    left: number;
+    width: string;
+  } | null>(null);
 
   const updateDropdownPosition = () => {
     if (!inputRef.current) {
@@ -155,13 +167,13 @@ function StockAutocompleteInner({
     }
 
     const frameId = window.requestAnimationFrame(updateDropdownPosition);
-    window.addEventListener('resize', updateDropdownPosition);
-    window.addEventListener('scroll', updateDropdownPosition, true);
+    window.addEventListener("resize", updateDropdownPosition);
+    window.addEventListener("scroll", updateDropdownPosition, true);
 
     return () => {
       window.cancelAnimationFrame(frameId);
-      window.removeEventListener('resize', updateDropdownPosition);
-      window.removeEventListener('scroll', updateDropdownPosition, true);
+      window.removeEventListener("resize", updateDropdownPosition);
+      window.removeEventListener("scroll", updateDropdownPosition, true);
     };
   }, [isOpen]);
 
@@ -170,7 +182,10 @@ function StockAutocompleteInner({
       return;
     }
 
-    console.error('Autocomplete runtime fallback activated.', autocompleteError);
+    console.error(
+      "Autocomplete runtime fallback activated.",
+      autocompleteError,
+    );
   }, [autocompleteError]);
 
   // Keyboard event handling
@@ -179,28 +194,28 @@ function StockAutocompleteInner({
     if (isComposing) return;
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
         highlightNext();
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         e.preventDefault();
         highlightPrevious();
         break;
-      case 'Enter':
+      case "Enter":
         e.preventDefault();
         if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
           // Select highlighted item
           const selected = suggestions[highlightedIndex];
           onChange(selected.displayCode);
           closeSuggestions();
-          onSubmit(selected.canonicalCode, selected.nameZh, 'autocomplete');
+          onSubmit(selected.canonicalCode, selected.nameZh, "autocomplete");
         } else {
           // Submit directly
           onSubmit(value);
         }
         break;
-      case 'Escape':
+      case "Escape":
         e.preventDefault();
         closeSuggestions();
         break;
@@ -256,7 +271,7 @@ function StockAutocompleteInner({
         className={cn(
           AUTOCOMPLETE_INPUT_CLASS,
           isOpen && "rounded-b-none",
-          className
+          className,
         )}
         aria-autocomplete="none"
         role="combobox"
@@ -273,23 +288,25 @@ function StockAutocompleteInner({
       )}
 
       {/* Suggestion dropdown list */}
-      {isOpen && dropdownStyle && createPortal(
-        <SuggestionsList
-          suggestions={suggestions}
-          highlightedIndex={highlightedIndex}
-          onSelect={(s) => {
-            // Update external value (shown in input box)
-            onChange(s.displayCode);
-            // Close dropdown list
-            closeSuggestions();
-            // Submit analysis
-            onSubmit(s.canonicalCode, s.nameZh, 'autocomplete');
-          }}
-          onMouseEnter={(index) => setHighlightedIndex(index)}
-          style={{ position: 'fixed', ...dropdownStyle }}
-        />,
-        document.body
-      )}
+      {isOpen &&
+        dropdownStyle &&
+        createPortal(
+          <SuggestionsList
+            suggestions={suggestions}
+            highlightedIndex={highlightedIndex}
+            onSelect={(s) => {
+              // Update external value (shown in input box)
+              onChange(s.displayCode);
+              // Close dropdown list
+              closeSuggestions();
+              // Submit analysis
+              onSubmit(s.canonicalCode, s.nameZh, "autocomplete");
+            }}
+            onMouseEnter={(index) => setHighlightedIndex(index)}
+            style={{ position: "fixed", ...dropdownStyle }}
+          />,
+          document.body,
+        )}
     </div>
   );
 }

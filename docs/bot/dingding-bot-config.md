@@ -1,6 +1,7 @@
 # 钉钉企业机器人配置
 
 ## 钉钉机器人
+
 钉钉机器人接收消息需要使用企业机器人能力
 https://open.dingtalk.com/document/dingstart/configure-the-robot-application
 
@@ -19,13 +20,16 @@ https://open.dingtalk.com/document/dingstart/configure-the-robot-application
 ![configbot.png](configbot.png)
 
 ### 获取应用凭证
+
 ![img.png](appkey.png)
 
 ### 配置钉钉凭证
+
 把钉钉应用凭证配置到配置文件中
 ![img.png](envconfig.png)
 
 ### 发布应用
+
 ![img.png](img.png)
 
 ![img.png](group.png)
@@ -33,7 +37,9 @@ https://open.dingtalk.com/document/dingstart/configure-the-robot-application
 ![img.png](add-group-bot.png)
 
 ### 往下滚动会看到增加的企业机器人
+
 ![img_1.png](img_1.png)
 
 ### 测试机器人命令
+
 ![img_3.png](img_3.png)

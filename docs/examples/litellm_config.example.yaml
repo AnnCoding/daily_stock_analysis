@@ -86,8 +86,8 @@ model_list:
 # Router 设置（可选）
 # ===================================
 router_settings:
-  routing_strategy: simple-shuffle    # simple-shuffle / least-busy / latency-based
-  num_retries: 2                      # 单个 deployment 失败后重试次数
+  routing_strategy: simple-shuffle # simple-shuffle / least-busy / latency-based
+  num_retries: 2 # 单个 deployment 失败后重试次数
   # timeout: 30                       # 请求超时（秒）
   # allowed_fails: 3                  # deployment 被冷却前允许的失败次数
   # cooldown_time: 60                 # deployment 冷却时间（秒）

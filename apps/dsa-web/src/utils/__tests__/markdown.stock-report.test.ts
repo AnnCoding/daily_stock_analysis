@@ -1,12 +1,12 @@
-import { describe, expect, it } from 'vitest';
-import { markdownToPlainText } from '../markdown';
+import { describe, expect, it } from "vitest";
+import { markdownToPlainText } from "../markdown";
 
 /**
  * Stock report specific tests for markdownToPlainText
  * Tests real-world stock analysis report scenarios
  */
-describe('markdownToPlainText - Stock Report Scenarios', () => {
-  it('handles typical Chinese stock report with tables and indicators', () => {
+describe("markdownToPlainText - Stock Report Scenarios", () => {
+  it("handles typical Chinese stock report with tables and indicators", () => {
     const stockReport = `# 贵州茅台 (600519) 分析报告
 
 ## 技术分析
@@ -42,15 +42,15 @@ target = 1750
     const result = markdownToPlainText(stockReport);
 
     // Verify key content is preserved
-    expect(result).toContain('贵州茅台');
-    expect(result).toContain('600519');
-    expect(result).toContain('技术分析');
-    expect(result).toContain('MACD');
-    expect(result).toContain('金叉信号');
-    expect(result).toContain('市盈率');
-    expect(result).toContain('风险提示');
-    expect(result).toContain('entry_zone');
-    expect(result).toContain('查看详细数据');
+    expect(result).toContain("贵州茅台");
+    expect(result).toContain("600519");
+    expect(result).toContain("技术分析");
+    expect(result).toContain("MACD");
+    expect(result).toContain("金叉信号");
+    expect(result).toContain("市盈率");
+    expect(result).toContain("风险提示");
+    expect(result).toContain("entry_zone");
+    expect(result).toContain("查看详细数据");
 
     // Verify markdown symbols are removed
     expect(result).not.toMatch(/^#{1,6}\s+/m);
@@ -59,7 +59,7 @@ target = 1750
     // This is a known limitation - tables remain pipe-separated
   });
 
-  it('handles Hong Kong stock report with English and Chinese mix', () => {
+  it("handles Hong Kong stock report with English and Chinese mix", () => {
     const hkReport = `# Tencent (00700.HK) Technical Analysis
 
 ## Key Indicators
@@ -85,17 +85,17 @@ RSI(14) = 58.3 (中性偏强)
 
     const result = markdownToPlainText(hkReport);
 
-    expect(result).toContain('Tencent');
-    expect(result).toContain('00700.HK');
-    expect(result).toContain('368.20');
-    expect(result).toContain('Resistance 1');
-    expect(result).toContain('Support 1');
-    expect(result).toContain('建议在回调');
-    expect(result).toContain('MA5 > MA10');
-    expect(result).toContain('Click for more details');
+    expect(result).toContain("Tencent");
+    expect(result).toContain("00700.HK");
+    expect(result).toContain("368.20");
+    expect(result).toContain("Resistance 1");
+    expect(result).toContain("Support 1");
+    expect(result).toContain("建议在回调");
+    expect(result).toContain("MA5 > MA10");
+    expect(result).toContain("Click for more details");
   });
 
-  it('handles US stock report with financial data', () => {
+  it("handles US stock report with financial data", () => {
     const usReport = `# Apple Inc. (AAPL) Analysis Report
 
 ## Financial Metrics
@@ -132,16 +132,16 @@ const riskReward = (targetPrice - entryPrice) / (entryPrice - stopLoss);
 
     const result = markdownToPlainText(usReport);
 
-    expect(result).toContain('Apple Inc.');
-    expect(result).toContain('AAPL');
-    expect(result).toContain('178.35');
-    expect(result).toContain('2.8T');
-    expect(result).toContain('Strong Buy');
-    expect(result).toContain('195.00');
-    expect(result).toContain('Risk/Reward ratio');
+    expect(result).toContain("Apple Inc.");
+    expect(result).toContain("AAPL");
+    expect(result).toContain("178.35");
+    expect(result).toContain("2.8T");
+    expect(result).toContain("Strong Buy");
+    expect(result).toContain("195.00");
+    expect(result).toContain("Risk/Reward ratio");
   });
 
-  it('handles market review report with multiple stocks', () => {
+  it("handles market review report with multiple stocks", () => {
     const marketReview = `# A股市场复盘
 
 ## 指数表现
@@ -180,17 +180,17 @@ const riskReward = (targetPrice - entryPrice) / (entryPrice - stopLoss);
 
     const result = markdownToPlainText(marketReview);
 
-    expect(result).toContain('A股市场复盘');
-    expect(result).toContain('上证指数');
-    expect(result).toContain('3050.32');
-    expect(result).toContain('人工智能');
-    expect(result).toContain('科大讯飞');
-    expect(result).toContain('北向资金');
-    expect(result).toContain('85.5亿');
-    expect(result).toContain('3040-3065');
+    expect(result).toContain("A股市场复盘");
+    expect(result).toContain("上证指数");
+    expect(result).toContain("3050.32");
+    expect(result).toContain("人工智能");
+    expect(result).toContain("科大讯飞");
+    expect(result).toContain("北向资金");
+    expect(result).toContain("85.5亿");
+    expect(result).toContain("3040-3065");
   });
 
-  it('handles report with special characters and formulas', () => {
+  it("handles report with special characters and formulas", () => {
     const report = `# 技术指标计算
 
 ## MACD 计算
@@ -226,15 +226,15 @@ $$RSI = 100 - \frac{100}{1 + RS}$$
 
     const result = markdownToPlainText(report);
 
-    expect(result).toContain('MACD 计算');
-    expect(result).toContain('EMA(12) - EMA(26)');
-    expect(result).toContain('RSI');
-    expect(result).toContain('布林带');
-    expect(result).toContain('MA(20)');
-    expect(result).toContain('注意回调风险');
+    expect(result).toContain("MACD 计算");
+    expect(result).toContain("EMA(12) - EMA(26)");
+    expect(result).toContain("RSI");
+    expect(result).toContain("布林带");
+    expect(result).toContain("MA(20)");
+    expect(result).toContain("注意回调风险");
   });
 
-  it('handles report with code snippets in multiple languages', () => {
+  it("handles report with code snippets in multiple languages", () => {
     const report = `# 策略回测代码
 
 ## Python 策略
@@ -261,16 +261,16 @@ def moving_average_strategy(data, short=5, long=20):
     const result = markdownToPlainText(report);
 
     // Verify key content is preserved
-    expect(result).toContain('策略回测代码');
-    expect(result).toContain('Python 策略');
-    expect(result).toContain('以上代码可直接用于策略回测');
+    expect(result).toContain("策略回测代码");
+    expect(result).toContain("Python 策略");
+    expect(result).toContain("以上代码可直接用于策略回测");
 
     // Verify code content is preserved
-    expect(result).toContain('import pandas');
-    expect(result).toContain('moving_average_strategy');
+    expect(result).toContain("import pandas");
+    expect(result).toContain("moving_average_strategy");
   });
 
-  it('handles edge case: very long stock code list', () => {
+  it("handles edge case: very long stock code list", () => {
     const stockList = `# 股票池列表
 
 ## 沪深300成分股（部分）
@@ -298,16 +298,16 @@ def moving_average_strategy(data, short=5, long=20):
     const result = markdownToPlainText(stockList);
 
     // Verify all stock codes are preserved
-    expect(result).toContain('600519');
-    expect(result).toContain('000858');
-    expect(result).toContain('601012');
-    expect(result).toContain('贵州茅台');
-    expect(result).toContain('宁德时代');
-    expect(result).toContain('筛选条件');
-    expect(result).toContain('ROE');
+    expect(result).toContain("600519");
+    expect(result).toContain("000858");
+    expect(result).toContain("601012");
+    expect(result).toContain("贵州茅台");
+    expect(result).toContain("宁德时代");
+    expect(result).toContain("筛选条件");
+    expect(result).toContain("ROE");
   });
 
-  it('handles mixed Chinese and English punctuation correctly', () => {
+  it("handles mixed Chinese and English punctuation correctly", () => {
     const text = `# 报告摘要
 
 **主要观点**：
@@ -323,16 +323,16 @@ def moving_average_strategy(data, short=5, long=20):
 
     const result = markdownToPlainText(text);
 
-    expect(result).toContain('主要观点');
-    expect(result).toContain('短期看涨');
-    expect(result).toContain('195.00');
-    expect(result).toContain('Risk: Trade war impact');
-    expect(result).toContain('风险提示');
-    expect(result).toContain('关注点');
-    expect(result).toContain('AI chip business');
+    expect(result).toContain("主要观点");
+    expect(result).toContain("短期看涨");
+    expect(result).toContain("195.00");
+    expect(result).toContain("Risk: Trade war impact");
+    expect(result).toContain("风险提示");
+    expect(result).toContain("关注点");
+    expect(result).toContain("AI chip business");
   });
 
-  it('preserves numerical data and percentages accurately', () => {
+  it("preserves numerical data and percentages accurately", () => {
     const report = `# 数据报告
 
 ## 关键指标
@@ -354,11 +354,11 @@ def moving_average_strategy(data, short=5, long=20):
 
     const result = markdownToPlainText(report);
 
-    expect(result).toContain('1,234.56');
-    expect(result).toContain('23.45%');
-    expect(result).toContain('15.67%');
-    expect(result).toContain('1680.50');
-    expect(result).toContain('1695.30');
-    expect(result).toContain('1.23%');
+    expect(result).toContain("1,234.56");
+    expect(result).toContain("23.45%");
+    expect(result).toContain("15.67%");
+    expect(result).toContain("1680.50");
+    expect(result).toContain("1695.30");
+    expect(result).toContain("1.23%");
   });
 });

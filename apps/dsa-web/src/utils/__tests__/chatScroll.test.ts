@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import { isNearBottom } from '../chatScroll';
+import { describe, expect, it } from "vitest";
+import { isNearBottom } from "../chatScroll";
 
-describe('isNearBottom', () => {
-  it('returns true when the viewport is within the default threshold', () => {
+describe("isNearBottom", () => {
+  it("returns true when the viewport is within the default threshold", () => {
     expect(
       isNearBottom({
         scrollTop: 604,
@@ -12,7 +12,7 @@ describe('isNearBottom', () => {
     ).toBe(true);
   });
 
-  it('returns false when the viewport is far from the bottom', () => {
+  it("returns false when the viewport is far from the bottom", () => {
     expect(
       isNearBottom({
         scrollTop: 240,

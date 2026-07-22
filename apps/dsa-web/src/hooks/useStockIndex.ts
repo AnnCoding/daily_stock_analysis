@@ -4,10 +4,10 @@
  * Manage stock index loading and state
  */
 
-import { useState, useEffect } from 'react';
-import type { StockIndexItem } from '../types/stockIndex';
-import { loadStockIndex } from '../utils/stockIndexLoader';
-import type { IndexLoadResult } from '../utils/stockIndexLoader';
+import { useState, useEffect } from "react";
+import type { StockIndexItem } from "../types/stockIndex";
+import { loadStockIndex } from "../utils/stockIndexLoader";
+import type { IndexLoadResult } from "../utils/stockIndexLoader";
 
 export interface UseStockIndexResult {
   /** Stock index data */
@@ -63,7 +63,7 @@ export function useStockIndex(): UseStockIndexResult {
     index,
     loading,
     error,
-    fallback,  // Whether fallback
+    fallback, // Whether fallback
     loaded: !loading,
   };
 }

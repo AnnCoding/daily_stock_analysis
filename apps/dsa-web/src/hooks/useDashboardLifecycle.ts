@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
-import type { TaskInfo } from '../types/analysis';
-import { useTaskStream } from './useTaskStream';
+import { useEffect, useRef } from "react";
+import type { TaskInfo } from "../types/analysis";
+import { useTaskStream } from "./useTaskStream";
 
 type UseDashboardLifecycleOptions = {
   loadInitialHistory: () => Promise<void>;
@@ -49,18 +49,21 @@ export function useDashboardLifecycle({
     }
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === "visible") {
         void refreshHistory(true);
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [enabled, refreshHistory]);
 
   useEffect(() => {
     return () => {
-      removalTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+      removalTimeoutsRef.current.forEach((timeoutId) =>
+        window.clearTimeout(timeoutId),
+      );
       removalTimeoutsRef.current = [];
     };
   }, []);
@@ -68,7 +71,9 @@ export function useDashboardLifecycle({
   const scheduleTaskRemoval = (taskId: string, delayMs: number) => {
     const timeoutId = window.setTimeout(() => {
       removeTask(taskId);
-      removalTimeoutsRef.current = removalTimeoutsRef.current.filter((item) => item !== timeoutId);
+      removalTimeoutsRef.current = removalTimeoutsRef.current.filter(
+        (item) => item !== timeoutId,
+      );
     }, delayMs);
 
     removalTimeoutsRef.current.push(timeoutId);
@@ -88,7 +93,7 @@ export function useDashboardLifecycle({
       scheduleTaskRemoval(task.taskId, 5_000);
     },
     onError: () => {
-      console.warn('SSE connection disconnected, reconnecting...');
+      console.warn("SSE connection disconnected, reconnecting...");
     },
     enabled,
   });

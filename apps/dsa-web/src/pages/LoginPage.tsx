@@ -1,13 +1,20 @@
-import type React from 'react';
-import { useState, useEffect } from 'react';
+import type React from "react";
+import { useState, useEffect } from "react";
 import { motion, useMotionValue, useTransform, useSpring } from "motion/react";
-import { Lock, Loader2, Cpu, TrendingUp, Network, ShieldCheck } from "lucide-react";
-import { Button, Input, ParticleBackground } from '../components/common';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import type { ParsedApiError } from '../api/error';
-import { isParsedApiError } from '../api/error';
-import { useAuth } from '../hooks';
-import { SettingsAlert } from '../components/settings';
+import {
+  Lock,
+  Loader2,
+  Cpu,
+  TrendingUp,
+  Network,
+  ShieldCheck,
+} from "lucide-react";
+import { Button, Input, ParticleBackground } from "../components/common";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import type { ParsedApiError } from "../api/error";
+import { isParsedApiError } from "../api/error";
+import { useAuth } from "../hooks";
+import { SettingsAlert } from "../components/settings";
 
 const LoginPage: React.FC = () => {
   const { login, passwordSet, setupState } = useAuth();
@@ -15,19 +22,21 @@ const LoginPage: React.FC = () => {
 
   // Set page title
   useEffect(() => {
-    document.title = '登录 - DSA';
+    document.title = "登录 - DSA";
   }, []);
   const [searchParams] = useSearchParams();
-  const rawRedirect = searchParams.get('redirect') ?? '';
+  const rawRedirect = searchParams.get("redirect") ?? "";
   const redirect =
-    rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/';
+    rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+      ? rawRedirect
+      : "/";
 
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | ParsedApiError | null>(null);
 
-  const isFirstTime = setupState === 'no_password' || !passwordSet;
+  const isFirstTime = setupState === "no_password" || !passwordSet;
 
   // 3D Tilt effect values
   const mouseX = useMotionValue(0);
@@ -52,16 +61,19 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setError(null);
     if (isFirstTime && password !== passwordConfirm) {
-      setError('两次输入的密码不一致');
+      setError("两次输入的密码不一致");
       return;
     }
     setIsSubmitting(true);
     try {
-      const result = await login(password, isFirstTime ? passwordConfirm : undefined);
+      const result = await login(
+        password,
+        isFirstTime ? passwordConfirm : undefined,
+      );
       if (result.success) {
         navigate(redirect, { replace: true });
       } else {
-        setError(result.error ?? '登录失败');
+        setError(result.error ?? "登录失败");
       }
     } finally {
       setIsSubmitting(false);
@@ -116,15 +128,19 @@ const LoginPage: React.FC = () => {
 
           <div className="mt-8 flex flex-col items-center">
             <h2 className="text-4xl font-extrabold tracking-tighter text-[var(--login-text-primary)] sm:text-6xl">
-              <span className="bg-gradient-to-r from-[var(--login-text-primary)] via-[var(--login-text-primary)] to-[var(--login-text-secondary)] bg-clip-text text-transparent">DAILY </span>
-              <span className="bg-gradient-to-r from-[var(--login-brand-start)] to-[var(--login-brand-end)] bg-clip-text text-transparent drop-shadow-[0_0_20px_var(--login-accent-glow)]">STOCK</span>
+              <span className="bg-gradient-to-r from-[var(--login-text-primary)] via-[var(--login-text-primary)] to-[var(--login-text-secondary)] bg-clip-text text-transparent">
+                DAILY{" "}
+              </span>
+              <span className="bg-gradient-to-r from-[var(--login-brand-start)] to-[var(--login-brand-end)] bg-clip-text text-transparent drop-shadow-[0_0_20px_var(--login-accent-glow)]">
+                STOCK
+              </span>
             </h2>
             <h3 className="mt-1 text-xl font-bold uppercase tracking-[0.5em] text-[var(--login-text-muted)]">
               Analysis Engine
             </h3>
           </div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -165,8 +181,8 @@ const LoginPage: React.FC = () => {
               </h1>
               <p className="mt-2 text-sm text-[var(--login-text-secondary)]">
                 {isFirstTime
-                  ? '首次启用认证，请为系统工作台设置管理员密码。'
-                  : '访问 DSA 量化决策引擎需要有效的身份凭证。'}
+                  ? "首次启用认证，请为系统工作台设置管理员密码。"
+                  : "访问 DSA 量化决策引擎需要有效的身份凭证。"}
               </p>
             </div>
 
@@ -178,13 +194,17 @@ const LoginPage: React.FC = () => {
                   appearance="login"
                   allowTogglePassword
                   iconType="password"
-                  label={isFirstTime ? '管理员密码' : '登录密码'}
-                  placeholder={isFirstTime ? '请设置 6 位以上密码' : '请输入密码'}
+                  label={isFirstTime ? "管理员密码" : "登录密码"}
+                  placeholder={
+                    isFirstTime ? "请设置 6 位以上密码" : "请输入密码"
+                  }
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isSubmitting}
                   autoFocus
-                  autoComplete={isFirstTime ? 'new-password' : 'current-password'}
+                  autoComplete={
+                    isFirstTime ? "new-password" : "current-password"
+                  }
                 />
 
                 {isFirstTime && (
@@ -207,11 +227,11 @@ const LoginPage: React.FC = () => {
               {error && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
+                  animate={{ opacity: 1, height: "auto" }}
                   className="overflow-hidden"
                 >
                   <SettingsAlert
-                    title={isFirstTime ? '配置失败' : '验证未通过'}
+                    title={isFirstTime ? "配置失败" : "验证未通过"}
                     message={isParsedApiError(error) ? error.message : error}
                     variant="error"
                     className="!border-[var(--login-error-border)] !bg-[var(--login-error-bg)] !text-[var(--login-error-text)]"
@@ -230,10 +250,14 @@ const LoginPage: React.FC = () => {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>{isFirstTime ? '初始化中...' : '正在建立连接...'}</span>
+                      <span>
+                        {isFirstTime ? "初始化中..." : "正在建立连接..."}
+                      </span>
                     </>
                   ) : (
-                    <span>{isFirstTime ? '完成设置并登录' : '授权进入工作台'}</span>
+                    <span>
+                      {isFirstTime ? "完成设置并登录" : "授权进入工作台"}
+                    </span>
                   )}
                 </div>
                 <div className="absolute inset-0 z-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none" />
@@ -243,7 +267,7 @@ const LoginPage: React.FC = () => {
         </motion.div>
 
         {/* Footer info */}
-        <motion.p 
+        <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
@@ -253,13 +277,17 @@ const LoginPage: React.FC = () => {
         </motion.p>
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @keyframes shimmer {
           100% {
             transform: translateX(100%);
           }
         }
-      `}} />
+      `,
+        }}
+      />
     </div>
   );
 };

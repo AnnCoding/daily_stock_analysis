@@ -1,6 +1,6 @@
-import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useSystemConfig } from '../useSystemConfig';
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useSystemConfig } from "../useSystemConfig";
 
 const { getConfig, validate, update } = vi.hoisted(() => ({
   getConfig: vi.fn(),
@@ -8,7 +8,7 @@ const { getConfig, validate, update } = vi.hoisted(() => ({
   update: vi.fn(),
 }));
 
-vi.mock('../../api/systemConfig', () => ({
+vi.mock("../../api/systemConfig", () => ({
   systemConfigApi: {
     getConfig,
     validate,
@@ -18,28 +18,28 @@ vi.mock('../../api/systemConfig', () => ({
   SystemConfigValidationError: class extends Error {
     issues: unknown[] = [];
     parsedError = {
-      title: 'validation error',
-      message: 'validation error',
-      rawMessage: 'validation error',
-      category: 'http_error',
+      title: "validation error",
+      message: "validation error",
+      rawMessage: "validation error",
+      category: "http_error",
     };
   },
 }));
 
 const sampleConfig = {
-  configVersion: 'v1',
-  maskToken: '******',
+  configVersion: "v1",
+  maskToken: "******",
   items: [
     {
-      key: 'STOCK_LIST',
-      value: 'SH600000',
+      key: "STOCK_LIST",
+      value: "SH600000",
       rawValueExists: true,
       isMasked: false,
       schema: {
-        key: 'STOCK_LIST',
-        category: 'base',
-        dataType: 'string',
-        uiControl: 'textarea',
+        key: "STOCK_LIST",
+        category: "base",
+        dataType: "string",
+        uiControl: "textarea",
         isSensitive: false,
         isRequired: false,
         isEditable: true,
@@ -51,7 +51,7 @@ const sampleConfig = {
   ],
 };
 
-describe('useSystemConfig', () => {
+describe("useSystemConfig", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getConfig.mockResolvedValue(sampleConfig);
@@ -59,7 +59,7 @@ describe('useSystemConfig', () => {
     update.mockResolvedValue({ warnings: [] });
   });
 
-  it('keeps load callback stable after a successful load', async () => {
+  it("keeps load callback stable after a successful load", async () => {
     const { result } = renderHook(() => useSystemConfig());
     const firstLoad = result.current.load;
 

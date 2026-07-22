@@ -4,8 +4,12 @@
  * Responsible for loading and parsing stock index data
  */
 
-import type { StockIndexData, StockIndexItem, StockIndexTuple } from '../types/stockIndex';
-import { INDEX_FIELD } from './stockIndexFields';
+import type {
+  StockIndexData,
+  StockIndexItem,
+  StockIndexTuple,
+} from "../types/stockIndex";
+import { INDEX_FIELD } from "./stockIndexFields";
 
 export interface IndexLoadResult {
   /** Index data */
@@ -26,10 +30,14 @@ export interface IndexLoadResult {
 export async function loadStockIndex(): Promise<IndexLoadResult> {
   try {
     // Add time parameter to bypass cache (in case the backend doesn't handle ETag/Cache-Control)
-    const response = await fetch(`/stocks.index.json?_t=${Math.floor(Date.now() / 3600000)}`);
+    const response = await fetch(
+      `/stocks.index.json?_t=${Math.floor(Date.now() / 3600000)}`,
+    );
 
     if (!response.ok) {
-      throw new Error(`Failed to load index: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to load index: ${response.status} ${response.statusText}`,
+      );
     }
 
     const data: StockIndexData = await response.json();
@@ -37,7 +45,7 @@ export async function loadStockIndex(): Promise<IndexLoadResult> {
     // Uncompress format (if array format)
     const items = isCompressedFormat(data)
       ? unpackTuples(data as StockIndexTuple[])
-      : data as StockIndexItem[];
+      : (data as StockIndexItem[]);
 
     return {
       data: items,
@@ -45,12 +53,12 @@ export async function loadStockIndex(): Promise<IndexLoadResult> {
       fallback: false,
     };
   } catch (error) {
-    console.error('[StockIndexLoader] Failed to load stock index:', error);
+    console.error("[StockIndexLoader] Failed to load stock index:", error);
     return {
       data: [],
       loaded: false,
       error: error as Error,
-      fallback: true,  // Load failed, fallback to old mode
+      fallback: true, // Load failed, fallback to old mode
     };
   }
 }
@@ -61,14 +69,14 @@ export async function loadStockIndex(): Promise<IndexLoadResult> {
 function isCompressedFormat(data: StockIndexData): data is StockIndexTuple[] {
   if (!Array.isArray(data) || data.length === 0) return false;
   const firstItem = data[0];
-  return Array.isArray(firstItem) && typeof firstItem[0] === 'string';
+  return Array.isArray(firstItem) && typeof firstItem[0] === "string";
 }
 
 /**
  * Uncompress tuple format to object format
  */
 function unpackTuples(tuples: StockIndexTuple[]): StockIndexItem[] {
-  return tuples.map(tuple => ({
+  return tuples.map((tuple) => ({
     canonicalCode: tuple[INDEX_FIELD.CANONICAL_CODE],
     displayCode: tuple[INDEX_FIELD.DISPLAY_CODE],
     nameZh: tuple[INDEX_FIELD.NAME_ZH],
@@ -88,7 +96,7 @@ function unpackTuples(tuples: StockIndexTuple[]): StockIndexItem[] {
  * For reducing index file size
  */
 export function compressIndex(items: StockIndexItem[]): StockIndexTuple[] {
-  return items.map(item => [
+  return items.map((item) => [
     item.canonicalCode,
     item.displayCode,
     item.nameZh,
@@ -111,9 +119,9 @@ export function compressIndex(items: StockIndexItem[]): StockIndexTuple[] {
  */
 export function findStockInIndex(
   canonicalCode: string,
-  index: StockIndexItem[]
+  index: StockIndexItem[],
 ): StockIndexItem | null {
-  return index.find(item => item.canonicalCode === canonicalCode) || null;
+  return index.find((item) => item.canonicalCode === canonicalCode) || null;
 }
 
 /**
@@ -125,10 +133,10 @@ export function findStockInIndex(
  */
 export function getPopularStocks(
   index: StockIndexItem[],
-  limit: number = 20
+  limit: number = 20,
 ): StockIndexItem[] {
   return [...index]
-    .filter(item => item.active)
+    .filter((item) => item.active)
     .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
     .slice(0, limit);
 }
@@ -140,7 +148,7 @@ export function getPopularStocks(
  * @returns Map of stocks grouped by market
  */
 export function groupStocksByMarket(
-  index: StockIndexItem[]
+  index: StockIndexItem[],
 ): Map<string, StockIndexItem[]> {
   const grouped = new Map<string, StockIndexItem[]>();
 

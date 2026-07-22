@@ -1,14 +1,14 @@
-export type PortfolioCostMethod = 'fifo' | 'avg';
-export type PortfolioSide = 'buy' | 'sell';
-export type PortfolioCashDirection = 'in' | 'out';
-export type PortfolioCorporateActionType = 'cash_dividend' | 'split_adjustment';
+export type PortfolioCostMethod = "fifo" | "avg";
+export type PortfolioSide = "buy" | "sell";
+export type PortfolioCashDirection = "in" | "out";
+export type PortfolioCorporateActionType = "cash_dividend" | "split_adjustment";
 
 export interface PortfolioAccountItem {
   id: number;
   ownerId?: string | null;
   name: string;
   broker?: string | null;
-  market: 'cn' | 'hk' | 'us';
+  market: "cn" | "hk" | "us";
   baseCurrency: string;
   isActive: boolean;
   createdAt?: string | null;
@@ -22,7 +22,7 @@ export interface PortfolioAccountListResponse {
 export interface PortfolioAccountCreateRequest {
   name: string;
   broker?: string;
-  market: 'cn' | 'hk' | 'us';
+  market: "cn" | "hk" | "us";
   baseCurrency: string;
   ownerId?: string;
 }
@@ -39,7 +39,7 @@ export interface PortfolioPositionItem {
   unrealizedPnlBase: number;
   unrealizedPnlPct?: number | null;
   valuationCurrency: string;
-  priceSource?: 'realtime_quote' | 'history_close' | 'missing' | string;
+  priceSource?: "realtime_quote" | "history_close" | "missing" | string;
   priceProvider?: string | null;
   priceDate?: string | null;
   priceStale?: boolean;
@@ -153,7 +153,7 @@ export interface PortfolioTradeCreateRequest {
   price: number;
   fee?: number;
   tax?: number;
-  market?: 'cn' | 'hk' | 'us';
+  market?: "cn" | "hk" | "us";
   currency?: string;
   tradeUid?: string;
   note?: string;
@@ -173,7 +173,7 @@ export interface PortfolioCorporateActionCreateRequest {
   symbol: string;
   effectiveDate: string;
   actionType: PortfolioCorporateActionType;
-  market?: 'cn' | 'hk' | 'us';
+  market?: "cn" | "hk" | "us";
   currency?: string;
   cashDividendPerShare?: number;
   splitRatio?: number;

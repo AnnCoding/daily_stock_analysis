@@ -1,5 +1,5 @@
-import type React from 'react';
-import { createPortal } from 'react-dom';
+import type React from "react";
+import { createPortal } from "react-dom";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -20,8 +20,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
   title,
   message,
-  confirmText = '确定',
-  cancelText = '取消',
+  confirmText = "确定",
+  cancelText = "取消",
   isDanger = false,
   onConfirm,
   onCancel,
@@ -54,8 +54,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             onClick={onConfirm}
             className={`rounded-lg px-4 py-2 text-sm font-medium text-foreground transition-colors ${
               isDanger
-                ? 'bg-red-500/80 hover:bg-red-500 shadow-lg shadow-red-500/20'
-                : 'bg-cyan/80 hover:bg-cyan shadow-lg shadow-cyan/20'
+                ? "bg-red-500/80 hover:bg-red-500 shadow-lg shadow-red-500/20"
+                : "bg-cyan/80 hover:bg-cyan shadow-lg shadow-cyan/20"
             }`}
           >
             {confirmText}

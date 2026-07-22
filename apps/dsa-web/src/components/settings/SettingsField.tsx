@@ -1,14 +1,23 @@
-import { useState } from 'react';
-import type React from 'react';
-import { Badge, Button, Select, Input } from '../common';
-import type { ConfigValidationIssue, SystemConfigFieldSchema, SystemConfigItem } from '../../types/systemConfig';
-import { getFieldDescriptionZh, getFieldTitleZh } from '../../utils/systemConfigI18n';
-import { cn } from '../../utils/cn';
-import { SettingsHelpButton } from './SettingsHelpButton';
+import { useState } from "react";
+import type React from "react";
+import { Badge, Button, Select, Input } from "../common";
+import type {
+  ConfigValidationIssue,
+  SystemConfigFieldSchema,
+  SystemConfigItem,
+} from "../../types/systemConfig";
+import {
+  getFieldDescriptionZh,
+  getFieldTitleZh,
+} from "../../utils/systemConfigI18n";
+import { cn } from "../../utils/cn";
+import { SettingsHelpButton } from "./SettingsHelpButton";
 
-function normalizeSelectOptions(options: SystemConfigFieldSchema['options'] = []) {
+function normalizeSelectOptions(
+  options: SystemConfigFieldSchema["options"] = [],
+) {
   return options.map((option) => {
-    if (typeof option === 'string') {
+    if (typeof option === "string") {
       return { value: option, label: option };
     }
 
@@ -23,19 +32,19 @@ function isMultiValueField(item: SystemConfigItem): boolean {
 
 function parseMultiValues(value: string): string[] {
   if (!value) {
-    return [''];
+    return [""];
   }
 
-  const values = value.split(',').map((entry) => entry.trim());
-  return values.length ? values : [''];
+  const values = value.split(",").map((entry) => entry.trim());
+  return values.length ? values : [""];
 }
 
 function serializeMultiValues(values: string[]): string {
-  return values.map((entry) => entry.trim()).join(',');
+  return values.map((entry) => entry.trim()).join(",");
 }
 
-function inferPasswordIconType(key: string): 'password' | 'key' {
-  return key.toUpperCase().includes('PASSWORD') ? 'password' : 'key';
+function inferPasswordIconType(key: string): "password" | "key" {
+  return key.toUpperCase().includes("PASSWORD") ? "password" : "key";
 }
 
 interface SettingsFieldProps {
@@ -56,11 +65,12 @@ function renderFieldControl(
   controlId: string,
 ) {
   const schema = item.schema;
-  const commonClass = 'input-surface input-focus-glow h-11 w-full rounded-xl border bg-transparent px-4 text-sm transition-all focus:outline-none disabled:cursor-not-allowed disabled:opacity-60';
-  const controlType = schema?.uiControl ?? 'text';
+  const commonClass =
+    "input-surface input-focus-glow h-11 w-full rounded-xl border bg-transparent px-4 text-sm transition-all focus:outline-none disabled:cursor-not-allowed disabled:opacity-60";
+  const controlType = schema?.uiControl ?? "text";
   const isMultiValue = isMultiValueField(item);
 
-  if (controlType === 'textarea') {
+  if (controlType === "textarea") {
     return (
       <textarea
         id={controlId}
@@ -72,21 +82,21 @@ function renderFieldControl(
     );
   }
 
-  if (controlType === 'select' && schema?.options?.length) {
+  if (controlType === "select" && schema?.options?.length) {
     return (
-        <Select
-          id={controlId}
-          value={value}
-          onChange={onChange}
-          options={normalizeSelectOptions(schema.options)}
-          disabled={disabled || !schema.isEditable}
-          placeholder="请选择"
-        />
-      );
+      <Select
+        id={controlId}
+        value={value}
+        onChange={onChange}
+        options={normalizeSelectOptions(schema.options)}
+        disabled={disabled || !schema.isEditable}
+        placeholder="请选择"
+      />
+    );
   }
 
-  if (controlType === 'switch') {
-    const checked = value.trim().toLowerCase() === 'true';
+  if (controlType === "switch") {
+    const checked = value.trim().toLowerCase() === "true";
     return (
       <label className="inline-flex cursor-pointer items-center gap-3">
         <input
@@ -94,14 +104,18 @@ function renderFieldControl(
           type="checkbox"
           checked={checked}
           disabled={disabled || !schema?.isEditable}
-          onChange={(event) => onChange(event.target.checked ? 'true' : 'false')}
+          onChange={(event) =>
+            onChange(event.target.checked ? "true" : "false")
+          }
         />
-        <span className="text-sm text-secondary-text">{checked ? '已启用' : '未启用'}</span>
+        <span className="text-sm text-secondary-text">
+          {checked ? "已启用" : "未启用"}
+        </span>
       </label>
     );
   }
 
-  if (controlType === 'password') {
+  if (controlType === "password") {
     const iconType = inferPasswordIconType(item.key);
 
     if (isMultiValue) {
@@ -110,7 +124,10 @@ function renderFieldControl(
       return (
         <div className="space-y-2">
           {values.map((entry, index) => (
-            <div className="flex items-center gap-2" key={`${item.key}-${index}`}>
+            <div
+              className="flex items-center gap-2"
+              key={`${item.key}-${index}`}
+            >
               <div className="flex-1">
                 <Input
                   type="password"
@@ -135,8 +152,12 @@ function renderFieldControl(
                 className="px-3 text-xs text-muted-text shadow-none hover:text-danger"
                 disabled={disabled || !schema?.isEditable || values.length <= 1}
                 onClick={() => {
-                  const nextValues = values.filter((_, rowIndex) => rowIndex !== index);
-                  onChange(serializeMultiValues(nextValues.length ? nextValues : ['']));
+                  const nextValues = values.filter(
+                    (_, rowIndex) => rowIndex !== index,
+                  );
+                  onChange(
+                    serializeMultiValues(nextValues.length ? nextValues : [""]),
+                  );
                 }}
               >
                 删除
@@ -151,7 +172,7 @@ function renderFieldControl(
               size="sm"
               className="text-xs shadow-none"
               disabled={disabled || !schema?.isEditable}
-              onClick={() => onChange(serializeMultiValues([...values, '']))}
+              onClick={() => onChange(serializeMultiValues([...values, ""]))}
             >
               添加 Key
             </Button>
@@ -175,7 +196,12 @@ function renderFieldControl(
     );
   }
 
-  const inputType = controlType === 'number' ? 'number' : controlType === 'time' ? 'time' : 'text';
+  const inputType =
+    controlType === "number"
+      ? "number"
+      : controlType === "time"
+        ? "time"
+        : "text";
 
   return (
     <input
@@ -200,20 +226,25 @@ export const SettingsField: React.FC<SettingsFieldProps> = ({
   const isMultiValue = isMultiValueField(item);
   const title = getFieldTitleZh(item.key, item.key);
   const description = getFieldDescriptionZh(item.key, schema?.description);
-  const hasError = issues.some((issue) => issue.severity === 'error');
+  const hasError = issues.some((issue) => issue.severity === "error");
   const [isPasswordEditable, setIsPasswordEditable] = useState(false);
   const controlId = `setting-${item.key}`;
 
   return (
     <div
       className={cn(
-        'rounded-[1.15rem] border bg-[var(--settings-surface)] p-4 shadow-soft-card transition-[background-color,border-color,box-shadow] duration-200',
-        hasError ? 'border-danger/40 hover:border-danger/55' : 'border-[var(--settings-border)] hover:border-[var(--settings-border-strong)]',
-        'hover:bg-[var(--settings-surface-hover)]',
+        "rounded-[1.15rem] border bg-[var(--settings-surface)] p-4 shadow-soft-card transition-[background-color,border-color,box-shadow] duration-200",
+        hasError
+          ? "border-danger/40 hover:border-danger/55"
+          : "border-[var(--settings-border)] hover:border-[var(--settings-border-strong)]",
+        "hover:bg-[var(--settings-surface-hover)]",
       )}
     >
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        <label className="text-sm font-semibold text-foreground" htmlFor={controlId}>
+        <label
+          className="text-sm font-semibold text-foreground"
+          htmlFor={controlId}
+        >
           {title}
         </label>
         <SettingsHelpButton
@@ -255,7 +286,7 @@ export const SettingsField: React.FC<SettingsFieldProps> = ({
       {schema?.isSensitive ? (
         <p className="mt-3 text-[11px] leading-5 text-secondary-text">
           敏感内容默认隐藏，可点击眼睛图标查看明文。
-          {isMultiValue ? ' 支持添加多个输入框进行增删。' : ''}
+          {isMultiValue ? " 支持添加多个输入框进行增删。" : ""}
         </p>
       ) : null}
 
@@ -264,7 +295,11 @@ export const SettingsField: React.FC<SettingsFieldProps> = ({
           {issues.map((issue, index) => (
             <p
               key={`${issue.code}-${issue.key}-${index}`}
-              className={issue.severity === 'error' ? 'text-xs text-danger' : 'text-xs text-warning'}
+              className={
+                issue.severity === "error"
+                  ? "text-xs text-danger"
+                  : "text-xs text-warning"
+              }
             >
               {issue.message}
             </p>

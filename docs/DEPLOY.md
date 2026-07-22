@@ -4,12 +4,12 @@
 
 ## 📋 部署方案对比
 
-| 方案 | 优点 | 缺点 | 推荐场景 |
-|------|------|------|----------|
-| **Docker Compose** ⭐ | 一键部署、环境隔离、易迁移、易升级 | 需要安装 Docker | **推荐**：大多数场景 |
-| **直接部署** | 简单直接、无额外依赖 | 环境依赖、迁移麻烦 | 临时测试 |
-| **Systemd 服务** | 系统级管理、开机自启 | 配置繁琐 | 长期稳定运行 |
-| **Supervisor** | 进程管理、自动重启 | 需要额外安装 | 多进程管理 |
+| 方案                  | 优点                               | 缺点               | 推荐场景             |
+| --------------------- | ---------------------------------- | ------------------ | -------------------- |
+| **Docker Compose** ⭐ | 一键部署、环境隔离、易迁移、易升级 | 需要安装 Docker    | **推荐**：大多数场景 |
+| **直接部署**          | 简单直接、无额外依赖               | 环境依赖、迁移麻烦 | 临时测试             |
+| **Systemd 服务**      | 系统级管理、开机自启               | 配置繁琐           | 长期稳定运行         |
+| **Supervisor**        | 进程管理、自动重启                 | 需要额外安装       | 多进程管理           |
 
 **结论：推荐使用 Docker Compose，迁移最快最方便！**
 
@@ -83,6 +83,7 @@ docker-compose -f ./docker/docker-compose.yml exec stock-analyzer python main.py
 ### 5. 数据持久化
 
 数据自动保存在宿主机目录：
+
 - `./data/` - 数据库文件
 - `./logs/` - 日志文件
 - `./reports/` - 分析报告
@@ -160,6 +161,7 @@ sudo vim /etc/systemd/system/stock-analyzer.service
 ```
 
 内容：
+
 ```ini
 [Unit]
 Description=A股自选股智能分析系统
@@ -203,24 +205,24 @@ journalctl -u stock-analyzer -f
 
 ### 必须配置项
 
-| 配置项 | 说明 | 获取方式 |
-|--------|------|----------|
-| `ANSPIRE_API_KEYS` / `AIHUBMIX_KEY` / `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` | AI 模型至少配置一个；推荐优先 Anspire 或 AIHubMix | 对应服务商控制台 |
-| `STOCK_LIST` | 自选股列表 | 逗号分隔的股票代码 |
-| 通知渠道 | 至少配置一个，如企业微信、飞书、Telegram 或邮件 | 对应通知平台 |
+| 配置项                                                                                          | 说明                                              | 获取方式           |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------ |
+| `ANSPIRE_API_KEYS` / `AIHUBMIX_KEY` / `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` | AI 模型至少配置一个；推荐优先 Anspire 或 AIHubMix | 对应服务商控制台   |
+| `STOCK_LIST`                                                                                    | 自选股列表                                        | 逗号分隔的股票代码 |
+| 通知渠道                                                                                        | 至少配置一个，如企业微信、飞书、Telegram 或邮件   | 对应通知平台       |
 
 ### 可选配置项
 
-| 配置项 | 默认值 | 说明 |
-|--------|--------|------|
-| `SCHEDULE_ENABLED` | `false` | 是否启用定时任务 |
-| `SCHEDULE_TIME` | `18:00` | 每日执行时间 |
-| `MARKET_REVIEW_ENABLED` | `true` | 是否启用大盘复盘 |
-| `ANSPIRE_API_KEYS` | - | Anspire 大模型与新闻搜索（推荐） |
-| `AIHUBMIX_KEY` | - | AIHubMix 一 Key 多模型（推荐） |
-| `SERPAPI_API_KEYS` | - | SerpAPI 实时金融新闻搜索（推荐） |
-| `TAVILY_API_KEYS` | - | Tavily 新闻搜索（可选） |
-| `MINIMAX_API_KEYS` | - | MiniMax 搜索（可选） |
+| 配置项                  | 默认值  | 说明                             |
+| ----------------------- | ------- | -------------------------------- |
+| `SCHEDULE_ENABLED`      | `false` | 是否启用定时任务                 |
+| `SCHEDULE_TIME`         | `18:00` | 每日执行时间                     |
+| `MARKET_REVIEW_ENABLED` | `true`  | 是否启用大盘复盘                 |
+| `ANSPIRE_API_KEYS`      | -       | Anspire 大模型与新闻搜索（推荐） |
+| `AIHUBMIX_KEY`          | -       | AIHubMix 一 Key 多模型（推荐）   |
+| `SERPAPI_API_KEYS`      | -       | SerpAPI 实时金融新闻搜索（推荐） |
+| `TAVILY_API_KEYS`       | -       | Tavily 新闻搜索（可选）          |
+| `MINIMAX_API_KEYS`      | -       | MiniMax 搜索（可选）             |
 
 ---
 
@@ -231,6 +233,7 @@ journalctl -u stock-analyzer -f
 ### Docker 方式
 
 编辑 `docker-compose.yml`：
+
 ```yaml
 environment:
   - http_proxy=http://your-proxy:port
@@ -240,6 +243,7 @@ environment:
 ### 直接部署方式
 
 编辑 `main.py` 顶部：
+
 ```python
 os.environ["http_proxy"] = "http://your-proxy:port"
 os.environ["https_proxy"] = "http://your-proxy:port"
@@ -304,6 +308,7 @@ rm /opt/stock-analyzer/data/*.lock
 ### 4. 内存不足
 
 调整 `docker-compose.yml` 中的内存限制：
+
 ```yaml
 deploy:
   resources:
@@ -320,11 +325,13 @@ deploy:
 **解决方法**：
 
 - **Docker 部署**：执行以下命令重新构建镜像（确保前端已正确打包进镜像）：
+
   ```bash
   docker-compose -f ./docker/docker-compose.yml down
   docker-compose -f ./docker/docker-compose.yml build --no-cache
   docker-compose -f ./docker/docker-compose.yml up -d
   ```
+
   构建完成后刷新浏览器缓存（`Ctrl+Shift+R`）再访问。
 
 - **直接部署（pip + python）**：先构建前端，再启动服务：
@@ -367,12 +374,14 @@ docker-compose -f ./docker/docker-compose.yml up -d
 **最简单的方案！** 无需服务器，利用 GitHub 免费计算资源。
 
 ### 优势
+
 - ✅ **完全免费**（每月 2000 分钟）
 - ✅ **无需服务器**
 - ✅ **自动定时执行**
 - ✅ **零维护成本**
 
 ### 限制
+
 - ⚠️ 无状态（每次运行是新环境）
 - ⚠️ 定时可能有几分钟延迟
 - ⚠️ 无法提供 HTTP API
@@ -401,32 +410,32 @@ git push -u origin main
 
 添加以下 Secrets：
 
-| Secret 名称 | 说明 | 必填 |
-|------------|------|------|
-| `ANSPIRE_API_KEYS` | Anspire Open API Key（一 Key 启用大模型与搜索） | 推荐 |
-| `AIHUBMIX_KEY` | AIHubMix API Key（一 Key 多模型） | 推荐 |
-| `ANTHROPIC_API_KEY` | Anthropic API Key | 可选 |
-| `GEMINI_API_KEY` | Gemini AI API Key | 可选 |
-| `OPENAI_API_KEY` | OpenAI 兼容 API Key | 可选 |
-| `WECHAT_WEBHOOK_URL` | 企业微信机器人 Webhook | 可选* |
-| `FEISHU_WEBHOOK_URL` | 飞书机器人 Webhook | 可选* |
-| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token | 可选* |
-| `TELEGRAM_CHAT_ID` | Telegram Chat ID | 可选* |
-| `TELEGRAM_MESSAGE_THREAD_ID` | Telegram Topic ID | 可选* |
-| `EMAIL_SENDER` | 发件人邮箱 | 可选* |
-| `EMAIL_PASSWORD` | 邮箱授权码 | 可选* |
-| `SERVERCHAN3_SENDKEY` | Server酱³ Sendkey | 可选* |
-| `CUSTOM_WEBHOOK_URLS` | 自定义 Webhook（多个逗号分隔） | 可选* |
-| `STOCK_LIST` | 自选股列表，如 `600519,300750` | ✅ |
-| `SERPAPI_API_KEYS` | SerpAPI Key | 推荐 |
-| `TAVILY_API_KEYS` | Tavily 搜索 API Key | 可选 |
-| `BOCHA_API_KEYS` | 博查搜索 API Key | 可选 |
-| `BRAVE_API_KEYS` | Brave Search API Key | 可选 |
-| `MINIMAX_API_KEYS` | MiniMax Coding Plan Web Search | 可选 |
-| `SEARXNG_BASE_URLS` | SearXNG 自建实例（无配额兜底，需在 settings.yml 启用 format: json）；留空时默认自动发现公共实例 | 可选 |
-| `SEARXNG_PUBLIC_INSTANCES_ENABLED` | 是否在 `SEARXNG_BASE_URLS` 为空时自动从 `searx.space` 获取公共实例（默认 `true`） | 可选 |
-| `TUSHARE_TOKEN` | Tushare Token | 可选 |
-| `GEMINI_MODEL` | 模型名称（默认 gemini-2.0-flash） | 可选 |
+| Secret 名称                        | 说明                                                                                            | 必填  |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------- | ----- |
+| `ANSPIRE_API_KEYS`                 | Anspire Open API Key（一 Key 启用大模型与搜索）                                                 | 推荐  |
+| `AIHUBMIX_KEY`                     | AIHubMix API Key（一 Key 多模型）                                                               | 推荐  |
+| `ANTHROPIC_API_KEY`                | Anthropic API Key                                                                               | 可选  |
+| `GEMINI_API_KEY`                   | Gemini AI API Key                                                                               | 可选  |
+| `OPENAI_API_KEY`                   | OpenAI 兼容 API Key                                                                             | 可选  |
+| `WECHAT_WEBHOOK_URL`               | 企业微信机器人 Webhook                                                                          | 可选* |
+| `FEISHU_WEBHOOK_URL`               | 飞书机器人 Webhook                                                                              | 可选* |
+| `TELEGRAM_BOT_TOKEN`               | Telegram Bot Token                                                                              | 可选* |
+| `TELEGRAM_CHAT_ID`                 | Telegram Chat ID                                                                                | 可选* |
+| `TELEGRAM_MESSAGE_THREAD_ID`       | Telegram Topic ID                                                                               | 可选* |
+| `EMAIL_SENDER`                     | 发件人邮箱                                                                                      | 可选* |
+| `EMAIL_PASSWORD`                   | 邮箱授权码                                                                                      | 可选* |
+| `SERVERCHAN3_SENDKEY`              | Server酱³ Sendkey                                                                               | 可选* |
+| `CUSTOM_WEBHOOK_URLS`              | 自定义 Webhook（多个逗号分隔）                                                                  | 可选* |
+| `STOCK_LIST`                       | 自选股列表，如 `600519,300750`                                                                  | ✅    |
+| `SERPAPI_API_KEYS`                 | SerpAPI Key                                                                                     | 推荐  |
+| `TAVILY_API_KEYS`                  | Tavily 搜索 API Key                                                                             | 可选  |
+| `BOCHA_API_KEYS`                   | 博查搜索 API Key                                                                                | 可选  |
+| `BRAVE_API_KEYS`                   | Brave Search API Key                                                                            | 可选  |
+| `MINIMAX_API_KEYS`                 | MiniMax Coding Plan Web Search                                                                  | 可选  |
+| `SEARXNG_BASE_URLS`                | SearXNG 自建实例（无配额兜底，需在 settings.yml 启用 format: json）；留空时默认自动发现公共实例 | 可选  |
+| `SEARXNG_PUBLIC_INSTANCES_ENABLED` | 是否在 `SEARXNG_BASE_URLS` 为空时自动从 `searx.space` 获取公共实例（默认 `true`）               | 可选  |
+| `TUSHARE_TOKEN`                    | Tushare Token                                                                                   | 可选  |
+| `GEMINI_MODEL`                     | 模型名称（默认 gemini-2.0-flash）                                                               | 可选  |
 
 > *注：通知渠道至少配置一个，支持多渠道同时推送
 
@@ -465,22 +474,24 @@ git push
 
 ```yaml
 schedule:
-  - cron: '0 10 * * 1-5'  # UTC 时间，+8 = 北京时间
+  - cron: "0 10 * * 1-5" # UTC 时间，+8 = 北京时间
 ```
 
 常用 cron 示例：
-| 表达式 | 说明 |
-|--------|------|
+
+| 表达式           | 说明                         |
+| ---------------- | ---------------------------- |
 | `'0 10 * * 1-5'` | 周一到周五 18:00（北京时间） |
 | `'30 7 * * 1-5'` | 周一到周五 15:30（北京时间） |
-| `'0 10 * * *'` | 每天 18:00（北京时间） |
-| `'0 2 * * 1-5'` | 周一到周五 10:00（北京时间） |
+| `'0 10 * * *'`   | 每天 18:00（北京时间）       |
+| `'0 2 * * 1-5'`  | 周一到周五 10:00（北京时间） |
 
 ### 修改自选股
 
 方法一：修改仓库 Secret `STOCK_LIST`
 
 方法二：直接修改代码后推送：
+
 ```bash
 # 修改 .env.example 或在代码中设置默认值
 git commit -am "Update stock list"

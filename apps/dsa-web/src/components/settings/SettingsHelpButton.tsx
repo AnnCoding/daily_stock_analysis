@@ -1,11 +1,11 @@
-import { CircleHelp, ExternalLink, X } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
-import type React from 'react';
-import { createPortal } from 'react-dom';
-import type { SystemConfigFieldSchema } from '../../types/systemConfig';
-import { getSettingsHelpContent } from '../../locales/settingsHelp';
-import { cn } from '../../utils/cn';
-import { Tooltip } from '../common';
+import { CircleHelp, ExternalLink, X } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import type React from "react";
+import { createPortal } from "react-dom";
+import type { SystemConfigFieldSchema } from "../../types/systemConfig";
+import { getSettingsHelpContent } from "../../locales/settingsHelp";
+import { cn } from "../../utils/cn";
+import { Tooltip } from "../common";
 
 interface SettingsHelpButtonProps {
   fieldKey: string;
@@ -15,16 +15,18 @@ interface SettingsHelpButtonProps {
 }
 
 const FOCUSABLE_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'textarea:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
+  "a[href]",
+  "button:not([disabled])",
+  "textarea:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
   '[tabindex]:not([tabindex="-1"])',
-].join(',');
+].join(",");
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
-  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+  );
 }
 
 function hasItems<T>(items: T[] | undefined): items is T[] {
@@ -44,7 +46,9 @@ function HelpSection({
 
   return (
     <section className="space-y-2">
-      <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-text">{title}</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-text">
+        {title}
+      </h3>
       {children}
     </section>
   );
@@ -99,7 +103,7 @@ export const SettingsHelpButton: React.FC<SettingsHelpButtonProps> = ({
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const titleId = useId();
   const examples = schema?.examples ?? [];
-  const docs = schema?.docs?.length ? schema.docs : help?.docs ?? [];
+  const docs = schema?.docs?.length ? schema.docs : (help?.docs ?? []);
 
   useEffect(() => {
     if (!open) {
@@ -111,12 +115,12 @@ export const SettingsHelpButton: React.FC<SettingsHelpButtonProps> = ({
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setOpen(false);
         return;
       }
 
-      if (event.key !== 'Tab') {
+      if (event.key !== "Tab") {
         return;
       }
 
@@ -137,27 +141,35 @@ export const SettingsHelpButton: React.FC<SettingsHelpButtonProps> = ({
       const activeElement = document.activeElement;
 
       if (event.shiftKey) {
-        if (!activeElement || !dialog.contains(activeElement) || activeElement === firstElement) {
+        if (
+          !activeElement ||
+          !dialog.contains(activeElement) ||
+          activeElement === firstElement
+        ) {
           event.preventDefault();
           lastElement.focus();
         }
         return;
       }
 
-      if (!activeElement || !dialog.contains(activeElement) || activeElement === lastElement) {
+      if (
+        !activeElement ||
+        !dialog.contains(activeElement) ||
+        activeElement === lastElement
+      ) {
         event.preventDefault();
         firstElement.focus();
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
     const previousOverflow = document.body.style.overflow;
     const triggerButton = buttonRef.current;
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
     focusDialogStart();
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = previousOverflow;
       triggerButton?.focus();
     };
@@ -185,7 +197,7 @@ export const SettingsHelpButton: React.FC<SettingsHelpButtonProps> = ({
         </span>
       </Tooltip>
 
-      {open && typeof document !== 'undefined'
+      {open && typeof document !== "undefined"
         ? createPortal(
             <div className="fixed inset-0 z-[140] flex items-end bg-background/25 backdrop-blur-sm sm:items-center sm:justify-center">
               <button
@@ -202,8 +214,8 @@ export const SettingsHelpButton: React.FC<SettingsHelpButtonProps> = ({
                 aria-labelledby={titleId}
                 tabIndex={-1}
                 className={cn(
-                  'relative flex max-h-[88vh] w-full flex-col overflow-hidden rounded-t-2xl border border-border/80 bg-card shadow-soft-card-strong',
-                  'sm:max-w-2xl sm:rounded-2xl',
+                  "relative flex max-h-[88vh] w-full flex-col overflow-hidden rounded-t-2xl border border-border/80 bg-card shadow-soft-card-strong",
+                  "sm:max-w-2xl sm:rounded-2xl",
                 )}
               >
                 <div className="h-1 w-full bg-gradient-to-r from-cyan/80 via-primary/70 to-purple/70" />
@@ -212,11 +224,16 @@ export const SettingsHelpButton: React.FC<SettingsHelpButtonProps> = ({
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-text">
                       {fieldKey}
                     </p>
-                    <h2 id={titleId} className="mt-1 text-lg font-semibold text-foreground">
+                    <h2
+                      id={titleId}
+                      className="mt-1 text-lg font-semibold text-foreground"
+                    >
                       {help.title || title}
                     </h2>
                     {help.summary ? (
-                      <p className="mt-2 text-sm leading-6 text-secondary-text">{help.summary}</p>
+                      <p className="mt-2 text-sm leading-6 text-secondary-text">
+                        {help.summary}
+                      </p>
                     ) : null}
                   </div>
                   <button
@@ -232,7 +249,11 @@ export const SettingsHelpButton: React.FC<SettingsHelpButtonProps> = ({
 
                 <div className="space-y-5 overflow-y-auto px-5 py-5">
                   <HelpSection title="用途">
-                    {help.usage ? <p className="text-sm leading-6 text-secondary-text">{help.usage}</p> : null}
+                    {help.usage ? (
+                      <p className="text-sm leading-6 text-secondary-text">
+                        {help.usage}
+                      </p>
+                    ) : null}
                   </HelpSection>
 
                   <HelpSection title="取值说明">
@@ -263,7 +284,10 @@ export const SettingsHelpButton: React.FC<SettingsHelpButtonProps> = ({
                             target="_blank"
                           >
                             <span>{doc.label}</span>
-                            <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
+                            <ExternalLink
+                              aria-hidden="true"
+                              className="h-3.5 w-3.5"
+                            />
                           </a>
                         ))}
                       </div>

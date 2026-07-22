@@ -7,6 +7,7 @@
 如果你正在选择具体服务商、配置 GitHub Actions Secrets / Variables、排查 `details.reason` 错误或准备回滚配置，请优先查看 [LLM 服务商配置指南](./llm-providers.md)。该文档集中维护 provider 预设、Actions 变量对照、运行时能力检测边界和常见错误处理建议。
 
 > 本页的 provider/model/Base URL 说明本次未新增外部兼容语义，仅用于同步现网约定；实际兼容判断仍按当前仓库锁定依赖与运行时实现执行：
+>
 > - 依赖边界：`litellm>=1.80.10,!=1.82.7,!=1.82.8,<2.0.0`（与 `requirements.txt` 一致）。
 > - 兼容验证入口：`tests/test_system_config_service.py`、`tests/test_system_config_api.py` 以及现有前端模型配置页回归用例。
 > - 回退路径：优先使用 `.env` 配置备份 + `POST /api/v1/system/config/import` 恢复；也可在重启前手动回填旧 `LITELLM_MODEL` / `LLM_*` / `AGENT_LITELLM_MODEL` / `VISION_MODEL` / `LLM_TEMPERATURE`。
@@ -34,6 +35,7 @@
 ### Anspire Open 示例：
 
 > 💡 **推荐 [Anspire Open](https://open.anspire.cn/?share_code=QFBC0FYC)**：支持中文优化的联网搜索与 OpenAI-compatible 路径一体化体验，适合只准备一个 Key 的用户。
+>
 > - 以下为配置示例，模型与网关可用性以账号权限和 Anspire 控制台为准；文档示例不替代实际连通性验证。
 > - 建议在 Web 设置页点击“测试连接”进行实际鉴权与模型可用性检查，避免以文档默认值直接当作可用性承诺。
 
@@ -58,24 +60,28 @@ OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxx
 # 填入平台的接口地址 (非常重要：结尾通常必须带有 /v1)
 OPENAI_BASE_URL=https://api.siliconflow.cn/v1
 # 填入该平台上具体的模型名称（非常重要：注意前面必须加上 openai/ 前缀帮系统识别）
-LITELLM_MODEL=openai/deepseek-ai/DeepSeek-V3 
+LITELLM_MODEL=openai/deepseek-ai/DeepSeek-V3
 ```
 
 ### 示例 2：使用 DeepSeek 官方接口
+
 ```env
 # 填入你在 DeepSeek 官方平台申请的 API Key
 DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
 ```
-*兼容提示：仅填这一行时，系统仍会默认使用 `deepseek/deepseek-chat` 并在日志提示迁移。*
+
+_兼容提示：仅填这一行时，系统仍会默认使用 `deepseek/deepseek-chat` 并在日志提示迁移。_
 `deepseek-chat` / `deepseek-reasoner` 仍可用于兼容旧配置，但 DeepSeek 官方已标记为 2026/07/24 后废弃；新配置建议通过 Web 快速渠道或显式 `LITELLM_MODEL=deepseek/deepseek-v4-flash` 迁移到 `deepseek-v4-flash` / `deepseek-v4-pro`。
 
 ### 示例 3：使用 Gemini 免费 API
+
 ```env
 # 填入你获取的 Google Gemini Key
 GEMINI_API_KEY=AIzac...
 ```
 
 ### 示例 4：使用 Ollama 本地模型
+
 ```env
 # Ollama 无需 API Key，本地运行 ollama serve 后即可使用
 OLLAMA_API_BASE=http://localhost:11434
@@ -149,6 +155,7 @@ LITELLM_MODEL=ollama/qwen3:8b
 2. **给每个渠道分别填写配置**（注意全大写）：`LLM_{渠道名}_XXX`
 
 ### 示例：同时配置 DeepSeek 和某中转平台，并设置备用切换
+
 ```env
 # 1. 开启渠道模式，声明这里有两个渠道：deepseek 和 aihubmix
 LLM_CHANNELS=deepseek,aihubmix
@@ -173,6 +180,7 @@ LITELLM_FALLBACK_MODELS=openai/gpt-5.4-mini,anthropic/claude-sonnet-4-6
 ```
 
 ### 示例：Ollama 渠道模式（本地模型，无需 API Key）
+
 ```env
 # 1. 开启渠道模式，声明 ollama 渠道
 LLM_CHANNELS=ollama
@@ -241,13 +249,14 @@ LITELLM_MODEL=ollama/qwen3:8b
 2. 在项目根目录创建一个 `litellm_config.yaml`（可以参考自带的 `docs/examples/litellm_config.example.yaml`）。
 
 示例 `litellm_config.yaml`：
+
 ```yaml
 model_list:
   - model_name: my-smart-model
     litellm_params:
       model: deepseek/deepseek-v4-flash
       api_base: https://api.deepseek.com
-      api_key: "os.environ/MY_CUSTOM_SECRET_KEY"  # 从环境变量读取 Key，安全防泄漏
+      api_key: "os.environ/MY_CUSTOM_SECRET_KEY" # 从环境变量读取 Key，安全防泄漏
 
   # Ollama 本地模型（无需 api_key）
   - model_name: ollama/qwen3:8b
@@ -262,14 +271,14 @@ model_list:
 
 2. 按下表配置，只有全部必填配置正确配置，YAML 高级配置模式才可以生效，YAML配置文件的写法，可以参考自带的 `docs/examples/litellm_config.example.yaml`
 
-| Secret 名称 | 说明 | 必填 |
-|------------|------|:----:|
-| `LITELLM_CONFIG` | 高级模型路由配置文件路径，通常配置 `./litellm_config.yaml` | 必填 |
-| `LITELLM_MODEL` | 默认主模型名称或路由别名 | 必填 |
-| `LITELLM_CONFIG_YAML` | 存放 YAML 配置文件内容，可不在仓库中提交实体文件 | 可选 |
-| `LITELLM_API_KEY` | 用于存储API Key，可在配置文件中引用（环境变量引用方式）。由于GitHub Actions必须要指定导入的环境变量，因此你不能像本地运行模式那样自由命名环境变量 | 可选，必须配置到repository secret中 |
-| `ANTHROPIC_API_KEY` | 如果要多个API Key，这个变量名称也能拿来用 | 可选，必须配置到repository secret中 |
-| `OPENAI_API_KEY` | 同上，可以用来存储API Key | 可选，必须配置到repository secret中 |
+| Secret 名称           | 说明                                                                                                                                              |                必填                 |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------: |
+| `LITELLM_CONFIG`      | 高级模型路由配置文件路径，通常配置 `./litellm_config.yaml`                                                                                        |                必填                 |
+| `LITELLM_MODEL`       | 默认主模型名称或路由别名                                                                                                                          |                必填                 |
+| `LITELLM_CONFIG_YAML` | 存放 YAML 配置文件内容，可不在仓库中提交实体文件                                                                                                  |                可选                 |
+| `LITELLM_API_KEY`     | 用于存储API Key，可在配置文件中引用（环境变量引用方式）。由于GitHub Actions必须要指定导入的环境变量，因此你不能像本地运行模式那样自由命名环境变量 | 可选，必须配置到repository secret中 |
+| `ANTHROPIC_API_KEY`   | 如果要多个API Key，这个变量名称也能拿来用                                                                                                         | 可选，必须配置到repository secret中 |
+| `OPENAI_API_KEY`      | 同上，可以用来存储API Key                                                                                                                         | 可选，必须配置到repository secret中 |
 
 渠道模式无需上传 YAML 文件。仓库自带 `daily_analysis.yml` 已显式透传以下常用字段：
 
@@ -278,7 +287,6 @@ model_list:
 - 常用渠道名：`primary`、`secondary`、`aihubmix`、`deepseek`、`dashscope`、`zhipu`、`moonshot`、`minimax`、`volcengine`、`siliconflow`、`openrouter`、`gemini`、`anthropic`、`openai`、`ollama`
 
 例如在 GitHub Actions 中配置 `LLM_CHANNELS=primary,deepseek` 时，需同步配置 `LLM_PRIMARY_*` / `LLM_DEEPSEEK_*`。其中 `LLM_<NAME>_API_KEY` / `LLM_<NAME>_API_KEYS` 当前也仅从 repository secrets 导入；如果你把这些值放在 Variables，运行时不会生效。若使用自定义渠道名（如 `my_proxy`），GitHub Actions 还必须在 workflow `env:` 中显式新增对应的 `LLM_MY_PROXY_*` 映射；本地 `.env` 和 Docker 不受这个限制。
-
 
 > **三层配置互斥准则**：YAML 优先级最高！只要配置了 YAML，**渠道模式** 和 **新手极简模式** 统统被忽略。系统优先级为：`YAML配置 > 渠道模式 > 极简单模型`。
 
@@ -296,6 +304,7 @@ VISION_MODEL=openai/gpt-5.5
 ```
 
 **备用看图机制：** 为了防止偶尔罢工，系统内置了切换策略。如果主视觉模型调用失败，它会按照下方的顺位尝试寻找是否有其他看图模型的 Key：
+
 ```env
 # 默认的备用顺序：
 VISION_PROVIDER_PRIORITY=gemini,anthropic,openai
@@ -312,13 +321,13 @@ VISION_PROVIDER_PRIORITY=gemini,anthropic,openai
 
 ### 常见踩坑答疑台
 
-| 遇到了什么诡异报错？ | 罪魁祸首可能是啥？ | 该怎么收拾它？ |
-|----------------------|----------------------|------------------|
-| **界面提示主模型未配置** | 系统不知道你到底想用哪家的哪个模型 | 在 `.env` 中写上一句明白话：`LITELLM_MODEL=provider/你的模型名`。比如 `openai/gpt-5.5` |
-| **我写了好几家的Key，为什么死活只有一个生效？修改还没用？** | 你把 **极简模式** 和 **渠道模式** 混着写了！ | 想好一条路走到黑——只要简单就删掉 `LLM_CHANNELS` 开头的；想要丰富备用切换就要全部转投到 `LLM_CHANNELS` 下的编制里。 |
-| **错误码报 400 或 401 或 Invalid API Key** | API Key 填错、少复制了一截、账号充值没到账、或者模型名字敲错（极度常见）。 | 1. 检查复制的 Key 前后是否有误填空格。<br> 2. 检查 Base URL 最后是不是少了一个 `/v1`。<br> 3. 检查模型名是否少写了 `openai/` 之类的前缀！ |
-| **Kimi K2.6 报 `invalid temperature`（可能提示只允许 `1.0` 或 `0.6`）** | 该模型按 thinking / non-thinking 模式要求不同固定 temperature；旧配置或调用入口可能还在传 `0.7`。 | 升级后系统会对 `kimi-k2.6` 默认 / thinking 请求自动使用 `temperature=1.0`；如果你在 LiteLLM YAML 路由里显式关闭 thinking，则自动改用 `0.6`。模型名建议写成 `openai/kimi-k2.6` 并配合 Moonshot / 聚合平台的 OpenAI 兼容 Base URL 与 API Key。非 Kimi fallback 仍会继续使用你配置的 `LLM_TEMPERATURE`。 |
-| **转圈转不停，最后报 Timeout / ConnectionRefused 等** | 1. 在国内使用国外原版（像 Google、OpenAI），没开代理被墙了。<br>2. 你买的云服务器压根不能出境。 | 非常推荐使用**国内官方**（如DeepSeek、阿里）或者各种**兼容 OpenAI 的聚合中转接口**。因为中转站把网络问题帮你解决好了。 |
-| **Ollama 报 404、`Could not get model info` 或 `api/generate/api/show`** | 误用 `OPENAI_BASE_URL` 配置 Ollama，系统会错误拼接 URL | 改用 `OLLAMA_API_BASE=http://localhost:11434` 或渠道模式（`LLM_CHANNELS=ollama` + `LLM_OLLAMA_BASE_URL`） |
+| 遇到了什么诡异报错？                                                     | 罪魁祸首可能是啥？                                                                                | 该怎么收拾它？                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **界面提示主模型未配置**                                                 | 系统不知道你到底想用哪家的哪个模型                                                                | 在 `.env` 中写上一句明白话：`LITELLM_MODEL=provider/你的模型名`。比如 `openai/gpt-5.5`                                                                                                                                                                                                                |
+| **我写了好几家的Key，为什么死活只有一个生效？修改还没用？**              | 你把 **极简模式** 和 **渠道模式** 混着写了！                                                      | 想好一条路走到黑——只要简单就删掉 `LLM_CHANNELS` 开头的；想要丰富备用切换就要全部转投到 `LLM_CHANNELS` 下的编制里。                                                                                                                                                                                    |
+| **错误码报 400 或 401 或 Invalid API Key**                               | API Key 填错、少复制了一截、账号充值没到账、或者模型名字敲错（极度常见）。                        | 1. 检查复制的 Key 前后是否有误填空格。<br> 2. 检查 Base URL 最后是不是少了一个 `/v1`。<br> 3. 检查模型名是否少写了 `openai/` 之类的前缀！                                                                                                                                                             |
+| **Kimi K2.6 报 `invalid temperature`（可能提示只允许 `1.0` 或 `0.6`）**  | 该模型按 thinking / non-thinking 模式要求不同固定 temperature；旧配置或调用入口可能还在传 `0.7`。 | 升级后系统会对 `kimi-k2.6` 默认 / thinking 请求自动使用 `temperature=1.0`；如果你在 LiteLLM YAML 路由里显式关闭 thinking，则自动改用 `0.6`。模型名建议写成 `openai/kimi-k2.6` 并配合 Moonshot / 聚合平台的 OpenAI 兼容 Base URL 与 API Key。非 Kimi fallback 仍会继续使用你配置的 `LLM_TEMPERATURE`。 |
+| **转圈转不停，最后报 Timeout / ConnectionRefused 等**                    | 1. 在国内使用国外原版（像 Google、OpenAI），没开代理被墙了。<br>2. 你买的云服务器压根不能出境。   | 非常推荐使用**国内官方**（如DeepSeek、阿里）或者各种**兼容 OpenAI 的聚合中转接口**。因为中转站把网络问题帮你解决好了。                                                                                                                                                                                |
+| **Ollama 报 404、`Could not get model info` 或 `api/generate/api/show`** | 误用 `OPENAI_BASE_URL` 配置 Ollama，系统会错误拼接 URL                                            | 改用 `OLLAMA_API_BASE=http://localhost:11434` 或渠道模式（`LLM_CHANNELS=ollama` + `LLM_OLLAMA_BASE_URL`）                                                                                                                                                                                             |
 
-*进阶老手的叮嘱：如果你开启了 **Agent (深度思考网络搜索问股) 模式**，这里有个经验之谈，推荐选用如 `deepseek-v4-pro` 这种逻辑推导能力更强的大模型。如果为了省钱用小微模型跑 Agent，它逻辑能力大概率跟不上，不仅达不到预期，还会白跑一堆空流程。*
+_进阶老手的叮嘱：如果你开启了 **Agent (深度思考网络搜索问股) 模式**，这里有个经验之谈，推荐选用如 `deepseek-v4-pro` 这种逻辑推导能力更强的大模型。如果为了省钱用小微模型跑 Agent，它逻辑能力大概率跟不上，不仅达不到预期，还会白跑一堆空流程。_

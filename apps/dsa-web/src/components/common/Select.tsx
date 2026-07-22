@@ -1,5 +1,5 @@
-import React, { useId } from 'react';
-import { cn } from '../../utils/cn';
+import React, { useId } from "react";
+import { cn } from "../../utils/cn";
 
 interface SelectOption {
   value: string;
@@ -29,17 +29,24 @@ export const Select: React.FC<SelectProps> = ({
   onChange,
   options,
   label,
-  placeholder = '请选择',
+  placeholder = "请选择",
   disabled = false,
-  className = '',
+  className = "",
 }) => {
   const selectId = useId();
   const resolvedId = id ?? selectId;
-  const hasEmptyOption = options.some((option) => option.value === '');
+  const hasEmptyOption = options.some((option) => option.value === "");
 
   return (
-    <div className={cn('flex flex-col', className)}>
-      {label ? <label htmlFor={resolvedId} className="mb-2 text-sm font-medium text-foreground">{label}</label> : null}
+    <div className={cn("flex flex-col", className)}>
+      {label ? (
+        <label
+          htmlFor={resolvedId}
+          className="mb-2 text-sm font-medium text-foreground"
+        >
+          {label}
+        </label>
+      ) : null}
       <div className="relative">
         <select
           id={resolvedId}
@@ -47,9 +54,9 @@ export const Select: React.FC<SelectProps> = ({
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
           className={cn(
-            'input-surface input-focus-glow h-11 w-full appearance-none rounded-xl border bg-transparent px-4 py-2.5 pr-10 text-sm text-foreground',
-            'transition-all duration-200 focus:outline-none',
-            disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
+            "input-surface input-focus-glow h-11 w-full appearance-none rounded-xl border bg-transparent px-4 py-2.5 pr-10 text-sm text-foreground",
+            "transition-all duration-200 focus:outline-none",
+            disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
           )}
         >
           {placeholder && !hasEmptyOption && (
@@ -58,7 +65,11 @@ export const Select: React.FC<SelectProps> = ({
             </option>
           )}
           {options.map((option) => (
-            <option key={option.value} value={option.value} className="bg-elevated text-foreground">
+            <option
+              key={option.value}
+              value={option.value}
+              className="bg-elevated text-foreground"
+            >
               {option.label}
             </option>
           ))}
@@ -72,7 +83,12 @@ export const Select: React.FC<SelectProps> = ({
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </div>
       </div>

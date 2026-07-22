@@ -1,18 +1,18 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
-import { analysisApi } from '../api/analysis';
-import type { TaskInfo } from '../types/analysis';
+import { useEffect, useRef, useCallback, useState } from "react";
+import { analysisApi } from "../api/analysis";
+import type { TaskInfo } from "../types/analysis";
 
 /**
  * SSE event types.
  */
 export type SSEEventType =
-  | 'connected'
-  | 'task_created'
-  | 'task_started'
-  | 'task_progress'
-  | 'task_completed'
-  | 'task_failed'
-  | 'heartbeat';
+  | "connected"
+  | "task_created"
+  | "task_started"
+  | "task_progress"
+  | "task_completed"
+  | "task_failed"
+  | "heartbeat";
 
 /**
  * SSE event payload.
@@ -64,7 +64,9 @@ export interface UseTaskStreamResult {
 /**
  * Task-stream SSE hook for realtime task status updates.
  */
-export function useTaskStream(options: UseTaskStreamOptions = {}): UseTaskStreamResult {
+export function useTaskStream(
+  options: UseTaskStreamOptions = {},
+): UseTaskStreamResult {
   const {
     onTaskCreated,
     onTaskStarted,
@@ -80,7 +82,9 @@ export function useTaskStream(options: UseTaskStreamOptions = {}): UseTaskStream
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const connectRef = useRef<() => void>(() => {});
 
   // Store callbacks in a ref to avoid reconnecting on every render.
@@ -113,7 +117,7 @@ export function useTaskStream(options: UseTaskStreamOptions = {}): UseTaskStream
       taskId: data.task_id as string,
       stockCode: data.stock_code as string,
       stockName: data.stock_name as string | undefined,
-      status: data.status as TaskInfo['status'],
+      status: data.status as TaskInfo["status"],
       progress: data.progress as number,
       message: data.message as string | undefined,
       reportType: data.report_type as string,
@@ -132,7 +136,7 @@ export function useTaskStream(options: UseTaskStreamOptions = {}): UseTaskStream
       const data = JSON.parse(eventData);
       return toCamelCase(data);
     } catch (e) {
-      console.error('Failed to parse SSE event data:', e);
+      console.error("Failed to parse SSE event data:", e);
       return null;
     }
   }, []);
@@ -148,42 +152,42 @@ export function useTaskStream(options: UseTaskStreamOptions = {}): UseTaskStream
     eventSourceRef.current = eventSource;
 
     // Connected event
-    eventSource.addEventListener('connected', () => {
+    eventSource.addEventListener("connected", () => {
       setIsConnected(true);
       callbacksRef.current.onConnected?.();
     });
 
     // Task created event
-    eventSource.addEventListener('task_created', (e) => {
+    eventSource.addEventListener("task_created", (e) => {
       const task = parseEventData(e.data);
       if (task) callbacksRef.current.onTaskCreated?.(task);
     });
 
     // Task started event
-    eventSource.addEventListener('task_started', (e) => {
+    eventSource.addEventListener("task_started", (e) => {
       const task = parseEventData(e.data);
       if (task) callbacksRef.current.onTaskStarted?.(task);
     });
 
-    eventSource.addEventListener('task_progress', (e) => {
+    eventSource.addEventListener("task_progress", (e) => {
       const task = parseEventData(e.data);
       if (task) callbacksRef.current.onTaskProgress?.(task);
     });
 
     // Task completed event
-    eventSource.addEventListener('task_completed', (e) => {
+    eventSource.addEventListener("task_completed", (e) => {
       const task = parseEventData(e.data);
       if (task) callbacksRef.current.onTaskCompleted?.(task);
     });
 
     // Task failed event
-    eventSource.addEventListener('task_failed', (e) => {
+    eventSource.addEventListener("task_failed", (e) => {
       const task = parseEventData(e.data);
       if (task) callbacksRef.current.onTaskFailed?.(task);
     });
 
     // Heartbeat event used to keep the connection alive.
-    eventSource.addEventListener('heartbeat', () => {
+    eventSource.addEventListener("heartbeat", () => {
       // Optional place to record the latest heartbeat timestamp.
     });
 
@@ -200,12 +204,7 @@ export function useTaskStream(options: UseTaskStreamOptions = {}): UseTaskStream
         }, reconnectDelay);
       }
     };
-  }, [
-    autoReconnect,
-    reconnectDelay,
-    enabled,
-    parseEventData,
-  ]);
+  }, [autoReconnect, reconnectDelay, enabled, parseEventData]);
 
   useEffect(() => {
     connectRef.current = connect;

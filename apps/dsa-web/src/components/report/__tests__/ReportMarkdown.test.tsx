@@ -1,21 +1,21 @@
-import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { historyApi } from '../../../api/history';
-import { ReportMarkdown } from '../ReportMarkdown';
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { historyApi } from "../../../api/history";
+import { ReportMarkdown } from "../ReportMarkdown";
 
-vi.mock('../../../api/history', () => ({
+vi.mock("../../../api/history", () => ({
   historyApi: {
     getMarkdown: vi.fn(),
   },
 }));
 
-describe('ReportMarkdown', () => {
+describe("ReportMarkdown", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('uses localized copy labels for English reports', async () => {
-    vi.mocked(historyApi.getMarkdown).mockResolvedValue('# Full report');
+  it("uses localized copy labels for English reports", async () => {
+    vi.mocked(historyApi.getMarkdown).mockResolvedValue("# Full report");
 
     render(
       <ReportMarkdown
@@ -24,10 +24,14 @@ describe('ReportMarkdown', () => {
         stockCode="AAPL"
         reportLanguage="en"
         onClose={() => {}}
-      />
+      />,
     );
 
-    expect(await screen.findByRole('button', { name: 'Copy Markdown Source' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Copy Plain Text' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "Copy Markdown Source" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Copy Plain Text" }),
+    ).toBeInTheDocument();
   });
 });

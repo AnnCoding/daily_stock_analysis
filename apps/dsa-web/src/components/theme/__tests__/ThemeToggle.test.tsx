@@ -1,13 +1,13 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { ThemeProvider } from '../ThemeProvider';
-import { ThemeToggle } from '../ThemeToggle';
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+import { ThemeProvider } from "../ThemeProvider";
+import { ThemeToggle } from "../ThemeToggle";
 
 beforeAll(() => {
-  Object.defineProperty(window, 'matchMedia', {
+  Object.defineProperty(window, "matchMedia", {
     writable: true,
     value: vi.fn().mockImplementation((query: string) => ({
-      matches: query === '(prefers-color-scheme: dark)',
+      matches: query === "(prefers-color-scheme: dark)",
       media: query,
       onchange: null,
       addListener: vi.fn(),
@@ -19,19 +19,27 @@ beforeAll(() => {
   });
 });
 
-describe('ThemeToggle', () => {
-  it('opens the theme menu and shows all theme modes', async () => {
+describe("ThemeToggle", () => {
+  it("opens the theme menu and shows all theme modes", async () => {
     render(
       <ThemeProvider>
         <ThemeToggle />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: '切换主题' }));
+    fireEvent.click(screen.getByRole("button", { name: "切换主题" }));
 
-    expect(await screen.findByRole('menu', { name: '主题模式' })).toBeInTheDocument();
-    expect(screen.getByRole('menuitemradio', { name: '浅色' })).toBeInTheDocument();
-    expect(screen.getByRole('menuitemradio', { name: '深色' })).toBeInTheDocument();
-    expect(screen.getByRole('menuitemradio', { name: '跟随系统' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("menu", { name: "主题模式" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitemradio", { name: "浅色" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitemradio", { name: "深色" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitemradio", { name: "跟随系统" }),
+    ).toBeInTheDocument();
   });
 });

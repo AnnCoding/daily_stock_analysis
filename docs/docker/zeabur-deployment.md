@@ -71,12 +71,12 @@ Dockerfile 已采用多阶段构建，前端会在镜像构建时自动打包。
 
 系统支持多种启动模式，你可以根据需要配置不同的启动命令：
 
-| 模式 | 启动命令 | 描述 |
-|------|----------|------|
-| 定时任务模式（默认） | `python main.py --schedule` | 按计划执行股票分析 |
-| FastAPI 模式 | `python main.py --serve` | 启动 FastAPI 并执行分析 |
-| 仅 FastAPI 模式 | `python main.py --serve-only` | 仅启动 FastAPI，不执行分析 |
-| 仅大盘复盘 | `python main.py --market-review` | 仅执行大盘复盘分析 |
+| 模式                 | 启动命令                         | 描述                       |
+| -------------------- | -------------------------------- | -------------------------- |
+| 定时任务模式（默认） | `python main.py --schedule`      | 按计划执行股票分析         |
+| FastAPI 模式         | `python main.py --serve`         | 启动 FastAPI 并执行分析    |
+| 仅 FastAPI 模式      | `python main.py --serve-only`    | 仅启动 FastAPI，不执行分析 |
+| 仅大盘复盘           | `python main.py --market-review` | 仅执行大盘复盘分析         |
 
 ### 3.2 配置启动命令
 
@@ -84,9 +84,9 @@ Dockerfile 已采用多阶段构建，前端会在镜像构建时自动打包。
 2. 点击「设置」
 3. 找到「启动命令」配置项
 4. 输入你需要的启动命令，例如：
-    - 启动 FastAPI：`python main.py --serve`
-    - 仅启动 FastAPI：`python main.py --serve-only --host 0.0.0.0 --port 8000`
-    - 启动定时任务：`python main.py --schedule`
+   - 启动 FastAPI：`python main.py --serve`
+   - 仅启动 FastAPI：`python main.py --serve-only --host 0.0.0.0 --port 8000`
+   - 启动定时任务：`python main.py --schedule`
 5. 点击「保存」
 6. 重启服务
 
@@ -111,11 +111,11 @@ Dockerfile 已采用多阶段构建，前端会在镜像构建时自动打包。
 
 在 Zeabur 控制台的「环境变量」配置中，添加以下变量：
 
-| 变量名 | 说明 | 示例值 |
-|--------|------|--------|
-| `DISCORD_BOT_TOKEN` | Discord 机器人 Token | `MTAxMjM0NTY3ODkwMTEyMzQ1Ng.GhIjKl.MnOpQrStUvWxYz1234567890` |
-| `DISCORD_MAIN_CHANNEL_ID` | 主频道 ID | `123456789012345678` |
-| `DISCORD_WEBHOOK_URL` | Discord Webhook URL（可选） | `https://discord.com/api/webhooks/...` |
+| 变量名                    | 说明                        | 示例值                                                       |
+| ------------------------- | --------------------------- | ------------------------------------------------------------ |
+| `DISCORD_BOT_TOKEN`       | Discord 机器人 Token        | `MTAxMjM0NTY3ODkwMTEyMzQ1Ng.GhIjKl.MnOpQrStUvWxYz1234567890` |
+| `DISCORD_MAIN_CHANNEL_ID` | 主频道 ID                   | `123456789012345678`                                         |
+| `DISCORD_WEBHOOK_URL`     | Discord Webhook URL（可选） | `https://discord.com/api/webhooks/...`                       |
 
 ### 4.3 启动机器人
 
@@ -125,36 +125,36 @@ Dockerfile 已采用多阶段构建，前端会在镜像构建时自动打包。
 
 ### 5.1 基本环境变量
 
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `PYTHONUNBUFFERED` | 启用 Python 无缓冲输出 | `1` |
-| `LOG_DIR` | 日志目录 | `/app/logs` |
-| `DATABASE_PATH` | 数据库路径 | `/app/data/stock_analysis.db` |
+| 变量名             | 说明                   | 默认值                        |
+| ------------------ | ---------------------- | ----------------------------- |
+| `PYTHONUNBUFFERED` | 启用 Python 无缓冲输出 | `1`                           |
+| `LOG_DIR`          | 日志目录               | `/app/logs`                   |
+| `DATABASE_PATH`    | 数据库路径             | `/app/data/stock_analysis.db` |
 
 ### 5.2 API 服务配置
 
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
+| 变量名     | 说明             | 默认值    |
+| ---------- | ---------------- | --------- |
 | `API_HOST` | API 服务监听地址 | `0.0.0.0` |
-| `API_PORT` | API 服务端口 | `8000` |
+| `API_PORT` | API 服务端口     | `8000`    |
 
 > 旧版 `WEBUI_HOST`/`WEBUI_PORT`/`WEBUI_ENABLED` 环境变量仍兼容，会自动转发到 API 服务。
 
 ### 5.3 分析相关配置
 
-| 变量名 | 说明 |
-|--------|------|
-| `ANSPIRE_API_KEYS` | Anspire Open API 密钥（大模型与搜索共用，推荐） |
-| `AIHUBMIX_KEY` | AIHubMix API 密钥（一 Key 多模型，推荐） |
-| `GEMINI_API_KEY` | Gemini API 密钥 |
-| `OPENAI_API_KEY` | OpenAI 兼容 API 密钥 |
-| `SERPAPI_API_KEYS` | SerpAPI 密钥（推荐） |
-| `TAVILY_API_KEYS` | Tavily API 密钥（用逗号分隔） |
-| `BOCHA_API_KEYS` | Bocha API 密钥（用逗号分隔） |
-| `BRAVE_API_KEYS` | Brave Search API 密钥（用逗号分隔） |
-| `MINIMAX_API_KEYS` | MiniMax API 密钥（用逗号分隔） |
-| `SEARXNG_BASE_URLS` | SearXNG 实例地址（逗号分隔，无配额兜底，需在 settings.yml 启用 format: json）；留空时默认自动发现公共实例 |
-| `SEARXNG_PUBLIC_INSTANCES_ENABLED` | 是否在 `SEARXNG_BASE_URLS` 为空时自动从 `searx.space` 获取公共实例（默认 `true`） |
+| 变量名                             | 说明                                                                                                      |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `ANSPIRE_API_KEYS`                 | Anspire Open API 密钥（大模型与搜索共用，推荐）                                                           |
+| `AIHUBMIX_KEY`                     | AIHubMix API 密钥（一 Key 多模型，推荐）                                                                  |
+| `GEMINI_API_KEY`                   | Gemini API 密钥                                                                                           |
+| `OPENAI_API_KEY`                   | OpenAI 兼容 API 密钥                                                                                      |
+| `SERPAPI_API_KEYS`                 | SerpAPI 密钥（推荐）                                                                                      |
+| `TAVILY_API_KEYS`                  | Tavily API 密钥（用逗号分隔）                                                                             |
+| `BOCHA_API_KEYS`                   | Bocha API 密钥（用逗号分隔）                                                                              |
+| `BRAVE_API_KEYS`                   | Brave Search API 密钥（用逗号分隔）                                                                       |
+| `MINIMAX_API_KEYS`                 | MiniMax API 密钥（用逗号分隔）                                                                            |
+| `SEARXNG_BASE_URLS`                | SearXNG 实例地址（逗号分隔，无配额兜底，需在 settings.yml 启用 format: json）；留空时默认自动发现公共实例 |
+| `SEARXNG_PUBLIC_INSTANCES_ENABLED` | 是否在 `SEARXNG_BASE_URLS` 为空时自动从 `searx.space` 获取公共实例（默认 `true`）                         |
 
 ### 5.4 配置方法
 
@@ -171,11 +171,11 @@ Dockerfile 已采用多阶段构建，前端会在镜像构建时自动打包。
 
 ### 6.1 支持的挂载目录
 
-| 目录 | 说明 |
-|------|------|
-| `/app/data` | 数据库和数据文件 |
-| `/app/logs` | 日志文件 |
-| `/app/reports` | 分析报告 |
+| 目录           | 说明             |
+| -------------- | ---------------- |
+| `/app/data`    | 数据库和数据文件 |
+| `/app/logs`    | 日志文件         |
+| `/app/reports` | 分析报告         |
 
 ### 6.2 配置挂载
 

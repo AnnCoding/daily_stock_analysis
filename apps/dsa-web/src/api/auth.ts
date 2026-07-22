@@ -1,16 +1,18 @@
-import apiClient from './index';
+import apiClient from "./index";
 
 export type AuthStatusResponse = {
   authEnabled: boolean;
   loggedIn: boolean;
   passwordSet?: boolean;
   passwordChangeable?: boolean;
-  setupState: 'enabled' | 'password_retained' | 'no_password';
+  setupState: "enabled" | "password_retained" | "no_password";
 };
 
 export const authApi = {
   async getStatus(): Promise<AuthStatusResponse> {
-    const { data } = await apiClient.get<AuthStatusResponse>('/api/v1/auth/status');
+    const { data } = await apiClient.get<AuthStatusResponse>(
+      "/api/v1/auth/status",
+    );
     return data;
   },
 
@@ -18,7 +20,7 @@ export const authApi = {
     authEnabled: boolean,
     password?: string,
     passwordConfirm?: string,
-    currentPassword?: string
+    currentPassword?: string,
   ): Promise<AuthStatusResponse> {
     const body: {
       authEnabled: boolean;
@@ -35,7 +37,10 @@ export const authApi = {
     if (currentPassword !== undefined) {
       body.currentPassword = currentPassword;
     }
-    const { data } = await apiClient.post<AuthStatusResponse>('/api/v1/auth/settings', body);
+    const { data } = await apiClient.post<AuthStatusResponse>(
+      "/api/v1/auth/settings",
+      body,
+    );
     return data;
   },
 
@@ -44,15 +49,15 @@ export const authApi = {
     if (passwordConfirm !== undefined) {
       body.passwordConfirm = passwordConfirm;
     }
-    await apiClient.post('/api/v1/auth/login', body);
+    await apiClient.post("/api/v1/auth/login", body);
   },
 
   async changePassword(
     currentPassword: string,
     newPassword: string,
-    newPasswordConfirm: string
+    newPasswordConfirm: string,
   ): Promise<void> {
-    await apiClient.post('/api/v1/auth/change-password', {
+    await apiClient.post("/api/v1/auth/change-password", {
       currentPassword,
       newPassword,
       newPasswordConfirm,
@@ -60,6 +65,6 @@ export const authApi = {
   },
 
   async logout(): Promise<void> {
-    await apiClient.post('/api/v1/auth/logout');
+    await apiClient.post("/api/v1/auth/logout");
   },
 };
