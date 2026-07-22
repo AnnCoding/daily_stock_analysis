@@ -2,12 +2,7 @@ import React from "react";
 import { cn } from "../../utils/cn";
 
 type BadgeVariant =
-  | "default"
-  | "success"
-  | "warning"
-  | "danger"
-  | "info"
-  | "history";
+  "default" | "success" | "warning" | "danger" | "info" | "history";
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   children: React.ReactNode;

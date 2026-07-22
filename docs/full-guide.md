@@ -65,7 +65,7 @@ daily_stock_analysis/
 | `OPENAI_BASE_URL`   | OpenAI 兼容 API 地址（如 `https://api.deepseek.com`）                                                                      | 可选 |
 | `OPENAI_MODEL`      | 模型名称（如 `gemini-3.1-pro-preview`、`deepseek-v4-flash`、`gpt-5.5`）                                                    | 可选 |
 
-> \*注：以上模型 Key / 渠道至少配置一个；推荐优先从 Anspire 或 AIHubMix 这类一 Key 多模型服务开始。
+> *注：以上模型 Key / 渠道至少配置一个；推荐优先从 Anspire 或 AIHubMix 这类一 Key 多模型服务开始。
 
 #### 通知渠道配置（可同时配置多个，全部推送）
 
@@ -100,7 +100,7 @@ daily_stock_analysis/
 | `CUSTOM_WEBHOOK_BODY_TEMPLATE`    | 自定义 Webhook JSON body 模板，适配 AstrBot、NapCat、自建服务等特殊 payload                                      | 可选 |
 | `WEBHOOK_VERIFY_SSL`              | Webhook HTTPS 证书校验（默认 true）。设为 false 可支持自签名证书。警告：关闭有严重安全风险（MITM），仅限可信内网 | 可选 |
 
-> \*注：至少配置一个渠道，配置多个则同时推送
+> *注：至少配置一个渠道，配置多个则同时推送
 >
 > 当前默认 `daily_analysis.yml` 只显式映射固定 Secret / Variable 名称，不会自动把 `STOCK_GROUP_1`、`EMAIL_GROUP_1` 这类任意编号变量导入运行环境。所以分组邮箱功能目前不适用于仓库自带默认 GitHub Actions workflow；它适用于本地 `.env`、Docker，或你自行显式扩展过 `env:` 映射的运行环境。Actions 已显式映射 `CUSTOM_WEBHOOK_BODY_TEMPLATE`、`WEBHOOK_VERIFY_SSL`、`FEISHU_WEBHOOK_SECRET`、`FEISHU_WEBHOOK_KEYWORD`、`PUSHPLUS_TOPIC`、P3 通知路由键以及 P4 通知降噪键；`MARKDOWN_TO_IMAGE_CHANNELS` 和 `MERGE_EMAIL_NOTIFICATION` 仍作为行为开关不在默认 workflow 中自动映射。
 
@@ -228,7 +228,7 @@ daily_stock_analysis/
 | `ANTHROPIC_TEMPERATURE`   | Claude 温度参数（0.0-1.0）                                                                         | `0.7`                    | 可选 |
 | `ANTHROPIC_MAX_TOKENS`    | Claude 响应最大 token 数                                                                           | `8192`                   | 可选 |
 
-> \*注：`ANSPIRE_API_KEYS`、`AIHUBMIX_KEY`、`GEMINI_API_KEY`、`ANTHROPIC_API_KEY`、`OPENAI_API_KEY` 或 `OLLAMA_API_BASE` 至少配置一个。`ANSPIRE_API_KEYS` 与 `AIHUBMIX_KEY` 无需配置 `OPENAI_BASE_URL`，系统自动适配。
+> *注：`ANSPIRE_API_KEYS`、`AIHUBMIX_KEY`、`GEMINI_API_KEY`、`ANTHROPIC_API_KEY`、`OPENAI_API_KEY` 或 `OLLAMA_API_BASE` 至少配置一个。`ANSPIRE_API_KEYS` 与 `AIHUBMIX_KEY` 无需配置 `OPENAI_BASE_URL`，系统自动适配。
 
 ### 通知渠道配置
 
@@ -1142,7 +1142,7 @@ FastAPI 提供 RESTful API 服务，支持配置管理和触发分析。
 ### API 接口
 
 | 接口                                  | 方法      | 说明                                                                                                                                                                     |
-| ------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- | -------------------------------------------------- |
+| ------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `/api/v1/analysis/analyze`            | POST      | 触发股票分析                                                                                                                                                             |
 | `/api/v1/analysis/market-review`      | POST      | 后台触发大盘复盘；请求体可传 `{"send_notification": true}`；与 `main.py --market-review` 与 `bot` 复用同一套 `GeminiAnalyzer/SearchService/NotificationService` 组装语义 |
 | `/api/v1/analysis/tasks`              | GET       | 查询任务列表                                                                                                                                                             |

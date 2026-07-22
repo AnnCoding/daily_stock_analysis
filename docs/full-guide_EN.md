@@ -65,7 +65,7 @@ Go to your forked repo → `Settings` → `Secrets and variables` → `Actions` 
 | `OPENAI_BASE_URL`   | OpenAI-compatible API endpoint (e.g., `https://api.deepseek.com`)                                                                                           |  Optional   |
 | `OPENAI_MODEL`      | Model name (e.g., `deepseek-v4-flash`)                                                                                                                      |  Optional   |
 
-> \*Note: Configure at least one model key or channel. Anspire or AIHubMix is the simplest starting point for one-key multi-model access.
+> *Note: Configure at least one model key or channel. Anspire or AIHubMix is the simplest starting point for one-key multi-model access.
 
 #### Notification Channels (Multiple can be configured, all will receive notifications)
 
@@ -101,7 +101,7 @@ Go to your forked repo → `Settings` → `Secrets and variables` → `Actions` 
 | `CUSTOM_WEBHOOK_BODY_TEMPLATE`    | Custom Webhook JSON body template for AstrBot, NapCat, or self-hosted services with special payloads                                                                             | Optional |
 | `WEBHOOK_VERIFY_SSL`              | Verify Webhook HTTPS certificates (default true). Set to false for self-signed certs. WARNING: Disabling has serious security risk (MITM), use only on trusted internal networks | Optional |
 
-> \*Note: Configure at least one channel; multiple channels will all receive notifications
+> *Note: Configure at least one channel; multiple channels will all receive notifications
 >
 > The default `daily_analysis.yml` in this repository only exports fixed Secret / Variable names. Arbitrary numbered env vars such as `STOCK_GROUP_1` and `EMAIL_GROUP_1` are not auto-injected into the job, so grouped email routing is not available in the stock workflow unless you explicitly extend the workflow's `env:` mapping in your own fork. Actions now maps `CUSTOM_WEBHOOK_BODY_TEMPLATE`, `WEBHOOK_VERIFY_SSL`, `FEISHU_WEBHOOK_SECRET`, `FEISHU_WEBHOOK_KEYWORD`, `PUSHPLUS_TOPIC`, the P3 notification route keys, and the P4 notification noise-control keys; `MARKDOWN_TO_IMAGE_CHANNELS` and `MERGE_EMAIL_NOTIFICATION` remain behavior toggles outside the default workflow mapping.
 
@@ -199,7 +199,7 @@ Default schedule: Every weekday at **18:00 (Beijing Time)** automatic execution.
 | `OLLAMA_API_BASE`         | Ollama local service address (e.g. `http://localhost:11434`), see [LLM Config Guide](LLM_CONFIG_GUIDE_EN.md)                   | -                        | Optional |
 | `OPENAI_MODEL`            | OpenAI model name (legacy)                                                                                                     | `gpt-5.5`                | Optional |
 
-> \*Note: Configure at least one of `ANSPIRE_API_KEYS`, `AIHUBMIX_KEY`, `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OLLAMA_API_BASE`, or `LLM_CHANNELS` / `LITELLM_CONFIG`. `ANSPIRE_API_KEYS` and `AIHUBMIX_KEY` are auto-adapted without an `OPENAI_BASE_URL`.
+> *Note: Configure at least one of `ANSPIRE_API_KEYS`, `AIHUBMIX_KEY`, `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OLLAMA_API_BASE`, or `LLM_CHANNELS` / `LITELLM_CONFIG`. `ANSPIRE_API_KEYS` and `AIHUBMIX_KEY` are auto-adapted without an `OPENAI_BASE_URL`.
 
 ### Notification Channel Configuration
 
@@ -987,7 +987,7 @@ FastAPI provides RESTful API service for configuration management and triggering
 ### API Endpoints
 
 | Endpoint                              | Method    | Description                                                                                                                                                                                                                      |
-| ------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | -------------------------------------------------------------------- |
+| ------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/api/v1/analysis/analyze`            | POST      | Trigger stock analysis                                                                                                                                                                                                           |
 | `/api/v1/analysis/market-review`      | POST      | Trigger a background market review; request body may pass `{"send_notification": true}`; shares the same `GeminiAnalyzer/SearchService/NotificationService` construction semantics as `main.py --market-review` and Bot commands |
 | `/api/v1/analysis/tasks`              | GET       | Query task list                                                                                                                                                                                                                  |

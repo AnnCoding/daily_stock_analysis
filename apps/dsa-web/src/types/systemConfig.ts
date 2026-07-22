@@ -9,22 +9,10 @@ export type SystemConfigCategory =
   | "uncategorized";
 
 export type SystemConfigDataType =
-  | "string"
-  | "integer"
-  | "number"
-  | "boolean"
-  | "array"
-  | "json"
-  | "time";
+  "string" | "integer" | "number" | "boolean" | "array" | "json" | "time";
 
 export type SystemConfigUIControl =
-  | "text"
-  | "password"
-  | "number"
-  | "select"
-  | "textarea"
-  | "switch"
-  | "time";
+  "text" | "password" | "number" | "select" | "textarea" | "switch" | "time";
 
 export interface SystemConfigOption {
   label: string;

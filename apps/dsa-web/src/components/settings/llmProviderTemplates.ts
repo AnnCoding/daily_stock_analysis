@@ -1,10 +1,5 @@
 export type ChannelProtocol =
-  | "openai"
-  | "deepseek"
-  | "gemini"
-  | "anthropic"
-  | "vertex_ai"
-  | "ollama";
+  "openai" | "deepseek" | "gemini" | "anthropic" | "vertex_ai" | "ollama";
 export type LLMProviderCapability =
   | "openai-compatible"
   | "aggregator"

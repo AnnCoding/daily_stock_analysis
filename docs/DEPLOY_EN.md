@@ -364,15 +364,15 @@ Add these Secrets:
 | `ANTHROPIC_API_KEY`          | Anthropic API Key                                      | Optional    |
 | `GEMINI_API_KEY`             | Gemini AI API Key                                      | Optional    |
 | `OPENAI_API_KEY`             | OpenAI-compatible API Key                              | Optional    |
-| `WECHAT_WEBHOOK_URL`         | WeChat Work Bot Webhook                                | Optional\*  |
-| `FEISHU_WEBHOOK_URL`         | Feishu Bot Webhook                                     | Optional\*  |
-| `TELEGRAM_BOT_TOKEN`         | Telegram Bot Token                                     | Optional\*  |
-| `TELEGRAM_CHAT_ID`           | Telegram Chat ID                                       | Optional\*  |
-| `TELEGRAM_MESSAGE_THREAD_ID` | Telegram Topic ID                                      | Optional\*  |
-| `EMAIL_SENDER`               | Sender email                                           | Optional\*  |
-| `EMAIL_PASSWORD`             | Email authorization code                               | Optional\*  |
-| `SERVERCHAN3_SENDKEY`        | ServerChan v3 Sendkey                                  | Optional\*  |
-| `CUSTOM_WEBHOOK_URLS`        | Custom Webhook (comma-separated for multiple)          | Optional\*  |
+| `WECHAT_WEBHOOK_URL`         | WeChat Work Bot Webhook                                | Optional*   |
+| `FEISHU_WEBHOOK_URL`         | Feishu Bot Webhook                                     | Optional*   |
+| `TELEGRAM_BOT_TOKEN`         | Telegram Bot Token                                     | Optional*   |
+| `TELEGRAM_CHAT_ID`           | Telegram Chat ID                                       | Optional*   |
+| `TELEGRAM_MESSAGE_THREAD_ID` | Telegram Topic ID                                      | Optional*   |
+| `EMAIL_SENDER`               | Sender email                                           | Optional*   |
+| `EMAIL_PASSWORD`             | Email authorization code                               | Optional*   |
+| `SERVERCHAN3_SENDKEY`        | ServerChan v3 Sendkey                                  | Optional*   |
+| `CUSTOM_WEBHOOK_URLS`        | Custom Webhook (comma-separated for multiple)          | Optional*   |
 | `STOCK_LIST`                 | Watchlist, e.g., `600519,300750`                       | ✅          |
 | `SERPAPI_API_KEYS`           | SerpAPI Key                                            | Recommended |
 | `TAVILY_API_KEYS`            | Tavily Search API Key                                  | Optional    |
@@ -382,7 +382,7 @@ Add these Secrets:
 | `TUSHARE_TOKEN`              | Tushare Token                                          | Optional    |
 | `GEMINI_MODEL`               | Model name (default gemini-2.0-flash)                  | Optional    |
 
-> \*Note: Configure at least one notification channel, multiple channels supported for simultaneous push
+> *Note: Configure at least one notification channel, multiple channels supported for simultaneous push
 
 #### 3. Verify Workflow File
 
@@ -423,12 +423,13 @@ schedule:
 ```
 
 Common cron examples:
-| Expression | Description |
-|--------|------|
+
+| Expression       | Description             |
+| ---------------- | ----------------------- |
 | `'0 10 * * 1-5'` | Mon-Fri 18:00 (Beijing) |
 | `'30 7 * * 1-5'` | Mon-Fri 15:30 (Beijing) |
-| `'0 10 * * *'` | Daily 18:00 (Beijing) |
-| `'0 2 * * 1-5'` | Mon-Fri 10:00 (Beijing) |
+| `'0 10 * * *'`   | Daily 18:00 (Beijing)   |
+| `'0 2 * * 1-5'`  | Mon-Fri 10:00 (Beijing) |
 
 ### Modify Watchlist
 
